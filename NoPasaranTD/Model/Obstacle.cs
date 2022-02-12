@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NoPasaranTD.Model
 {
-    internal class Obstacle
+    public class Obstacle
     {
     }
 }

@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace NoPasaranTD.Model
 {
-    struct Fragment
+    public struct Fragment
     {
         public int StartVector { get; }
         public double StartPercent { get; }
@@ -14,7 +14,7 @@ namespace NoPasaranTD.Model
             => (StartVector, StartPercent, EndPercent) = (sv, sp, ep);
     }
 
-    class Map
+    public class Map
     {
 
         public List<Obstacle> Obstacles { get; set; }
