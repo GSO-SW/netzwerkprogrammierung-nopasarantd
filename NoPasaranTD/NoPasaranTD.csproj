@@ -53,6 +53,7 @@
     <Compile Include="Engine\Display.Designer.cs">
       <DependentUpon>Display.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\Map.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
