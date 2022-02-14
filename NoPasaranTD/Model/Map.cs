@@ -4,14 +4,14 @@ using System.Drawing;
 
 namespace NoPasaranTD.Model
 {
-    public struct Fragment
+    struct Fragment
     {
+        public Fragment(int sv, double sp, double ep)
+            => (StartVector, StartPercent, EndPercent) = (sv, sp, ep);
+
         public int StartVector { get; }
         public double StartPercent { get; }
         public double EndPercent { get; }
-
-        public Fragment(int sv, double sp, double ep)
-            => (StartVector, StartPercent, EndPercent) = (sv, sp, ep);
     }
 
     public class Map
