@@ -9,8 +9,10 @@ namespace NoPasaranTD.Data
 {
     public static class StaticInfo
     {
+        static int i = 1;
 
-        private static Dictionary<BalloonType, int> BalloonStrength = new Dictionary<BalloonType, int>()
+
+        private static readonly Dictionary<BalloonType, int> BalloonStrength = new Dictionary<BalloonType, int>()
         {
             {BalloonType.None,     0},
             {BalloonType.Red,      1},
@@ -19,6 +21,28 @@ namespace NoPasaranTD.Data
             {BalloonType.Purple,   4},
             {BalloonType.Black,    5},
             {BalloonType.Gold,     6}
+        };
+
+        private static readonly Dictionary<BalloonType, int> BalloonVelocity = new Dictionary<BalloonType, int>()
+        {
+            {BalloonType.None,     0},
+            {BalloonType.Red,      i},
+            {BalloonType.Green,    i*2},
+            {BalloonType.Blue,     i*3},
+            {BalloonType.Purple,   i*4},
+            {BalloonType.Black,    i*5},
+            {BalloonType.Gold,     i*6}
+        };
+
+        private static readonly Dictionary<BalloonType, int> BalloonValue = new Dictionary<BalloonType, int>()
+        {
+            {BalloonType.None,     0},
+            {BalloonType.Red,      i},
+            {BalloonType.Green,    i*2},
+            {BalloonType.Blue,     i*3},
+            {BalloonType.Purple,   i*4},
+            {BalloonType.Black,    i*5},
+            {BalloonType.Gold,     i*6}
         };
 
     }
