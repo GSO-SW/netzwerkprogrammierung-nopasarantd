@@ -11,10 +11,11 @@ namespace NoPasaranTD.Model
     {
         public Rectangle Hitbox { get; set; }
         public uint Level { get; set; }
-        public uint Strength { get; }
-        public uint Speed { get; }
-        public uint Range { get; }
-        public abstract void Render();
+        public uint Strength { get /* TODO: Zurgiff auf StaticInfo */; }
+        public uint Speed { get /* TODO: Zurgiff auf StaticInfo */; }
+        public uint Range { get /* TODO: Zurgiff auf StaticInfo */; }
+        
+        public abstract void Render(Graphics g);
         public abstract void Update();
     }
 }
