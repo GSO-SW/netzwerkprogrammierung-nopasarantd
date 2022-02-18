@@ -11,23 +11,22 @@ namespace NoPasaranTD.Engine
 	{
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
-		//public List<Tower> Towers { get; }
+		public List<Tower> Towers { get; }
 
 		public Game(Map map)
 		{
 			CurrentMap = map;
-			//Towers = new List<Tower>();
+			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 		}
 
 		public void Update()
 		{
-			//for (int i = 0; i < Towers.Count; i++)
-			//	Towers[i].Update();
+			for (int i = 0; i < Towers.Count; i++)
+				Towers[i].Update();
 			for (int i = 0; i < Balloons.Count; i++)
 				Balloons[i].PathPosition += 1f; // TODO get speed
 		}
-		/*
 		public void AddTower(Tower t)
 		{
 			// TODO network communication
@@ -38,6 +37,5 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			Towers.Remove(t);
 		}
-		*/
 	}
 }
