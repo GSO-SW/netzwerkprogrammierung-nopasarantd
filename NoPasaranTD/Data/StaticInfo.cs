@@ -1,6 +1,7 @@
 ﻿using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,10 +10,71 @@ namespace NoPasaranTD.Data
 {
     public static class StaticInfo
     {
-        private static readonly int i = 1;
+        
+
+        #region GetTower methoden
+
+        /// <summary>
+        /// Öffentliche Methoden zum Aufrufen der TowerDaten/Werte 
+        /// </summary>
+        
+        public static string GetTowerName(Type type)
+        {
+            TowerName.TryGetValue(type, out string name);
+            return name;
+        }
+        public static uint GetTowerPrice(Type type)
+        {
+            TowerPrice.TryGetValue(type, out uint price);
+            return price;
+        }
+
+        public static uint GetTowerDamage(Type type)
+        {
+            TowerDamage.TryGetValue(type, out uint damage);
+            return damage;
+        }
+        public static double GetTowerRange(Type type)
+        {
+            TowerRange.TryGetValue(type, out double range);
+            return range;
+        }
+        public static Size GetTowerSize(Type type)
+        {
+            TowerSize.TryGetValue(type, out Size size);
+            return size;
+        }
+        public static uint GetTowerDelay(Type type)
+        {
+            TowerDelay.TryGetValue(type, out uint delay);
+            return delay;
+        }
+        #endregion
+
+        #region GetBallon methoden 
+
+        /// <summary>
+        /// Öffentliche Methoden zum Aufrufen der BallonDaten/Werte 
+        /// </summary>
+        public static uint GetBallonStrength(BalloonType type)
+        {
+            BalloonStrength.TryGetValue(type, out uint strength);
+            return strength;
+        }
+        public static float GetBalloonVelocity(BalloonType type)
+        {
+            BalloonVelocity.TryGetValue(type, out float velocity);
+            return velocity;
+        }
+        public static uint GetBalloonValue(BalloonType type)
+        {
+            BalloonValue.TryGetValue(type, out uint value);
+            return value;
+        }
+        #endregion
 
         #region Ballon
-        private static readonly Dictionary<BalloonType, int> BalloonStrength = new Dictionary<BalloonType, int>()
+        private static readonly Dictionary<BalloonType, uint> BalloonStrength = new Dictionary<BalloonType, uint>()
         {
             {BalloonType.None,     0},
             {BalloonType.Red,      1},
@@ -23,63 +85,58 @@ namespace NoPasaranTD.Data
             {BalloonType.Gold,     6}
         };
 
-        private static readonly Dictionary<BalloonType, int> BalloonVelocity = new Dictionary<BalloonType, int>()
+        private static readonly Dictionary<BalloonType, float> BalloonVelocity = new Dictionary<BalloonType, float>()
         {
             {BalloonType.None,     0},
-            {BalloonType.Red,      i},
-            {BalloonType.Green,    i*2},
-            {BalloonType.Blue,     i*3},
-            {BalloonType.Purple,   i*4},
-            {BalloonType.Black,    i*5},
-            {BalloonType.Gold,     i*6}
+            {BalloonType.Red,      1},
+            {BalloonType.Green,    2},
+            {BalloonType.Blue,     3},
+            {BalloonType.Purple,   4},
+            {BalloonType.Black,    5},
+            {BalloonType.Gold,     6}
         };
 
-        private static readonly Dictionary<BalloonType, int> BalloonValue = new Dictionary<BalloonType, int>()
+        private static readonly Dictionary<BalloonType, uint> BalloonValue = new Dictionary<BalloonType, uint>()
         {
             {BalloonType.None,     0},
-            {BalloonType.Red,      i},
-            {BalloonType.Green,    i*2},
-            {BalloonType.Blue,     i*3},
-            {BalloonType.Purple,   i*4},
-            {BalloonType.Black,    i*5},
-            {BalloonType.Gold,     i*6}
+            {BalloonType.Red,      1},
+            {BalloonType.Green,    2},
+            {BalloonType.Blue,     3},
+            {BalloonType.Purple,   4},
+            {BalloonType.Black,    5},
+            {BalloonType.Gold,     6}
         };
         #endregion  // Dictionary für die Ballons
 
         #region Tower
-        private static readonly Dictionary<TowerType, string> TowerName = new Dictionary<TowerType, string>()
+        private static readonly Dictionary<Type, string> TowerName = new Dictionary<Type, string>()
         {
-            {TowerType.Canon,     "Canon"},
-        };
-        
-        private static readonly Dictionary<TowerType, double> TowerCost = new Dictionary<TowerType, double>()
-        {
-            {TowerType.Canon,     40},
+            //{typeof(TowerCanon),     "Canon"},
         };
 
-        private static readonly Dictionary<TowerType, double> TowerDamage = new Dictionary<TowerType, double>()
+        private static readonly Dictionary<Type, uint> TowerPrice = new Dictionary<Type, uint>()
         {
-            {TowerType.Canon,     1},
+            //{typeof(TowerCanon),     40},
         };
 
-        private static readonly Dictionary<TowerType, double> TowerRange = new Dictionary<TowerType, double>()
+        private static readonly Dictionary<Type, uint> TowerDamage = new Dictionary<Type, uint>()
         {
-            {TowerType.Canon,     10},
+            //{typeof(TowerCanon),     1},
         };
 
-        private static readonly Dictionary<TowerType, string> TowerDamagetyp = new Dictionary<TowerType, string>()
+        private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
-            {TowerType.Canon,     "AOE"},
+            //{typeof(TowerCanon),     10},
         };
 
-        private static readonly Dictionary<TowerType, double> TowerSize = new Dictionary<TowerType, double>()
+        private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
         {
-            {TowerType.Canon,     1*1},
+            //{typeof(TowerCanon),     new Size(1, 1)},
         };
 
-        private static readonly Dictionary<TowerType, double> TowerAttackspeed = new Dictionary<TowerType, double>()
+        private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
-            {TowerType.Canon,     3},
+            //{typeof(TowerCanon),     3},
         };
         #endregion // Dictionary für die Türme
     }
