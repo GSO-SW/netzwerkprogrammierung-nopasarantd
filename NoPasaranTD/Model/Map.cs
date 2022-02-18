@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Newtonsoft.Json;
 
 namespace NoPasaranTD.Model
 {
@@ -15,14 +16,27 @@ namespace NoPasaranTD.Model
         public double EndLength { get; }
     }
 
+    [JsonObject(MemberSerialization.OptOut)]
     public class Map
     {
-        public List<Obstacle> Obstacles { get; set; }        
+        public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
 
-        public string BackgroundPath { get; private set; }
+        [JsonIgnore]
         public Bitmap BackgroundImage { get; private set; }
 
+        private string backgroundPath;
+        public string BackgroundPath 
+        { 
+            get => backgroundPath; 
+            set
+            { 
+                backgroundPath = value;
+                BackgroundImage = new Bitmap(Environment.CurrentDirectory + BackgroundPath); 
+            } 
+        }
+
+        [JsonIgnore]
         public double PathLength { get; private set; }
 
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
@@ -36,7 +50,7 @@ namespace NoPasaranTD.Model
         {
             // Pfadlänge berechnen
             PathLength = GetFragmentMagnitudeTo(BalloonPath.Length - 2);
-
+        
             double startMagnitude = 0;
             pathFragments = new Fragment[BalloonPath.Length - 1];
             for (int i = 0; i < pathFragments.Length; i++)

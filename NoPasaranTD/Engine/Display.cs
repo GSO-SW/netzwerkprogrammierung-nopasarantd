@@ -26,7 +26,7 @@ namespace NoPasaranTD
 
             Map map = new Map()
             {
-                BackgroundPath = "\\img\\img_background.json",
+                BackgroundPath = "\\img\\img_background.jpg",
                 BalloonPath = new Utilities.Vector2D[]
                 {
                     new Utilities.Vector2D(2,3),
@@ -40,7 +40,9 @@ namespace NoPasaranTD
                 }
 
             };
-            await Task.Run(() => mapData.CreateNewMapAsync("test2", map));
+            //await Task.Run(() => mapData.CreateNewMapAsync("test2", map));
+
+            Map map1 = await Task.Run(() => mapData.GetMapByPathAsync("test2"));
         }
     }
 }

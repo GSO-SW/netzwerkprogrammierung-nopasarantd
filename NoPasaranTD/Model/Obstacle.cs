@@ -4,9 +4,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace NoPasaranTD.Model
 {
+    [JsonObject(MemberSerialization.OptOut)]
     public class Obstacle
     {
         public Obstacle(ObstacleType obstacleType, Rectangle hitbox)
@@ -18,6 +20,7 @@ namespace NoPasaranTD.Model
         public ObstacleType ObstacleType { get; set; }
         public Rectangle Hitbox { get; set; } // Maybe change to RectangleF
 
+        [JsonIgnore]
         public Bitmap Image { get; } // Link with static class
     }
 
