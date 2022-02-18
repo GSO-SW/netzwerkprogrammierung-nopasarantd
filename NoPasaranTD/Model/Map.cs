@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -16,10 +17,14 @@ namespace NoPasaranTD.Model
 
     public class Map
     {
-
         public List<Obstacle> Obstacles { get; set; }
-        public Bitmap BackgroundImage { get; set; }
+
+        private Bitmap background = null;
+        public Bitmap BackgroundImage { get => background; }
         public Vector2D[] BalloonPath { get; set; }
+
+        private string backgroundPath = "";
+        public string BackgroundPath{ get => backgroundPath; set { backgroundPath = value; background = new Bitmap(Environment.CurrentDirectory + value); } }
 
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
         private Fragment[] pathFragments;

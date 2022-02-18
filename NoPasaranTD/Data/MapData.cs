@@ -6,6 +6,9 @@ using NoPasaranTD.Model;
 
 namespace NoPasaranTD.Data
 {
+    /// <summary>
+    /// Tools für die Daten der Maps
+    /// </summary>
     public class MapData
     {
         /// <summary>
@@ -13,16 +16,22 @@ namespace NoPasaranTD.Data
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns></returns>
-        public async Task<Map> GetMapByPathAsync(string fullPath)
+        public async Task<Map> GetMapByPathAsync(string fileName)
         {
-            Map obj = null;
-            using (StreamReader streamReader = new StreamReader(fullPath))
-            {
+            object obj = null;      
+            string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
+
+            if (!File.Exists(savePath))
+                throw new FileNotFoundException(savePath);
+
+            using (StreamReader streamReader = new StreamReader(savePath))
+            {           
                 string rawData = await streamReader.ReadToEndAsync();
                 try { obj = JsonConvert.DeserializeObject<Map>(rawData); }
-                catch (Exception) { /* TODO: Exception  */ }               
+                catch (Exception) { /* TODO: Exception  */ }
+                streamReader.Close();
             }     
-            return obj;
+            return obj as Map;
         }
 
         /// <summary>
@@ -32,11 +41,16 @@ namespace NoPasaranTD.Data
         /// <param name="map">Die zur speichernde Map</param>
         public async Task CreateNewMapAsync(string fileName, Map map)
         {
-            string savePath = Environment.CurrentDirectory;
-            File.Create(savePath + "//" + fileName + ".json");
+            string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
-            using (StreamWriter streamWriter = new StreamWriter(savePath + "//" + fileName + ".json"))
+            if (!File.Exists(savePath))
+                File.Create(savePath);
+
+            using (StreamWriter streamWriter = new StreamWriter(savePath))
+            {
                 await streamWriter.WriteAsync(JsonConvert.SerializeObject(map, Formatting.Indented));
+                streamWriter.Close();
+            }                
         }
-    }
+    }  
 }

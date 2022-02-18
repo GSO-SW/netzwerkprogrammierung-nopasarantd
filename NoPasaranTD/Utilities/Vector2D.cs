@@ -1,11 +1,12 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace NoPasaranTD.Utilities
 {
 	public struct Vector2D
 	{
-		public float X { get; }
-		public float Y { get; }
+		public float X { get; set; }
+		public float Y { get; set; }
 		public Vector2D(float x, float y) { X = x; Y = y; }
 		public Vector2D(double x, double y) { X = (float)x; Y = (float)y; }
 
