@@ -17,14 +17,11 @@ namespace NoPasaranTD.Model
 
     public class Map
     {
-        public List<Obstacle> Obstacles { get; set; }
-
-        private Bitmap background = null;
-        public Bitmap BackgroundImage { get => background; }
+        public List<Obstacle> Obstacles { get; set; }        
         public Vector2D[] BalloonPath { get; set; }
 
-        private string backgroundPath = "";
-        public string BackgroundPath{ get => backgroundPath; set { backgroundPath = value; background = new Bitmap(Environment.CurrentDirectory + value); } }
+        public string BackgroundPath { get; private set; }
+        public Bitmap BackgroundImage { get; private set; }
 
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
         private Fragment[] pathFragments;
