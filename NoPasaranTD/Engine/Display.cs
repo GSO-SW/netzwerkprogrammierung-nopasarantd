@@ -16,5 +16,40 @@ namespace NoPasaranTD
         {
             InitializeComponent();
         }
+
+        private void Display_Load(object sender, EventArgs e)
+        {
+            Engine.INTERNAL.FormDisplay = this;
+            if(!Engine.INIT()) throw new Exception("Ooga Booga, something went wrong X(");
+            ThreadEngine.RunWorkerAsync();
+            
+        }
+        private void ThreadEngine_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Engine.INTERNAL.THREADEDLoop();
+        }
+
+
+        private void Display_Paint(object sender, PaintEventArgs e)
+        {
+            Engine.INTERNAL.DoDraw(sender, e);
+        }
+
+        private void Display_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (Engine.INTERNAL.DOupdateCanvas)
+            {
+                Refresh();
+                Engine.INTERNAL.DOupdateCanvas = false;
+            }
+ 
+        }
+
+        private void Display_Resize(object sender, EventArgs e)
+        {
+            Engine.INTERNAL.newResize = true;
+        }
+
+        
     }
 }
