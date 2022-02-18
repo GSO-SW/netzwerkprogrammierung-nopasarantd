@@ -7,12 +7,12 @@ namespace NoPasaranTD.Model
 {
     struct Fragment
     {
-        public Fragment(int sv, double sp, double ep)
-            => (StartVector, StartPercent, EndPercent) = (sv, sp, ep);
+        public Fragment(int sv, double sl, double el)
+            => (StartVector, StartLength, EndLength) = (sv, sl, el);
 
         public int StartVector { get; }
-        public double StartPercent { get; }
-        public double EndPercent { get; }
+        public double StartLength { get; }
+        public double EndLength { get; }
     }
 
     public class Map
@@ -23,54 +23,57 @@ namespace NoPasaranTD.Model
         public string BackgroundPath { get; private set; }
         public Bitmap BackgroundImage { get; private set; }
 
+        public double PathLength { get; private set; }
+
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
         private Fragment[] pathFragments;
 
         /// <summary>
-        /// Inizialisiert das Objekt und berechnet somit alle Pfadfragmente.<br/>
-        /// Erst nachdem diese Methode (nach jeder Änderung von 'BalloonPath') ausgeführt wird, gibt 'GetPathPosition' ein richtiges Ergebnis.
+        /// Inizialisiert das Objekt und berechnet somit die Länge des Pfades und dessen einzelne Fragmente.<br/>
+        /// Erst nachdem diese Methode (nach jeder Änderung von 'BalloonPath') ausgeführt wird, gibt 'GetPathPosition' & 'PathLength' ein richtiges Ergebnis.
         /// </summary>
         public void Initialize()
         {
-            pathFragments = new Fragment[BalloonPath.Length - 1];
-
-            // Benutzung von Methoden aus Klasse, da 'Path' schon gesetzt ist
-            double totalMagnitude = GetFragmentMagnitudeTotal();
+            // Pfadlänge berechnen
+            PathLength = GetFragmentMagnitudeTo(BalloonPath.Length - 2);
 
             double startMagnitude = 0;
+            pathFragments = new Fragment[BalloonPath.Length - 1];
             for (int i = 0; i < pathFragments.Length; i++)
-            {
+            { // Errechnen der einzelnen Fragmente
                 double endSum = GetFragmentMagnitudeTo(i);
                 // StartVector, StartPercent, EndPercent
-                pathFragments[i] = new Fragment(i, startMagnitude / totalMagnitude, endSum / totalMagnitude);
+                pathFragments[i] = new Fragment(i, startMagnitude, endSum);
                 startMagnitude = endSum;
             }
         }
 
         /// <summary>
-        /// Errechnet die Position auf dem Pfad anhand von Prozent.<br/>
-        /// Achtung: Bei änderung von 'BalloonPath' stelle sicher, dass die 'Initialize'-Methode ausgeführt wurde!
+        /// Errechnet die Position auf dem Pfad anhand von der gegebenen Länge.<br/>
+        /// Achtung: Bei änderung von 'BalloonPath' stellen Sie sicher, dass die 'Initialize'-Methode ausgeführt wurde!
         /// </summary>
-        /// <param name="percent">Position auf dem Pfad in Prozent</param>
-        /// <returns>Errechnete Position relational nach Prozent</returns>
-        public Vector2D GetPathPosition(double percent)
+        /// <param name="length">Position auf dem Pfad in Längeneinheit</param>
+        /// <returns>Errechnete Position relational nach der Länge</returns>
+        public Vector2D GetPathPosition(double length)
         {
-            Fragment fragment = pathFragments[
-                (int)((pathFragments.Length - 1) * percent)
-            ];
+            // Auswahl eines ungefähr richtigen Fragments
+            int index = (int)((pathFragments.Length - 1) / PathLength * length);
+            Fragment fragment = pathFragments[index];
+
+            // Suche nach dem genau richtigen Fragment
+            while (fragment.StartLength > length) 
+                fragment = pathFragments[--index];
+            while (fragment.EndLength < length) 
+                fragment = pathFragments[++index];
 
             Vector2D start = BalloonPath[fragment.StartVector];
             Vector2D end = BalloonPath[fragment.StartVector + 1];
 
             return start + (end - start) // Geradengleichung aufstellen,
-                / (fragment.EndPercent - fragment.StartPercent) // normalisieren
-                * (percent - fragment.StartPercent); // & mithilfe von differenz zwischen 'StartPercent' & 'percent' faktorisieren
+                / (fragment.EndLength - fragment.StartLength) // normalisieren
+                * (length - fragment.StartLength); // & mithilfe von differenz zwischen 'StartLength' & 'length' faktorisieren
         }
-
-        // Berechnen des Betrags vom Pfad
-        private double GetFragmentMagnitudeTotal()
-            => GetFragmentMagnitudeTo(BalloonPath.Length - 2);
-
+        
         // Berechnen des Betrags zwischen Punkt 'index' und 'index + 1'
         private double GetFragmentMagnitudeOf(int index)
             => (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
