@@ -16,10 +16,12 @@ namespace NoPasaranTD.Data
         /// <summary>
         /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
         /// Die Methode erlaubt keine parallele zugriffe !
-        /// </summary>
+        /// </summary>       
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns></returns>
-        public async Task<Map> GetMapByPathAsync(string fileName)
+        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        public static async Task<Map> GetMapByPathAsync(string fileName)
         {
             Map obj = null;      
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
@@ -46,7 +48,7 @@ namespace NoPasaranTD.Data
         /// </summary>
         /// <param name="fileName">Name der neu zu erstellenden Datei</param>
         /// <param name="map">Die zur speichernde Map</param>
-        public async Task CreateNewMapAsync(string fileName, Map map)
+        public static async Task CreateNewMapAsync(string fileName, Map map)
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
@@ -70,7 +72,7 @@ namespace NoPasaranTD.Data
         /// </summary>
         /// <param name="rawData"></param>
         /// <returns>Die ausgelesene Map</returns>
-        public Map GetMapFromJson(object rawData)
+        private static Map GetMapFromJson(object rawData)
         {
             // Dynamisches Objekt dataMap
             dynamic dataMap = rawData;
