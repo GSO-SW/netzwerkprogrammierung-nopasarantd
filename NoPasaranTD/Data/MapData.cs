@@ -50,11 +50,15 @@ namespace NoPasaranTD.Data
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
+            FileStream fileStream = null;
+
             // Prüft ob die Datei bereits existiert
             if (!File.Exists(savePath))
-                File.Create(savePath);
+                fileStream = File.Create(savePath);
+            else
+                fileStream = new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite);
 
-            using (StreamWriter streamWriter = new StreamWriter(savePath))
+            using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
                 await streamWriter.WriteAsync(JsonConvert.SerializeObject(map, Formatting.Indented));
                 streamWriter.Close();
