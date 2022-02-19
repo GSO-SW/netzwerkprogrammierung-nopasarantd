@@ -22,7 +22,7 @@ namespace NoPasaranTD
             Engine.INTERNAL.FormDisplay = this;
             if(!Engine.INIT()) throw new Exception("Ooga Booga, something went wrong X(");
             ThreadEngine.RunWorkerAsync();
-            
+
         }
         private void ThreadEngine_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -37,12 +37,7 @@ namespace NoPasaranTD
 
         private void Display_MouseDown(object sender, MouseEventArgs e)
         {
-            if (Engine.INTERNAL.DOupdateCanvas)
-            {
-                Refresh();
-                Engine.INTERNAL.DOupdateCanvas = false;
-            }
- 
+
         }
 
         private void Display_Resize(object sender, EventArgs e)
@@ -50,6 +45,15 @@ namespace NoPasaranTD
             Engine.INTERNAL.newResize = true;
         }
 
-        
+        private void TimerCanvasUpdate_Tick(object sender, EventArgs e)
+        {
+            // TODO: Adjust update time of the timer based on the max fps of the engine
+
+            if (Engine.INTERNAL.DOupdateCanvas)
+            {
+                Refresh();
+                Engine.INTERNAL.DOupdateCanvas = false;
+            }
+        }
     }
 }

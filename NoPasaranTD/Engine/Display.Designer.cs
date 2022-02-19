@@ -37,6 +37,12 @@
             // 
             this.ThreadEngine.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ThreadEngine_DoWork);
             // 
+            // TimerCanvasUpdate
+            // 
+            this.TimerCanvasUpdate.Enabled = true;
+            this.TimerCanvasUpdate.Interval = 10;
+            this.TimerCanvasUpdate.Tick += new System.EventHandler(this.TimerCanvasUpdate_Tick);
+            // 
             // Display
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
