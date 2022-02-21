@@ -12,6 +12,9 @@ namespace NoPasaranTD.Engine
     public delegate void RenderEventHandler(Graphics g);
     public delegate void UpdateEventHandler();
 
+    /// <summary>
+    /// Klasse zum errechnen von Durchschnitten
+    /// </summary>
     internal class RunningAverage
     {
         private const int DAMPEN_THRESHOLD = 10;
@@ -26,12 +29,20 @@ namespace NoPasaranTD.Engine
                 this.slots[offset] = value;
         }
 
+        /// <summary>
+        /// Fügt ein Element für die Errechnung vom Durchschnitt hinzu.<br/>
+        /// Falls das Array voll ist, werden die ersten Elemente überschrieben.
+        /// </summary>
         public void Add(long value)
         {
             slots[offset++ % slots.Length] = value;
             offset %= slots.Length;
         }
 
+        /// <summary>
+        /// Errechnet den Durchschnitt aller vorhandenen Elemente.
+        /// </summary>
+        /// <returns>Durchschnitt von den gespeicherten Elementen</returns>
         public long GetAverage()
         {
             long sum = 0;
@@ -40,6 +51,9 @@ namespace NoPasaranTD.Engine
             return sum / slots.Length;
         }
 
+        /// <summary>
+        /// Dämpft den Durchschnitt falls ein bestimmter überschritten wurde.
+        /// </summary>
         public void Damp()
         {
             if(GetAverage() > DAMPEN_THRESHOLD)
@@ -53,6 +67,7 @@ namespace NoPasaranTD.Engine
     public static class Engine
     {
 
+        #region Event handlers
         public static MouseEventHandler OnMouseDown;
         public static MouseEventHandler OnMouseUp;
         public static MouseEventHandler OnMouseMove;
@@ -62,13 +77,16 @@ namespace NoPasaranTD.Engine
 
         public static RenderEventHandler OnRender;
         public static UpdateEventHandler OnUpdate;
+        #endregion
 
+        #region Bildschirm Eigenschaften
         public static int RenderWidth { get; set; } = 1280;
         public static int RenderHeight { get; set; } = 720;
         public static int Framerate { get; set; } = 240;
 
         public static int MouseX { get; internal set; }
         public static int MouseY { get; internal set; }
+        #endregion
 
         #region Synchronize region
         private static readonly Stopwatch sleepWatch = new Stopwatch();
@@ -76,7 +94,7 @@ namespace NoPasaranTD.Engine
         private static long nextFrame = Environment.TickCount;
 
         /// <summary>
-        /// Präzises warten zwischen einzelnen Frames.
+        /// Präzises warten zwischen einzelnen Frames anhand von eingestellter Framerate.
         /// </summary>
         internal static void Sync()
         {
