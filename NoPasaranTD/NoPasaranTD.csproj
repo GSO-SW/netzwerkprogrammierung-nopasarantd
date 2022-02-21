@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -55,6 +58,7 @@
     </Compile>
     <Compile Include="Model\Balloon.cs" />
     <Compile Include="Model\Map.cs" />
+    <Compile Include="Engine\Engine.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Tower.cs" />
     <Compile Include="Program.cs" />
