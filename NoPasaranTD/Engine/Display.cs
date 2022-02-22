@@ -16,10 +16,10 @@ namespace NoPasaranTD.Engine
         {
             InitializeComponent();
             listContainer.Margin = 10;
-            listContainer.ItemSize = new System.Drawing.Size(100,150);
+            listContainer.ItemSize = new System.Drawing.Size(100,130);
             listContainer.Position = new System.Drawing.Point(20, Engine.RenderHeight-150);
-            listContainer.ContainerSize = new System.Drawing.Size(Engine.RenderWidth-40, 150);
-            listContainer.BackgroundColor = Brushes.Blue;
+            listContainer.ContainerSize = new System.Drawing.Size(Engine.RenderWidth-40, 130);
+            listContainer.BackgroundColor = Brushes.SlateGray;
             listContainer.Items = new NotifyCollection<Tower>()
             {
                 new TowerTest(),
@@ -28,7 +28,7 @@ namespace NoPasaranTD.Engine
                 new TowerTest(),
                 new TowerTest(),
             };
-            listContainer.DrawItems();
+            listContainer.DefineItems();
             listContainer.Items.Add(new TowerTest());
         }
 
