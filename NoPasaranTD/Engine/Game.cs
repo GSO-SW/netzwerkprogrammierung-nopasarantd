@@ -20,6 +20,19 @@ namespace NoPasaranTD.Engine
 			Balloons = new List<Balloon>();
 		}
 
+		public int TowerTarget(int tower)
+        {
+			List<int> ballonsInRange = new List<int>();
+            for (int i = 0; i < Balloons.Count; i++)
+            {
+				
+                if (CurrentMap.GetPathPosition(Balloons[i].PathPosition))
+                {
+
+                }
+            }
+        }
+
 		public void Update()
 		{
 			for (int i = 0; i < Towers.Count; i++)
