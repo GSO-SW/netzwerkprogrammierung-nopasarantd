@@ -5,15 +5,27 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine.Visuals
 {
+    /// <summary>
+    /// Eine Generische Listbox welche jeden beliebigen Item Container Typen annehmen kann
+    /// </summary>
+    /// <typeparam name="T">Model Typ</typeparam>
+    /// <typeparam name="R">Item Container Typ</typeparam>
     public class ListContainer<T,R> where R : new()
     {
         #region Privat Member
 
-        private ContainerCollection<R> items = new ContainerCollection<R>();
-        private R selectedItem;
+        public delegate void SelectionChangedHandler();
+        /// <summary>
+        /// Wird beim einer neuen Auswahl eines Items in einem ListContainer ausgelöst
+        /// </summary>
+        public event SelectionChangedHandler SelectionChanged;
+
+        private List<ItemContainer<T>> items = new List<ItemContainer<T>>();
+        private ItemContainer<T> selectedItem;
         private Rectangle background = new Rectangle();
 
         #endregion
@@ -32,15 +44,7 @@ namespace NoPasaranTD.Engine.Visuals
         public Size ItemSize { get; set; }
 
         private Brush backgroundColor = Brushes.White;
-        public Brush BackgroundColor
-        {
-            get { return backgroundColor; }
-            set 
-            { 
-                backgroundColor = value; 
-                Graphics.FillRectangle(backgroundColor, background); 
-            }
-        }
+        public Brush BackgroundColor { get; set; }
        
         public int Margin { get; set; }
 
@@ -51,91 +55,120 @@ namespace NoPasaranTD.Engine.Visuals
         }
 
         public Graphics Graphics { get; set; }
-        public List<T> Items { get; set; }
+
+        private NotifyCollection<T> _contextItems = new NotifyCollection<T>();
+        public NotifyCollection<T> Items
+        {
+            get { return _contextItems; }
+            set { _contextItems = value; _contextItems.CollectionChanged += ItemsCollectionChanged; }
+        }
+
+        public T SelectedItem { get => (selectedItem as ItemContainer<T>).DataContext; }
         
         #endregion
 
         public ListContainer()
         {
-            items.CollectionChanged += ItemsCollectionChanged;
+            Items.CollectionChanged += ItemsCollectionChanged;
+            Engine.OnRender += Render;
+            Engine.OnMouseDown += MouseLeftButton;
         }
 
-        private void ItemsCollectionChanged()
-        {
-
-        }
-        public void Draw()
-        {
+        private void ItemsCollectionChanged() =>
             DrawItems();
-        }
 
-        void DrawItems()
+        /// <summary>
+        /// Zu jedem Model-Objekt wird ein eigener Item Container erstellt
+        /// </summary>
+        public void DrawItems()
         {
+            items.Clear();
             for (int i = 0; i < Items.Count; i++)
             {
                 ItemContainer<T> item = (new R() as ItemContainer<T>);
                 item.DataContext = Items[i];
                 item.ItemSize = ItemSize;
                 item.Graphics = Graphics;
-                item.Position = new Point(Position.X + i*ItemSize.Width + Margin, Position.Y);
-                item.Draw();
+                item.Position = new Point(Position.X + i*(ItemSize.Width + Margin) + Margin, Position.Y);
+                items.Add(item);
             }                                
+        }
+
+        private void Render(Graphics g) 
+        {
+            g.FillRectangle(BackgroundColor, background);
+        }
+
+        
+        private void MouseLeftButton(MouseEventArgs args)
+        {
+            for (int i = 0; i < items.Count; i++)
+                if (items[i].IsMouseOver)
+                {
+                    selectedItem = items[i];
+                    SelectionChanged?.Invoke();
+                }
+                    
         }
     }
 
-    public class ContainerCollection<T> : ICollection<T>
+    
+
+    /// <summary>
+    /// Normale Generische Liste mit NotifyListChangedEvent
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class NotifyCollection<T> : ICollection<T>
     {
         private ArrayList arrayList = new ArrayList();
 
-        public event Action CollectionChanged;
+        public delegate void NotifyOnListChanged();
+        public event NotifyOnListChanged CollectionChanged;
 
-        public int Count => throw new NotImplementedException();
+        public int Count => arrayList.Count;
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly { get; set; }
 
         public T this[int index] { get => (T)arrayList[index]; set => arrayList[index] = value; }
 
         public void Add(T item)
         {
             arrayList.Add(item);
-            CollectionChanged.Invoke();
+            OnListChanged();
         }
 
         public void Clear() 
         {
             arrayList.Clear();
-            CollectionChanged.Invoke();
+            OnListChanged();
         }
 
-        public bool Contains(T item)
-        {
-            return arrayList.Contains(item);
-        }
+        public bool Contains(T item) =>
+            arrayList.Contains(item);
 
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            //throw new NotImplementedException();
-        }
+        public void CopyTo(T[] array, int arrayIndex) { }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerator<T> GetEnumerator() =>
+            (IEnumerator<T>)arrayList.GetEnumerator();
 
         public bool Remove(T item)
         {
             try
             {
                 arrayList.Remove(item);
-                CollectionChanged.Invoke();
                 return true;
             }
             catch (Exception) { return false; }          
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        protected virtual void OnListChanged()
         {
-            throw new NotImplementedException();
+            if (CollectionChanged != null)
+                CollectionChanged();
         }
+            
+
+        IEnumerator IEnumerable.GetEnumerator() =>
+             arrayList.GetEnumerator();
     }
 }

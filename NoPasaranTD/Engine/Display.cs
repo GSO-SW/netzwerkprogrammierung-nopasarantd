@@ -14,26 +14,22 @@ namespace NoPasaranTD.Engine
         private ListContainer<Tower, TowerItemContainer> listContainer = new ListContainer<Tower, TowerItemContainer>();
         public Display()
         {
-            Paint += Display_Paint1;
-            
-        }
-
-        private void Display_Paint1(object sender, PaintEventArgs e)
-        {
-            listContainer.Graphics = e.Graphics;
+            InitializeComponent();
             listContainer.Margin = 10;
-            listContainer.ItemSize = new System.Drawing.Size(30, 50);
-            listContainer.Position = new System.Drawing.Point(0, 0);
-            listContainer.ContainerSize = new System.Drawing.Size(400, 60);
+            listContainer.ItemSize = new System.Drawing.Size(100,150);
+            listContainer.Position = new System.Drawing.Point(20, Engine.RenderHeight-150);
+            listContainer.ContainerSize = new System.Drawing.Size(Engine.RenderWidth-40, 150);
             listContainer.BackgroundColor = Brushes.Blue;
-            listContainer.Items = new System.Collections.Generic.List<Tower>()
+            listContainer.Items = new NotifyCollection<Tower>()
             {
                 new TowerTest(),
                 new TowerTest(),
                 new TowerTest(),
                 new TowerTest(),
+                new TowerTest(),
             };
-            listContainer.Draw();
+            listContainer.DrawItems();
+            listContainer.Items.Add(new TowerTest());
         }
 
         private void Display_Load(object sender, EventArgs e)
