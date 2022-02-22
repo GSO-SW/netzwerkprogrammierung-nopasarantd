@@ -11,26 +11,8 @@ namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
-        private ListContainer<Tower, TowerItemContainer> listContainer = new ListContainer<Tower, TowerItemContainer>();
-        public Display()
-        {
-            InitializeComponent();
-            listContainer.Margin = 10;
-            listContainer.ItemSize = new System.Drawing.Size(100,130);
-            listContainer.Position = new System.Drawing.Point(20, Engine.RenderHeight-150);
-            listContainer.ContainerSize = new System.Drawing.Size(Engine.RenderWidth-40, 130);
-            listContainer.BackgroundColor = Brushes.SlateGray;
-            listContainer.Items = new NotifyCollection<Tower>()
-            {
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-            };
-            listContainer.DefineItems();
-            listContainer.Items.Add(new TowerTest());
-        }
+        private UILayout layout = new UILayout();
+        public Display() => InitializeComponent();
 
         private void Display_Load(object sender, EventArgs e)
             => new Thread(GameLoop).Start();

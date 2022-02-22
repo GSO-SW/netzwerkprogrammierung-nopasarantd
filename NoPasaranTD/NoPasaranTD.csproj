@@ -61,7 +61,9 @@
       <DependentUpon>Display.cs</DependentUpon>
     </Compile>
     <Compile Include="Engine\Visuals\BuildMenuContainer.cs" />
+    <Compile Include="Engine\Visuals\DragDropService.cs" />
     <Compile Include="Engine\Visuals\ItemContainer.cs" />
+    <Compile Include="Engine\Visuals\UILayout.cs" />
     <Compile Include="Model\Balloon.cs" />
     <Compile Include="Model\Map.cs" />
     <Compile Include="Engine\Engine.cs" />
