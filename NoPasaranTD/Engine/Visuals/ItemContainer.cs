@@ -45,8 +45,16 @@ namespace NoPasaranTD.Engine.Visuals
         public TowerItemContainer()
         {
             Engine.OnRender += DrawItem;
-            Engine.OnMouseMove += MouseMove; 
-            Content = Image.FromFile(Environment.CurrentDirectory + "\\img\\monkey.jpg");
+            Engine.OnMouseMove += MouseMove;
+            try
+            {
+                //Content = Image.FromFile(Environment.CurrentDirectory + "\\img\\monkey.jpg");
+            }
+            catch (Exception)
+            {
+
+            }
+            
         }
 
         #endregion
@@ -112,8 +120,15 @@ namespace NoPasaranTD.Engine.Visuals
                 g.FillRectangle(Brushes.Red, background);
             else
                 g.FillRectangle(BackgroundBrush, background);
+            try
+            {
+                g.DrawImage(Content,background.X + 3, background.Y + 3, background.Width - 6, background.Height -6);   
+            }
+            catch (Exception)
+            {
 
-            g.DrawImage(Content,background.X + 3, background.Y + 3, background.Width - 6, background.Height -6);            
+            }
+                     
         }
 
         private void MouseMove(MouseEventArgs args)
