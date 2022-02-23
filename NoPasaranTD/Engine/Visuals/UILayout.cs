@@ -9,10 +9,15 @@ using System.Threading.Tasks;
 
 namespace NoPasaranTD.Engine.Visuals
 {
+    /// <summary>
+    /// Das UI Layout innerhalb eines Gameplays </br>
+    /// Enthält: Tower Baumenü, Tower Platzierung 
+    /// </summary>
     public class UILayout
     {
-
-
+        /// <summary>
+        /// Das Baumenü 
+        /// </summary>
         public ListContainer<Tower, TowerItemContainer> TowerBuildMenu { get; set; } = new ListContainer<Tower, TowerItemContainer>()
         {
             Margin = 10,
@@ -30,33 +35,46 @@ namespace NoPasaranTD.Engine.Visuals
             },            
         };
 
+        // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
-        private Rectangle towerDragDropVisual = new Rectangle(Engine.RenderWidth / 2, Engine.RenderHeight/2,0,0);
+
+        private List<Rectangle> placedTowers = new List<Rectangle>();
 
         public UILayout()
         {
             TowerBuildMenu.DefineItems();
+
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
 
             Engine.OnRender += Render;
         }
 
+        // Wird beim abschließen des DragDrop Vorganges ausgelöst
         private void PlacingTowerDragDrop_DragDropFinish(DragDropArgs args)
         {
-            // TODO: Tower Plazieren
+            Point posNewTower = args.MovedObject.Location;
+            placedTowers.Add(args.MovedObject);
+            // TODO: Neuen Tower Regristrieren
+            // TODO: Diesen neuen Tower platziern und zur Runde hinzufügen
         }
 
         private void TowerBuildMenu_SelectionChanged()
         {
-            placingTowerDragDrop.Start(new Rectangle(Engine.RenderWidth / 2, Engine.RenderHeight -50, 50, 50));
+            int width = 50;
+            int height = 50;
+
+            placingTowerDragDrop.Start(new Rectangle(Engine.MouseX - width/2, Engine.MouseY - height/2 , width, height));
         }
 
         private void Render(Graphics g)
         {
             if (placingTowerDragDrop.IsMoving)
                 g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
-            
+            foreach (var item in placedTowers)
+            {
+                g.FillRectangle(Brushes.Blue, item);
+            }
         }
     }
 }

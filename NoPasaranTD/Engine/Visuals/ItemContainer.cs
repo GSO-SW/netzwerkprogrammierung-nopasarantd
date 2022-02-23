@@ -48,7 +48,7 @@ namespace NoPasaranTD.Engine.Visuals
             Engine.OnMouseMove += MouseMove;
             try
             {
-                //Content = Image.FromFile(Environment.CurrentDirectory + "\\img\\monkey.jpg");
+                Content = Image.FromFile(Environment.CurrentDirectory + "\\img\\blyat.jpg");
             }
             catch (Exception)
             {
