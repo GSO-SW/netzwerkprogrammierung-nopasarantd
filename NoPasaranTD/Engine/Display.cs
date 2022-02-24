@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine.Visuals;
 using NoPasaranTD.Model;
 using System;
 using System.Drawing;
@@ -10,8 +11,30 @@ namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
+        private ListContainer<Tower, TowerItemContainer> listContainer = new ListContainer<Tower, TowerItemContainer>();
+        public Display()
+        {
+            Paint += Display_Paint1;
+            
+        }
 
-        public Display() => InitializeComponent();
+        private void Display_Paint1(object sender, PaintEventArgs e)
+        {
+            listContainer.Graphics = e.Graphics;
+            listContainer.Margin = 10;
+            listContainer.ItemSize = new System.Drawing.Size(30, 50);
+            listContainer.Position = new System.Drawing.Point(0, 0);
+            listContainer.ContainerSize = new System.Drawing.Size(400, 60);
+            listContainer.BackgroundColor = Brushes.Blue;
+            listContainer.Items = new System.Collections.Generic.List<Tower>()
+            {
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+            };
+            listContainer.Draw();
+        }
 
         private void Display_Load(object sender, EventArgs e)
             => new Thread(GameLoop).Start();
@@ -120,6 +143,5 @@ namespace NoPasaranTD.Engine
                 Engine.Sync();
             }
         }
-
     }
 }
