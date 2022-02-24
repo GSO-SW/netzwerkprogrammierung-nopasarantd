@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NoPasaranTD.Engine
 {
-	class Game
+	public class Game
 	{
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }

@@ -15,6 +15,9 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class UILayout
     {
+
+        public Game Game { get; set; } = new Game(new Map());
+
         /// <summary>
         /// Das Baumenü 
         /// </summary>
@@ -55,8 +58,9 @@ namespace NoPasaranTD.Engine.Visuals
         {
             Point posNewTower = args.MovedObject.Location;
             placedTowers.Add(args.MovedObject);
-            // TODO: Neuen Tower Regristrieren
-            // TODO: Diesen neuen Tower platziern und zur Runde hinzufügen
+            TowerTest towerTest = new TowerTest();
+
+            Game.AddTower(towerTest);
         }
 
         private void TowerBuildMenu_SelectionChanged()
@@ -72,9 +76,8 @@ namespace NoPasaranTD.Engine.Visuals
             if (placingTowerDragDrop.IsMoving)
                 g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
             foreach (var item in placedTowers)
-            {
                 g.FillRectangle(Brushes.Blue, item);
-            }
+
         }
     }
 }
