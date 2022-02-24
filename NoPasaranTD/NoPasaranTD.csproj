@@ -60,7 +60,6 @@
     <Compile Include="Engine\Display.Designer.cs">
       <DependentUpon>Display.cs</DependentUpon>
     </Compile>
-<<<<<<<<< Temporary merge branch 1
     <Compile Include="Engine\Visuals\BuildMenuContainer.cs" />
     <Compile Include="Engine\Visuals\DragDropService.cs" />
     <Compile Include="Engine\Visuals\ItemContainer.cs" />
