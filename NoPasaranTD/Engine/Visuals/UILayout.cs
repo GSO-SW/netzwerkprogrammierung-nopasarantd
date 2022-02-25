@@ -15,7 +15,6 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class UILayout
     {
-
         public Game Game { get; set; } = new Game(new Map());
 
         /// <summary>
@@ -77,7 +76,6 @@ namespace NoPasaranTD.Engine.Visuals
                 g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
             foreach (var item in placedTowers)
                 g.FillRectangle(Brushes.Blue, item);
-
         }
     }
 }
