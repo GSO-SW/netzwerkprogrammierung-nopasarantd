@@ -18,8 +18,13 @@ namespace NoPasaranTD.Model
                 coolDownTick = 0;
                 return true;
             }
-            coolDownTick++;
             return false;
+        }
+
+        public void IncreaseCoolDownTick()
+        {
+            if (coolDownTick < Speed)
+                coolDownTick++;
         }
 
         public Rectangle Hitbox { get; set; }

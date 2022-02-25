@@ -24,7 +24,6 @@ namespace NoPasaranTD.Engine
 			Balloons = new List<Balloon>();
 			Engine.OnRender += Render;
 			Engine.OnUpdate += Update;
-
 		}
 
 		/// <summary>
@@ -51,7 +50,7 @@ namespace NoPasaranTD.Engine
 			for (int i = 0; i < ballonsInRange.Count; i++) // Alle Ballons im Radius checken welcher am weitesten ist
                 if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
 					farthestIndex = i;
-			return farthestIndex;
+			return ballonsInRange[farthestIndex];
         }
 
 		public void Update()
@@ -59,18 +58,21 @@ namespace NoPasaranTD.Engine
 			if (tickCount == 1000)
 			{
 				tickCount = 0;
-				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Blue });
+				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
             }
 			tickCount++;
+
 			for (int i = 0; i < Towers.Count; i++)
 			{
 				int target = TowerTarget(i);
-				if (target != -1 && Towers[i].ShootRequest())
+				Towers[i].IncreaseCoolDownTick();
+				if (target != -1)
                 {
-					Balloons[target].Type -= 1;
-					if (Balloons[target].Type == BalloonType.None)
-					{
-						Balloons.RemoveAt(target);
+                    if (Towers[i].ShootRequest())
+                    {
+						Balloons[target].Type -= 1;
+						if (Balloons[target].Type == BalloonType.None)
+							Balloons.RemoveAt(target);
 					}
                 }
 			}
@@ -90,15 +92,23 @@ namespace NoPasaranTD.Engine
 		public void Render(Graphics g)
         {
 			Pen pen = new Pen(Color.Black);
-			Brush brushRed = new SolidBrush(Color.Blue);
+			Brush brush = new SolidBrush(Color.Blue);
 			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
 			{
 				g.DrawLine(pen, new PointF(CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y), new PointF(CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y));
 			}
 			foreach (var item in Balloons)
 			{
+                switch (item.Type)
+                {
+					case BalloonType.Red: brush = new SolidBrush(Color.Red); break;
+					case BalloonType.Blue: brush = new SolidBrush(Color.Blue); break;
+					case BalloonType.Green: brush = new SolidBrush(Color.Green); break;
+					case BalloonType.Purple: brush = new SolidBrush(Color.Purple); break;
+					case BalloonType.Black: brush = new SolidBrush(Color.Black); break;
+				}
 				Vector2D position = CurrentMap.GetPathPosition(item.PathPosition);
-				g.FillEllipse(brushRed, new RectangleF(new PointF(position.X - StaticInfo.GetBalloonSize.Width / 2, position.Y - StaticInfo.GetBalloonSize.Height / 2), StaticInfo.GetBalloonSize));
+				g.FillEllipse(brush, new RectangleF(new PointF(position.X - StaticInfo.GetBalloonSize.Width / 2, position.Y - StaticInfo.GetBalloonSize.Height / 2), StaticInfo.GetBalloonSize));
 			}
             foreach (var item in Towers)
             {

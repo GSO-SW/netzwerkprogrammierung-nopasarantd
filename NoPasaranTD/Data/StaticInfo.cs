@@ -138,7 +138,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
-            {typeof(TowerTest),     150},
+            {typeof(TowerTest),     250},
         };
         #endregion // Dictionary für die Türme
     }
