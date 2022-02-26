@@ -11,8 +11,17 @@ namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
-        private Game currentGame = new Game(null);
-        public Display() => InitializeComponent();
+        private Game currentGame;
+        public Display()
+        {
+            InitializeComponent();
+            LoadMap();
+        } 
+
+        private async void LoadMap()
+        {
+            currentGame = new Game(await MapData.GetMapByPathAsync("test2"));
+        }
 
         private void Display_Load(object sender, EventArgs e)
             => new Thread(GameLoop).Start();

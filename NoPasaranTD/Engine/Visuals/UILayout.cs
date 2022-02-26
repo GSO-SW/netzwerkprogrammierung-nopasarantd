@@ -60,6 +60,9 @@ namespace NoPasaranTD.Engine.Visuals
             if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
                 return;
 
+            if (Game.TowerCollisionPath(args.MovedObject))
+                return;
+
             Point posNewTower = args.MovedObject.Location;
             placedTowers.Add(args.MovedObject);
             TowerTest towerTest = new TowerTest();
