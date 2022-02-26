@@ -15,7 +15,7 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class UILayout
     {
-        public Game Game { get; set; } = new Game(new Map());
+        public Game Game { get; set; }
 
         /// <summary>
         /// Das Baumenü 
@@ -42,12 +42,14 @@ namespace NoPasaranTD.Engine.Visuals
 
         private List<Rectangle> placedTowers = new List<Rectangle>();
 
-        public UILayout()
+        public UILayout(Game game)
         {
             TowerBuildMenu.DefineItems();
 
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
+
+            Game = game;
 
             Engine.OnRender += Render;
         }
@@ -55,6 +57,9 @@ namespace NoPasaranTD.Engine.Visuals
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
         private void PlacingTowerDragDrop_DragDropFinish(DragDropArgs args)
         {
+            if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
+                return;
+
             Point posNewTower = args.MovedObject.Location;
             placedTowers.Add(args.MovedObject);
             TowerTest towerTest = new TowerTest();

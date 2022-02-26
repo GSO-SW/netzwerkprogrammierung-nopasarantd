@@ -11,7 +11,7 @@ namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
-        private UILayout layout = new UILayout();
+        private Game currentGame = new Game(null);
         public Display() => InitializeComponent();
 
         private void Display_Load(object sender, EventArgs e)

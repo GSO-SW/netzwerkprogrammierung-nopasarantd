@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace NoPasaranTD.Engine.Visuals
     /// Basisklasse für Item Containers eines List Containers
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class ItemContainer<T>
+    public abstract class ItemContainer<T> : GuiComponent
     {
         /// <summary>
         /// Der Model Context des Item Containers
@@ -33,6 +34,10 @@ namespace NoPasaranTD.Engine.Visuals
         /// Befindet sich der Cursor zurzeit auf dem Item Container
         /// </summary>
         public bool IsMouseOver { get; protected private set; } = false;
+
+        public Rectangle ParentBounds { get; set; }  
+
+        public abstract void TranslateTransform(int offX, int offY);
     }
 
     /// <summary>
@@ -74,8 +79,8 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public override Point Position 
         { 
-            get { return new Point(background.X, background.Y); } 
-            set { background.X = value.X; background.Y = value.Y; } 
+            get { return new Point(Bounds.X, Bounds.Y); } 
+            set { Bounds = new Rectangle(value, ItemSize); PositionChanged(); } 
         }
 
         /// <summary>
@@ -83,8 +88,8 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public override Size ItemSize 
         { 
-            get { return new Size(background.Width, background.Height); } 
-            set { background.Width = value.Width; background.Height = value.Height; } 
+            get { return new Size(Bounds.Width, Bounds.Height); } 
+            set { Bounds = new Rectangle(Position, value); } 
         }
 
         /// <summary>
@@ -109,34 +114,45 @@ namespace NoPasaranTD.Engine.Visuals
         #endregion
         #region Private Members
 
-        private Rectangle background = new Rectangle(); // Hintergrund des Item Containers
-
         #endregion
         #region Private Methodes
 
         private void DrawItem(Graphics g)
         {
-            if (IsMouseOver)
-                g.FillRectangle(Brushes.Red, background);
-            else
-                g.FillRectangle(BackgroundBrush, background);
-            try
+            if (Visible)
             {
-                g.DrawImage(Content,background.X + 3, background.Y + 3, background.Width - 6, background.Height -6);   
-            }
-            catch (Exception)
-            {
+                if (IsMouseOver)
+                    g.FillRectangle(Brushes.Red, Bounds);
+                else
+                    g.FillRectangle(BackgroundBrush, Bounds);
+                try
+                {
+                    g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6);
+                }
+                catch (Exception)
+                {
 
-            }
-                     
+                }
+            }                              
         }
 
         private void MouseMove(MouseEventArgs args)
         {
-            if (background.Contains(new Point(Engine.MouseX, Engine.MouseY)))
+            if (Bounds.Contains(new Point(Engine.MouseX, Engine.MouseY)))
                 IsMouseOver = true;
             else
                 IsMouseOver = false;
+        }
+
+        public override void TranslateTransform(int offX, int offY) =>
+            Position = new Point(offX + Position.X, offY + Position.Y);
+
+        private void PositionChanged()
+        {
+            if (Position.X >= ParentBounds.X && Position.X + ItemSize.Width <=  ParentBounds.X + ParentBounds.Width)
+                Visible = true;
+            else
+                Visible = false;
         }
 
         #endregion

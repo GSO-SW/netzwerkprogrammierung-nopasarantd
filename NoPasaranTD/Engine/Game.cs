@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Model;
+﻿using NoPasaranTD.Engine.Visuals;
+using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,15 @@ namespace NoPasaranTD.Engine
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
+		public UILayout UILayout { get; private set; }
+
 
 		public Game(Map map)
 		{
 			CurrentMap = map;
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
+			UILayout = new UILayout(this);
 		}
 
 		/// <summary>
