@@ -13,6 +13,7 @@ namespace NoPasaranTD.Engine
 {
 	public class Game
 	{
+		int tickCount;
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
@@ -24,6 +25,8 @@ namespace NoPasaranTD.Engine
 			CurrentMap = map;
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
+			Engine.OnRender += Render;
+			Engine.OnUpdate += Update;
 			UILayout = new UILayout(this);
 		}
 
@@ -40,7 +43,7 @@ namespace NoPasaranTD.Engine
             for (int i = 0; i < Balloons.Count; i++)
             {
 				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
-				Vector2D towerCentre = new Vector2D(Towers[tower].Hitbox.Location.X + Towers[tower].Hitbox.Width, Towers[tower].Hitbox.Location.Y + Towers[tower].Hitbox.Height); // Zentrale Position des Turmes
+				Vector2D towerCentre = new Vector2D(Towers[tower].Hitbox.Location.X + Towers[tower].Hitbox.Width / 2, Towers[tower].Hitbox.Location.Y + Towers[tower].Hitbox.Height / 2); // Zentrale Position des Turmes
 				if ((currentPosition - towerCentre).Magnitude <= Towers[tower].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
 					ballonsInRange.Add(i);
             }
@@ -51,16 +54,74 @@ namespace NoPasaranTD.Engine
 			for (int i = 0; i < ballonsInRange.Count; i++) // Alle Ballons im Radius checken welcher am weitesten ist
                 if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
 					farthestIndex = i;
-			return farthestIndex;
+			return ballonsInRange[farthestIndex];
         }
 
 		public void Update()
 		{
+			if (tickCount == 1000)
+			{
+				tickCount = 0;
+				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
+            }
+			tickCount++;
+
 			for (int i = 0; i < Towers.Count; i++)
-				Towers[i].Update();
+			{
+				int target = TowerTarget(i);
+				Towers[i].IncreaseCoolDownTick();
+				if (target != -1)
+                {
+                    if (Towers[i].ShootRequest())
+                    {
+						Balloons[target].Type -= 1;
+						if (Balloons[target].Type == BalloonType.None)
+							Balloons.RemoveAt(target);
+					}
+                }
+			}
+
 			for (int i = 0; i < Balloons.Count; i++)
-				Balloons[i].PathPosition += 1f; // TODO get speed
+            {
+				Balloons[i].PathPosition += 0.2f; // TODO get speed
+                if (Balloons[i].PathPosition >= CurrentMap.PathLength)
+                {
+					Balloons.RemoveAt(i);
+					i = 0;
+                }
+            }
+				
 		}
+
+		public void Render(Graphics g)
+        {
+			Pen pen = new Pen(Color.Black);
+			Brush brush = new SolidBrush(Color.Blue);
+			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+			{
+				g.DrawLine(pen, new PointF(CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y), new PointF(CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y));
+			}
+			foreach (var item in Balloons)
+			{
+                switch (item.Type)
+                {
+					case BalloonType.Red: brush = new SolidBrush(Color.Red); break;
+					case BalloonType.Blue: brush = new SolidBrush(Color.Blue); break;
+					case BalloonType.Green: brush = new SolidBrush(Color.Green); break;
+					case BalloonType.Purple: brush = new SolidBrush(Color.Purple); break;
+					case BalloonType.Black: brush = new SolidBrush(Color.Black); break;
+				}
+				Vector2D position = CurrentMap.GetPathPosition(item.PathPosition);
+				g.FillEllipse(brush, new RectangleF(new PointF(position.X - StaticInfo.GetBalloonSize.Width / 2, position.Y - StaticInfo.GetBalloonSize.Height / 2), StaticInfo.GetBalloonSize));
+			}
+            foreach (var item in Towers)
+            {
+				Vector2D towerCentre = new Vector2D(item.Hitbox.Location.X + item.Hitbox.Width / 2, item.Hitbox.Location.Y + item.Hitbox.Height / 2);
+				g.DrawEllipse(pen, new RectangleF(new PointF(towerCentre.X - item.Range,towerCentre.Y - item.Range), new SizeF(item.Range * 2, item.Range * 2)));
+            }
+            
+        }
+
 		public void AddTower(Tower t)
 		{
 			// TODO network communication

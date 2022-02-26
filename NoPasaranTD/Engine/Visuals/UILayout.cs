@@ -15,7 +15,8 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class UILayout
     {
-        public Game Game { get; set; }
+
+        public Game Game { get; set; } = new Game(new Map());
 
         /// <summary>
         /// Das Baumenü 
@@ -52,6 +53,14 @@ namespace NoPasaranTD.Engine.Visuals
             Game = game;
 
             Engine.OnRender += Render;
+
+            LoadMap();
+        }
+
+        private async void LoadMap()
+        {
+            Game = new Game(await MapData.GetMapByPathAsync("test2"));
+            Game.CurrentMap.Initialize();
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
@@ -65,7 +74,7 @@ namespace NoPasaranTD.Engine.Visuals
 
             Point posNewTower = args.MovedObject.Location;
             placedTowers.Add(args.MovedObject);
-            TowerTest towerTest = new TowerTest();
+            TowerTest towerTest = new TowerTest() { Hitbox = args.MovedObject };
 
             Game.AddTower(towerTest);
         }
