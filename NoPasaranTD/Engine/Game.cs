@@ -1,6 +1,7 @@
 ﻿using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,5 +38,24 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			Towers.Remove(t);
 		}
+		public bool IsTowerValidPosition(Rectangle rect)
+        {
+            foreach (var item in Towers)
+            {
+                if (item.Hitbox.IntersectsWith(rect))
+                {
+					return false;
+                }
+            }
+
+            foreach (var item in CurrentMap.Obstacles)
+            {
+				if (item.Hitbox.IntersectsWith(rect))
+				{
+					return false;
+				}
+			}
+            return true;
+        }
 	}
 }
