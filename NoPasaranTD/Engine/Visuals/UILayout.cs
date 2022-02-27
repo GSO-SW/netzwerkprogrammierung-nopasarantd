@@ -16,7 +16,7 @@ namespace NoPasaranTD.Engine.Visuals
     public class UILayout
     {
 
-        public Game Game { get; set; } = new Game(new Map());
+        public Game Game { get; set; }
 
         /// <summary>
         /// Das Baumenü 
@@ -30,6 +30,16 @@ namespace NoPasaranTD.Engine.Visuals
             BackgroundColor = Brushes.SlateGray,
             Items = new NotifyCollection<Tower>()
             {
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
+                new TowerTest(),
                 new TowerTest(),
                 new TowerTest(),
                 new TowerTest(),
@@ -53,14 +63,6 @@ namespace NoPasaranTD.Engine.Visuals
             Game = game;
 
             Engine.OnRender += Render;
-
-            LoadMap();
-        }
-
-        private async void LoadMap()
-        {
-            Game = new Game(await MapData.GetMapByPathAsync("test2"));
-            Game.CurrentMap.Initialize();
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
@@ -69,7 +71,7 @@ namespace NoPasaranTD.Engine.Visuals
             if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
                 return;
 
-            if (Game.TowerCollisionPath(args.MovedObject))
+            if (!Game.TowerCollisionPath(args.MovedObject))
                 return;
 
             Point posNewTower = args.MovedObject.Location;

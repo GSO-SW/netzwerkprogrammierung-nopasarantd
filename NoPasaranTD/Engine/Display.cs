@@ -21,6 +21,7 @@ namespace NoPasaranTD.Engine
         private async void LoadMap()
         {
             currentGame = new Game(await MapData.GetMapByPathAsync("test2"));
+            currentGame.CurrentMap.Initialize();
         }
 
         private void Display_Load(object sender, EventArgs e)

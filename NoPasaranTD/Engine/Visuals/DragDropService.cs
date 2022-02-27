@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine.Visuals
@@ -14,6 +9,10 @@ namespace NoPasaranTD.Engine.Visuals
     public class DragDropService
     {
         public delegate void DragDropFinishHandler(DragDropArgs args);
+
+        /// <summary>
+        /// Dieses Event wird beim beenden eines DragDrop Vorganges ausgelöst
+        /// </summary>
         public event DragDropFinishHandler DragDropFinish;
 
         public DragDropService()
@@ -61,9 +60,11 @@ namespace NoPasaranTD.Engine.Visuals
         public void Start(Rectangle visual)
         {
             MovedObject = visual;
+
             Engine.OnUpdate += Update;
             Engine.OnMouseDown += MouseDown;
             Engine.OnMouseUp += MouseUp;
+
             IsMoving = true;
         }
             
@@ -75,19 +76,24 @@ namespace NoPasaranTD.Engine.Visuals
             Engine.OnUpdate -= Update;
             Engine.OnMouseDown -= MouseDown;
             Engine.OnMouseUp -= MouseUp;
+
             IsMoving = false;
+
             DragDropFinish?.Invoke(new DragDropArgs() { MovedObject = MovedObject});
         }
 
+        /// <summary>
+        /// Stopt und verlässt den DragDrop Vorgang
+        /// </summary>
         public void Leave()
         {
             Engine.OnUpdate -= Update;
             Engine.OnMouseDown -= MouseDown;
             Engine.OnMouseUp -= MouseUp;
+
             IsMoving = false;
         }
             
-
         private void MouseDown(MouseEventArgs args)
         {
             if (LeaveSetting == DragDropMode.MouseRightButtonDown && args.Button == MouseButtons.Right)
@@ -116,8 +122,14 @@ namespace NoPasaranTD.Engine.Visuals
         }
     }
 
+    /// <summary>
+    /// Argumentclasse für DragDrop Events
+    /// </summary>
     public class DragDropArgs
     {
+        /// <summary>
+        /// Das bewegte Objekt
+        /// </summary>
         public Rectangle MovedObject { get; set; }
     }
 

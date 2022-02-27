@@ -155,7 +155,7 @@ namespace NoPasaranTD.Engine
 						Vector2D closestV = new Vector2D(positionV.X + closestPointDistance * connectionV.X, positionV.Y + closestPointDistance * connectionV.Y);
 
 						// Länge der kürzesten Verbindung bestimmen
-						if ((closestV - rectangleCornerV).Magnitude < 50) // TODO: Wert an StaticInfo festmachen
+						if ((closestV - rectangleCornerV).Magnitude < 10) // TODO: Wert an StaticInfo festmachen
                         {
 							return false;
                         }

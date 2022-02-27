@@ -2,10 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine.Visuals
@@ -31,6 +27,7 @@ namespace NoPasaranTD.Engine.Visuals
         public ListContainer()
         {
             Items.CollectionChanged += ItemsCollectionChanged;
+
             Engine.OnRender += Render;
             Engine.OnMouseDown += MouseLeftButton;
             Engine.OnKeyDown += KeyPressed;
@@ -40,7 +37,7 @@ namespace NoPasaranTD.Engine.Visuals
         #region Privat Member
 
         private List<ItemContainer<T>> items = new List<ItemContainer<T>>(); // Liste von allen Visuellen Item Containern
-        private ItemContainer<T> selectedItem; // Das derzeitige ausgewählte Item Container
+        private ItemContainer<T> selectedItem; // Der derzeitige ausgewählte Item Container
              
         #endregion
 
@@ -52,10 +49,7 @@ namespace NoPasaranTD.Engine.Visuals
         public Size ContainerSize
         {
             get => new Size(Bounds.Width, Bounds.Height); 
-            set 
-            {
-                Bounds = new Rectangle(Position, value);
-            }
+            set => Bounds = new Rectangle(Position, value); 
         }
 
         /// <summary>
@@ -74,15 +68,17 @@ namespace NoPasaranTD.Engine.Visuals
         public int Margin { get; set; }
 
         /// <summary>
+        /// Die Scrittgröße beim Scrollen
+        /// </summary>
+        public int ScrollSteps { get; set; } = 20;
+
+        /// <summary>
         /// Die Position des Containers auf dem Screen
         /// </summary>
         public Point Position
         {
-            get { return new Point(Bounds.X, Bounds.Y); }
-            set 
-            {
-                Bounds = new Rectangle(value, ContainerSize);
-            }
+            get => new Point(Bounds.X, Bounds.Y); 
+            set => Bounds = new Rectangle(value, ContainerSize); 
         }
 
         private NotifyCollection<T> _contextItems = new NotifyCollection<T>();
@@ -91,7 +87,7 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public NotifyCollection<T> Items
         {
-            get { return _contextItems; }
+            get => _contextItems; 
             set { _contextItems = value; _contextItems.CollectionChanged += ItemsCollectionChanged; }
         }
 
@@ -113,10 +109,12 @@ namespace NoPasaranTD.Engine.Visuals
             {
                 // Platziert für jedes Model Objekt einen eigenen Container im List-Container
                 ItemContainer<T> item = (new R() as ItemContainer<T>);
+
                 item.ParentBounds = Bounds;
                 item.DataContext = Items[i];
                 item.ItemSize = new Size(ItemSize.Width, ItemSize.Height - Margin*2);
-                item.Position = new Point(Position.X + i*(ItemSize.Width + Margin) + Margin, Position.Y + Margin);                
+                item.Position = new Point(Position.X + i*(ItemSize.Width + Margin) + Margin, Position.Y + Margin);   
+                
                 items.Add(item);
             }                                
         }
@@ -124,12 +122,9 @@ namespace NoPasaranTD.Engine.Visuals
         #endregion
         #region Private Methodes
 
-        public void Render(Graphics g)
-        {
+        public void Render(Graphics g) =>
             g.FillRectangle(BackgroundColor, Bounds);
-        } 
-            
-       
+                
         private void MouseLeftButton(MouseEventArgs args)
         {
             for (int i = 0; i < items.Count; i++)
@@ -137,8 +132,7 @@ namespace NoPasaranTD.Engine.Visuals
                 {
                     selectedItem = items[i];
                     SelectionChanged?.Invoke();
-                }                   
-            
+                }                               
         }
 
         private void ItemsCollectionChanged() =>
@@ -146,19 +140,23 @@ namespace NoPasaranTD.Engine.Visuals
 
         private void KeyPressed(KeyEventArgs args)
         {
-            if (args.KeyCode == Keys.Left && IsMouseOver)
+            if (args.KeyCode == Keys.Right && IsMouseOver)
             {
-                foreach (var item in items)
-                    item.TranslateTransform(-105,0);
+                if (!items[items.Count - 1].Visible)
+                {
+                    foreach (var item in items)
+                        item.TranslateTransform(-ScrollSteps, 0);
+                }              
             }
-            else if (args.KeyCode == Keys.Right && IsMouseOver)
+            else if (args.KeyCode == Keys.Left && IsMouseOver)
             {
-                foreach (var item in items)
-                    item.TranslateTransform(105,0);
+                if (!items[0].Visible) 
+                {
+                    foreach (var item in items)
+                        item.TranslateTransform(ScrollSteps, 0);
+                }               
             }
-        }
-
-      
+        }    
         #endregion
     }
 

@@ -129,10 +129,7 @@ namespace NoPasaranTD.Engine.Visuals
                 {
                     g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6);
                 }
-                catch (Exception)
-                {
-
-                }
+                catch (Exception) { }
             }                              
         }
 
@@ -144,9 +141,15 @@ namespace NoPasaranTD.Engine.Visuals
                 IsMouseOver = false;
         }
 
+        /// <summary>
+        /// Ändert die Position des ItemContainers mit einer Delta-Entfernung
+        /// </summary>
+        /// <param name="offX"></param>
+        /// <param name="offY"></param>
         public override void TranslateTransform(int offX, int offY) =>
             Position = new Point(offX + Position.X, offY + Position.Y);
 
+        // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
         private void PositionChanged()
         {
             if (Position.X >= ParentBounds.X && Position.X + ItemSize.Width <=  ParentBounds.X + ParentBounds.Width)
