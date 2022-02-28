@@ -80,12 +80,14 @@ namespace NoPasaranTD.Engine
 				// Alle Hitboxen des Pfades durchgehen und auf Kollisionen kontrollieren
 				for (int j = 0; j < CurrentMap.BalloonPath.Length - 1; j++)
 				{
-					for (int k = 0; k < 2; k++)
+					for (int k = 0; k < 2; k++) // Hitbox ober- und unterhalb kontrollieren
 					{
 						Vector2D pathLocationV = CurrentMap.BallonPathHitbox[k, j * 2];
 						Vector2D pathDirectionV = CurrentMap.BallonPathHitbox[k, j * 2 + 1] - pathLocationV;
+						// Wert der Variable für die Geradengleichung an der Schnittstelle
 						float collisionVariablePathF = ((pathLocationV.Y - cornersV[i].Y) * connectionRecV.X + (cornersV[i].X - pathLocationV.X) * connectionRecV.Y) / (pathDirectionV.X * connectionRecV.Y - pathDirectionV.Y * connectionRecV.X);
 						float collisionVariableRecF = ((cornersV[i].Y - pathLocationV.Y) * pathDirectionV.X + (pathLocationV.X - cornersV[i].X) * pathDirectionV.Y) / (connectionRecV.X * pathDirectionV.Y - connectionRecV.Y * pathDirectionV.X);
+						// Kontrolle, ob die Schnittstelle zwischen Gerade und Seite des Rechtecks innerhalb der Intervalle von [0,1] liegt
 						if (collisionVariablePathF >= 0 && collisionVariablePathF <= 1 && collisionVariableRecF >= 0 && collisionVariableRecF <= 1)
 							return false;
 					}

@@ -114,17 +114,17 @@ namespace NoPasaranTD.Model
             int directionI = 1;
             for (int i = 0; i < BalloonPath.Length; i++)
             {
-                // Erst checken ob es nur einen Anliegenden Ballon gibt, also erster / letzter
+                // Erst checken ob es nur einen anliegenden Ballon gibt, also erster / letzter
                 if (i != 0)
                     directionI = 0;
                 if (i == BalloonPath.Length - 1)
                     directionI = -1;
-                for (int j = -1; j < 2; j += 2)
+                for (int j = -1; j < 2; j += 2) // Jeden Punkt 2 mal durchgehen, um für beide verbundenen Geraden parallele zu erstellen
                 {
-                    if (directionI == 1) // Bei dem ersten nur auf den nächsten schauen
+                    if (directionI == 1) // Bei dem ersten nur auf den nächsten Punkt schauen
                         if (j < 0)
                             j = 1;
-                    if (directionI == -1) // Bei dem letzten nur auf den davor schauen
+                    if (directionI == -1) // Bei dem letzten nur auf den Punkt davor schauen
                         if (j > 0)
                             break;
 
@@ -134,7 +134,7 @@ namespace NoPasaranTD.Model
                     double multiplicatorD = Math.Sqrt((24 * 24) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
-                    // In beide Richungen orthagonal vom Vektor aus schauen 
+                    // In beide Richungen orthogonal vom Vektor aus schauen 
                     Vector2D v2 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD * -1, BalloonPath[i].Y + directionV.Y * multiplicatorD * -1);
                     if (j == 1)
                     {
@@ -143,7 +143,7 @@ namespace NoPasaranTD.Model
                     }
                     else
                     {
-                        pathHitbox[0, i * 2 - 1] = v2;
+                        pathHitbox[0, i * 2 - 1] = v2; // Die Punkte müssen "vertauscht" werden, denn die Richtungsvektoren sind gespiegelt jenachdem wie herum sie erstellt werden 
                         pathHitbox[1, i * 2 - 1] = v1;
                     }
                 }
