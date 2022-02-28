@@ -131,7 +131,7 @@ namespace NoPasaranTD.Model
                     // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
                     Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
                     // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
-                    double multiplicatorD = Math.Sqrt((100 * 100) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
+                    double multiplicatorD = Math.Sqrt((24 * 24) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
                     // In beide Richungen orthagonal vom Vektor aus schauen 
@@ -143,8 +143,8 @@ namespace NoPasaranTD.Model
                     }
                     else
                     {
-                        pathHitbox[0, i * 2 - 1] = v1;
-                        pathHitbox[1, i * 2 - 1] = v2;
+                        pathHitbox[0, i * 2 - 1] = v2;
+                        pathHitbox[1, i * 2 - 1] = v1;
                     }
                 }
             }
