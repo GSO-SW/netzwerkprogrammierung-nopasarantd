@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 
 namespace NoPasaranTD.Utilities
-{
+{	
 	public struct Vector2D
 	{
 		public float X { get; }
@@ -10,11 +10,23 @@ namespace NoPasaranTD.Utilities
 		public Vector2D(float x, float y) { X = x; Y = y; }
 		public Vector2D(double x, double y) { X = (float)x; Y = (float)y; }
 
+		public override bool Equals(object obj) => obj is Vector2D d && X == d.X && Y == d.Y;
 		public override int GetHashCode() => (X, Y).GetHashCode();
-		public override bool Equals(object obj) => obj is Vector2D v0 && X == v0.X && Y == v0.Y;
 		public override string ToString() => "(" + X + '|' + Y + ')';
- 
-		public double Magnitude => Math.Sqrt(X * X + Y * Y);
+
+		public float Magnitude => (float)Math.Sqrt(X * X + Y * Y);
+		public float Angle => (float)Math.Atan2(Y, X);
+
+		public Vector2D Rotated(double angle)
+		{
+			double sin = Math.Sin(angle);
+			double cos = Math.Cos(angle);
+			return new Vector2D(cos * X - sin * Y, sin * X + cos * Y);
+		}
+		public Vector2D WithAngle(double angle) => Rotated(angle - Angle);
+		public Vector2D WithMagnitude(double magnitude) => (magnitude / Magnitude) * this;
+
+		public static Vector2D FromPolar(double magnitude, double angle) => new Vector2D(magnitude * Math.Cos(angle), magnitude * Math.Sin(angle));
 
 		public static Vector2D operator *(double i, Vector2D v) => new Vector2D(v.X * i, v.Y * i);
 		public static Vector2D operator *(Vector2D v, double i) => new Vector2D(v.X * i, v.Y * i);
@@ -25,6 +37,7 @@ namespace NoPasaranTD.Utilities
 
 		public static Vector2D operator +(Vector2D a, Vector2D b) => new Vector2D(a.X + b.X, a.Y + b.Y);
 		public static Vector2D operator -(Vector2D a, Vector2D b) => new Vector2D(a.X - b.X, a.Y - b.Y);
+		public static Vector2D operator -(Vector2D v) => new Vector2D(-v.X, -v.Y);
 
 		public static implicit operator Vector2D((float x, float y) t) => new Vector2D(t.x, t.y);
 		public static implicit operator Vector2D((double x, double y) t) => new Vector2D(t.x, t.y);
