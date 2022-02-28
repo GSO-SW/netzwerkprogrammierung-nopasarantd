@@ -41,40 +41,13 @@ namespace NoPasaranTD.Engine
 		}
 
 		/// <summary>
-		/// Kontrolliert, ob das angegebene Recheck einen Abstand von 50 Einheiten zum nächsten Pfad hat 
+		/// Überprüft, ob das jeweilige Objekt an der bestimmten Stelle platziert werden kann, oder ob es eine Kollision gibt
 		/// </summary>
-		/// <param name="rect">Zu überprüfendes Rechteck</param>
-		/// <returns>False wenn es eine Überschneidung gibt</returns>
-		public bool TowerCollisionPath(Rectangle rect)
-        {
-            for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++) // Alle Pfadteile durchgehen
-            {
-				Vector2D positionV = CurrentMap.BalloonPath[i]; // Ortsvektor der Gerade die den Pfadabschnitt darstellt
-				Vector2D connectionV = CurrentMap.BalloonPath[i + 1] - CurrentMap.BalloonPath[i]; // Verbindungsvektor der Gerade die den Pfadabschnitt darstellt
-                for (int j = 0; j < 2; j++) // Durchgehen beider X Möglichkeiten der verschiebung vom Eckpunkt oben links
-                {
-                    for (int k = 0; k < 2; k++) // Durchgehen beider Y Möglichkeiten
-                    {
-						Vector2D rectangleCornerV = new Vector2D(rect.X + j * rect.Width, rect.Y + k * rect.Height); // Verschiebung des Eckpunktes zur kontrolle
-						// Lotfußpunktverfahren zu einer Formel umgestellt
-						float closestPointDistance = -1 * (((positionV.X - rectangleCornerV.X) * connectionV.X + (positionV.Y - rectangleCornerV.Y) * connectionV.Y) / ((connectionV.X * connectionV.X) + (connectionV.Y * connectionV.Y)));
-						//Bestimmen des Punkts auf dem Pfad der am nächsten am Eckpunkt ist
-						Vector2D closestV = new Vector2D(positionV.X + closestPointDistance * connectionV.X, positionV.Y + closestPointDistance * connectionV.Y);
-
-						// Länge der kürzesten Verbindung bestimmen
-						if ((closestV - rectangleCornerV).Magnitude < 50) // TODO: Wert an StaticInfo festmachen
-                        {
-							return false;
-                        }
-                    }
-                }
-               
-            }
-			return true;
-        }
+		/// <param name="rect">Rechteck das zur Kollision überprüft wird</param>
+		/// <returns></returns>
 		public bool IsTowerValidPosition(Rectangle rect)
         {
-            foreach (var item in Towers)
+            foreach (var item in Towers)                       //Überprüft, ob das Rechteck mit den Towern kollidiert
             {
                 if (item.Hitbox.IntersectsWith(rect))
                 {
@@ -82,13 +55,17 @@ namespace NoPasaranTD.Engine
                 }
             }
 
-            foreach (var item in CurrentMap.Obstacles)
+            foreach (var item in CurrentMap.Obstacles) //Überprüft, ob das Rechteck mit den Hindernisssen kollidiert
             {
 				if (item.Hitbox.IntersectsWith(rect))
 				{
 					return false;
 				}
 			}
+            if (!TowerCollisionPath(rect))  //Wenn Kollision mit dem Path, dann wird false zurückgegeben
+            {
+				return false;
+            }
             return true;
         }
 	}
