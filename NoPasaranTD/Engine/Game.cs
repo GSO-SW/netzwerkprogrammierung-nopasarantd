@@ -93,5 +93,23 @@ namespace NoPasaranTD.Engine
 			}
 			return true;
 		}
+
+		/// <summary>
+		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
+		/// </summary>
+		/// <param name="rect">Zu kontrollierendes Rechteck</param>
+		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
+		public bool IsTowerValidPosition(Rectangle rect)
+		{
+			foreach (var item in Towers)  //Überprüft, ob es eine Kollision mit einem Turm gibt
+				if (item.Hitbox.IntersectsWith(rect)) 
+					return false;
+
+			foreach (var item in CurrentMap.Obstacles) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
+				if (item.Hitbox.IntersectsWith(rect))
+					return false;
+
+			return TowerCollisionPath(rect); //Überprüft, ob es eine Kollision mit dem Pfad gibt
+		}
 	}
 }
