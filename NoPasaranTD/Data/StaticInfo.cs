@@ -53,6 +53,8 @@ namespace NoPasaranTD.Data
 
         #region GetBallon methoden 
 
+        public static Size GetBalloonSize = new Size(10,10);
+
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der BallonDaten/Werte 
         /// </summary>
@@ -126,7 +128,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
-            //{typeof(TowerCanon),     10},
+            {typeof(TowerTest),     150},
         };
 
         private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
@@ -136,7 +138,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
-            //{typeof(TowerCanon),     3},
+            {typeof(TowerTest),     250},
         };
         #endregion // Dictionary für die Türme
     }

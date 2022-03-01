@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine.Visuals;
 using NoPasaranTD.Model;
 using System;
 using System.Drawing;
@@ -10,8 +11,18 @@ namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
+        private Game currentGame;
+        public Display()
+        {
+            InitializeComponent();
+            LoadMap();
+        } 
 
-        public Display() => InitializeComponent();
+        private async void LoadMap()
+        {
+            currentGame = new Game(await MapData.GetMapByPathAsync("test2"));
+            currentGame.CurrentMap.Initialize();
+        }
 
         private void Display_Load(object sender, EventArgs e)
             => new Thread(GameLoop).Start();
@@ -120,6 +131,5 @@ namespace NoPasaranTD.Engine
                 Engine.Sync();
             }
         }
-
     }
 }
