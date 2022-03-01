@@ -1,6 +1,5 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
-using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,7 +11,6 @@ namespace NoPasaranTD.Engine
 {
 	public class Game
 	{
-		int tickCount;
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
@@ -22,20 +20,11 @@ namespace NoPasaranTD.Engine
 			CurrentMap = map;
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
-			Engine.OnRender += Render;
-			Engine.OnUpdate += Update;
 		}
 
-		/// <summary>
-		/// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
-		/// </summary>
-		/// <param name="tower"></param>
-		/// <returns>Index des Ziels in der Liste Balloons.</br>
-		/// Ohne Ballon in Reichweite -1</returns>
 		public int TowerTarget(int tower)
         {
 			List<int> ballonsInRange = new List<int>();
-			// Alle Ballons in der Reichweite des Turms bestimmen
             for (int i = 0; i < Balloons.Count; i++)
             {
 				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
@@ -55,69 +44,11 @@ namespace NoPasaranTD.Engine
 
 		public void Update()
 		{
-			if (tickCount == 1000)
-			{
-				tickCount = 0;
-				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
-            }
-			tickCount++;
-
 			for (int i = 0; i < Towers.Count; i++)
-			{
-				int target = TowerTarget(i);
-				Towers[i].IncreaseCoolDownTick();
-				if (target != -1)
-                {
-                    if (Towers[i].ShootRequest())
-                    {
-						Balloons[target].Type -= 1;
-						if (Balloons[target].Type == BalloonType.None)
-							Balloons.RemoveAt(target);
-					}
-                }
-			}
-
+				Towers[i].Update();
 			for (int i = 0; i < Balloons.Count; i++)
-            {
-				Balloons[i].PathPosition += 0.2f; // TODO get speed
-                if (Balloons[i].PathPosition >= CurrentMap.PathLength)
-                {
-					Balloons.RemoveAt(i);
-					i = 0;
-                }
-            }
-				
+				Balloons[i].PathPosition += 1f; // TODO get speed
 		}
-
-		public void Render(Graphics g)
-        {
-			Pen pen = new Pen(Color.Black);
-			Brush brush = new SolidBrush(Color.Blue);
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-			{
-				g.DrawLine(pen, new PointF(CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y), new PointF(CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y));
-			}
-			foreach (var item in Balloons)
-			{
-                switch (item.Type)
-                {
-					case BalloonType.Red: brush = new SolidBrush(Color.Red); break;
-					case BalloonType.Blue: brush = new SolidBrush(Color.Blue); break;
-					case BalloonType.Green: brush = new SolidBrush(Color.Green); break;
-					case BalloonType.Purple: brush = new SolidBrush(Color.Purple); break;
-					case BalloonType.Black: brush = new SolidBrush(Color.Black); break;
-				}
-				Vector2D position = CurrentMap.GetPathPosition(item.PathPosition);
-				g.FillEllipse(brush, new RectangleF(new PointF(position.X - StaticInfo.GetBalloonSize.Width / 2, position.Y - StaticInfo.GetBalloonSize.Height / 2), StaticInfo.GetBalloonSize));
-			}
-            foreach (var item in Towers)
-            {
-				Vector2D towerCentre = new Vector2D(item.Hitbox.Location.X + item.Hitbox.Width / 2, item.Hitbox.Location.Y + item.Hitbox.Height / 2);
-				g.DrawEllipse(pen, new RectangleF(new PointF(towerCentre.X - item.Range,towerCentre.Y - item.Range), new SizeF(item.Range * 2, item.Range * 2)));
-            }
-            
-        }
-
 		public void AddTower(Tower t)
 		{
 			// TODO network communication
