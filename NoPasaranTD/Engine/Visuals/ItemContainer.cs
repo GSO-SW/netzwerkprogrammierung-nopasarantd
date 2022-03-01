@@ -13,7 +13,7 @@ namespace NoPasaranTD.Engine.Visuals
     /// <summary>
     /// Basisklasse für Item Containers eines List Containers
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Container Typ z.b TowerItemContainer</typeparam>
     public abstract class ItemContainer<T> : GuiComponent
     {
         /// <summary>
@@ -30,11 +30,6 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public abstract Size ItemSize { get; set; }
 
-        /// <summary>
-        /// Befindet sich der Cursor zurzeit auf dem Item Container
-        /// </summary>
-        public bool IsMouseOver { get; protected private set; } = false;
-
         public Rectangle ParentBounds { get; set; }  
 
         public abstract void TranslateTransform(int offX, int offY);
@@ -49,17 +44,7 @@ namespace NoPasaranTD.Engine.Visuals
 
         public TowerItemContainer()
         {
-            Engine.OnRender += DrawItem;
-            Engine.OnMouseMove += MouseMove;
-            try
-            {
-                Content = Image.FromFile(Environment.CurrentDirectory + "\\img\\blyat.jpg");
-            }
-            catch (Exception)
-            {
-
-            }
-            
+            Engine.OnRender += DrawItem;         
         }
 
         #endregion
@@ -119,26 +104,16 @@ namespace NoPasaranTD.Engine.Visuals
 
         private void DrawItem(Graphics g)
         {
+            // TODO: Ausehen auf Towerart spezialisieren
             if (Visible)
             {
                 if (IsMouseOver)
                     g.FillRectangle(Brushes.Red, Bounds);
                 else
                     g.FillRectangle(BackgroundBrush, Bounds);
-                try
-                {
-                    g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6);
-                }
-                catch (Exception) { }
+                //try { g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6); }
+                //catch (Exception) { }
             }                              
-        }
-
-        private void MouseMove(MouseEventArgs args)
-        {
-            if (Bounds.Contains(new Point(Engine.MouseX, Engine.MouseY)))
-                IsMouseOver = true;
-            else
-                IsMouseOver = false;
         }
 
         /// <summary>

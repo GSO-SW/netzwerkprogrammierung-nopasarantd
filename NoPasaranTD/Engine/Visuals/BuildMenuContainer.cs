@@ -9,8 +9,8 @@ namespace NoPasaranTD.Engine.Visuals
     /// <summary>
     /// Eine Generische Listbox welche jeden beliebigen Item Container Typen annehmen kann
     /// </summary>
-    /// <typeparam name="T">Model Typ</typeparam>
-    /// <typeparam name="R">Item Container Typ</typeparam>
+    /// <typeparam name="T">Model Typ (Welches Model soll genutzt werden z.b Tower)</typeparam>
+    /// <typeparam name="R">Item Container Typ (Welcher Containertyp wird Verwendet z.b TowerItemContainer)</typeparam>
     public class ListContainer<T,R> : GuiComponent where R : new()
     {
         #region Events
@@ -84,6 +84,7 @@ namespace NoPasaranTD.Engine.Visuals
         private NotifyCollection<T> _contextItems = new NotifyCollection<T>();
         /// <summary>
         /// Model Item Sammlung
+        /// Hier befinden sich alle Model Objekte mit einem Bezug zur Box
         /// </summary>
         public NotifyCollection<T> Items
         {
@@ -140,6 +141,7 @@ namespace NoPasaranTD.Engine.Visuals
 
         private void KeyPressed(KeyEventArgs args)
         {
+            // TODO: Mouse Wheel benutzen und Scollbar implementieren
             if (args.KeyCode == Keys.Right && IsMouseOver)
             {
                 if (!items[items.Count - 1].Visible)

@@ -15,8 +15,8 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class UILayout
     {
-
-        public Game Game { get; set; }
+        // Game instanz in dem das UI Layout zu finden ist
+        private Game game;
 
         /// <summary>
         /// Das Baumenü 
@@ -28,6 +28,7 @@ namespace NoPasaranTD.Engine.Visuals
             Position = new System.Drawing.Point(20, Engine.RenderHeight - 150),
             ContainerSize = new System.Drawing.Size(Engine.RenderWidth - 40, 130),
             BackgroundColor = Brushes.SlateGray,
+            // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
             {
                 new TowerTest(),
@@ -53,14 +54,14 @@ namespace NoPasaranTD.Engine.Visuals
 
         private List<Rectangle> placedTowers = new List<Rectangle>();
 
-        public UILayout(Game game)
+        public UILayout(Game gameObj)
         {
             TowerBuildMenu.DefineItems();
 
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
 
-            Game = game;
+            game = gameObj;
 
             Engine.OnRender += Render;
         }
@@ -71,14 +72,18 @@ namespace NoPasaranTD.Engine.Visuals
             if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
                 return;
 
-            if (!Game.TowerCollisionPath(args.MovedObject))
+            if (!game.TowerCollisionPath(args.MovedObject))
                 return;
 
-            Point posNewTower = args.MovedObject.Location;
             placedTowers.Add(args.MovedObject);
-            TowerTest towerTest = new TowerTest() { Hitbox = args.MovedObject };
 
-            Game.AddTower(towerTest);
+            Tower placedTower = null;
+            
+            if (args.Context is TowerTest)
+                placedTower = new TowerTest() { Hitbox = args.MovedObject };
+            // TODO: Towers Spezifizeiren
+
+            game.AddTower(placedTower);
         }
 
         private void TowerBuildMenu_SelectionChanged()
@@ -86,6 +91,8 @@ namespace NoPasaranTD.Engine.Visuals
             int width = 50;
             int height = 50;
 
+            placingTowerDragDrop.Context = TowerBuildMenu.SelectedItem;
+            // TODO: Größe des Rechteckes auf TowerType spezifieren
             placingTowerDragDrop.Start(new Rectangle(Engine.MouseX - width/2, Engine.MouseY - height/2 , width, height));
         }
 

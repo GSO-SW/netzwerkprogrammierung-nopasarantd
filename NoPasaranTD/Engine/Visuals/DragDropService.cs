@@ -47,6 +47,11 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public bool IsMoving { get; private set; } = false;
 
+        /// <summary>
+        /// Was soll gezogen werden und beim setzen übergeben werden
+        /// </summary>
+        public object Context { get; set; }
+
         private void Update()
         {
             if (IsMoving)
@@ -79,7 +84,7 @@ namespace NoPasaranTD.Engine.Visuals
 
             IsMoving = false;
 
-            DragDropFinish?.Invoke(new DragDropArgs() { MovedObject = MovedObject});
+            DragDropFinish?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context });
         }
 
         /// <summary>
@@ -131,6 +136,11 @@ namespace NoPasaranTD.Engine.Visuals
         /// Das bewegte Objekt
         /// </summary>
         public Rectangle MovedObject { get; set; }
+
+        /// <summary>
+        /// Das zu übergebende Objekt
+        /// </summary>
+        public object Context { get; set; }
     }
 
     public enum DragDropMode
