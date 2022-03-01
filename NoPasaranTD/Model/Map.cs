@@ -21,6 +21,7 @@ namespace NoPasaranTD.Model
     {
         public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
+        public Vector2D[,] BallonPathHitbox { get; private set; } // Mehrdimensional um die Hitbox unter und oberhalb des Pfades zu speichern
 
         [JsonIgnore]
         public Bitmap BackgroundImage { get; private set; }
@@ -60,6 +61,8 @@ namespace NoPasaranTD.Model
                 pathFragments[i] = new Fragment(i, startMagnitude, endSum);
                 startMagnitude = endSum;
             }
+
+            BallonPathHitbox = GetPathHitbox();
         }
 
         /// <summary>
@@ -101,5 +104,51 @@ namespace NoPasaranTD.Model
             return sum;
         }
 
+        /// <summary>
+        /// Erstellt Parallele Vektoren zur Strecke
+        /// </summary>
+        /// <returns>Gibt ein zweidimensionales Array zurück mit einer Dimension für überhalb des Pfades und einer unterhalb</returns>
+        private Vector2D[,] GetPathHitbox()
+        {
+            Vector2D[,] pathHitbox = new Vector2D[2, BalloonPath.Length * 2 - 2];
+            int directionI = 1;
+            for (int i = 0; i < BalloonPath.Length; i++)
+            {
+                // Erst checken ob es nur einen anliegenden Ballon gibt, also erster / letzter
+                if (i != 0)
+                    directionI = 0;
+                if (i == BalloonPath.Length - 1)
+                    directionI = -1;
+                for (int j = -1; j < 2; j += 2) // Jeden Punkt 2 mal durchgehen, um für beide verbundenen Geraden parallele zu erstellen
+                {
+                    if (directionI == 1) // Bei dem ersten nur auf den nächsten Punkt schauen
+                        if (j < 0)
+                            j = 1;
+                    if (directionI == -1) // Bei dem letzten nur auf den Punkt davor schauen
+                        if (j > 0)
+                            break;
+
+                    // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
+                    Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
+                    // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
+                    double multiplicatorD = Math.Sqrt((24 * 24) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
+                    // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
+                    Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
+                    // In beide Richungen orthogonal vom Vektor aus schauen 
+                    Vector2D v2 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD * -1, BalloonPath[i].Y + directionV.Y * multiplicatorD * -1);
+                    if (j == 1)
+                    {
+                        pathHitbox[0, i * 2] = v1;
+                        pathHitbox[1, i * 2] = v2;
+                    }
+                    else
+                    {
+                        pathHitbox[0, i * 2 - 1] = v2; // Die Punkte müssen "vertauscht" werden, denn die Richtungsvektoren sind gespiegelt jenachdem wie herum sie erstellt werden 
+                        pathHitbox[1, i * 2 - 1] = v1;
+                    }
+                }
+            }
+            return pathHitbox;
+        }
     }
 }
