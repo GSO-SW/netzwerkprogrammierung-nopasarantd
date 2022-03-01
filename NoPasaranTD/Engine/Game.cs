@@ -38,50 +38,30 @@ namespace NoPasaranTD.Engine
 		/// <returns>Index des Ziels in der Liste Balloons.</br>
 		/// Ohne Ballon in Reichweite -1</returns>
 		public int TowerTarget(int tower)
-        {
+		{
 			List<int> ballonsInRange = new List<int>();
 			// Alle Ballons in der Reichweite des Turms bestimmen
-            for (int i = 0; i < Balloons.Count; i++)
-            {
+			for (int i = 0; i < Balloons.Count; i++)
+			{
 				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
 				Vector2D towerCentre = new Vector2D(Towers[tower].Hitbox.Location.X + Towers[tower].Hitbox.Width / 2, Towers[tower].Hitbox.Location.Y + Towers[tower].Hitbox.Height / 2); // Zentrale Position des Turmes
 				if ((currentPosition - towerCentre).Magnitude <= Towers[tower].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
 					ballonsInRange.Add(i);
-            }
-            if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+			}
+			if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
 				return -1;
 
 			int farthestIndex = 0;
 			for (int i = 0; i < ballonsInRange.Count; i++) // Alle Ballons im Radius checken welcher am weitesten ist
-                if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
+				if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
 					farthestIndex = i;
 			return ballonsInRange[farthestIndex];
-        }
+		}
 
 		public void Update()
 		{
-			if (tickCount == 1000)
-			{
-				tickCount = 0;
-				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
-            }
-			tickCount++;
-
 			for (int i = 0; i < Towers.Count; i++)
-			{
-				int target = TowerTarget(i);
-				Towers[i].IncreaseCoolDownTick();
-				if (target != -1)
-                {
-                    if (Towers[i].ShootRequest())
-                    {
-						Balloons[target].Type -= 1;
-						if (Balloons[target].Type == BalloonType.None)
-							Balloons.RemoveAt(target);
-					}
-                }
-			}
-
+				Towers[i].Update(this, TowerTarget(i));
 			for (int i = 0; i < Balloons.Count; i++)
 				Balloons[i].PathPosition += 1f; // TODO get speed
 
