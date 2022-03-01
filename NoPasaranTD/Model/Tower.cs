@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -29,11 +30,11 @@ namespace NoPasaranTD.Model
 
         public Rectangle Hitbox { get; set; }
         public uint Level { get; set; }
-        public uint Strength { get /* TODO: Zurgiff auf StaticInfo */; }
-        public uint Speed { get => StaticInfo.GetTowerDelay(typeof(TowerTest)); }
-        public uint Range { get => (uint)StaticInfo.GetTowerRange(typeof(TowerTest)); }
+        public uint Strength { get => StaticInfo.GetTowerDelay(typeof(Tower)); } // TODO: Spezifizieren
+        public uint Speed { get => StaticInfo.GetTowerDelay(typeof(Tower)); }
+        public uint Range { get => (uint)StaticInfo.GetTowerRange(typeof(Tower)); }
         
         public abstract void Render(Graphics g);
-        public abstract void Update();
+        public abstract void Update(Game game, int targetIndex);
     }
 }

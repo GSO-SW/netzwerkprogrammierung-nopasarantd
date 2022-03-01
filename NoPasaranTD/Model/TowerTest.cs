@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NoPasaranTD.Engine;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace NoPasaranTD.Model
             throw new NotImplementedException();
         }
 
-        public override void Update()
+        public override void Update(Game game, int targetIndex)
         {
             throw new NotImplementedException();
         }
