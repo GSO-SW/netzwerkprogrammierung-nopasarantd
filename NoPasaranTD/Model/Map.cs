@@ -21,7 +21,7 @@ namespace NoPasaranTD.Model
     {
         public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
-        public Vector2D[,] BallonPathHitbox { get; private set; }
+        public Vector2D[,] BallonPathHitbox { get; private set; } // Mehrdimensional um die Hitbox unter und oberhalb des Pfades zu speichern
 
         [JsonIgnore]
         public Bitmap BackgroundImage { get; private set; }
@@ -107,7 +107,7 @@ namespace NoPasaranTD.Model
         /// <summary>
         /// Erstellt Parallele Vektoren zur Strecke
         /// </summary>
-        /// <returns>Gibt ein zweidimensionales Array zurück</returns>
+        /// <returns>Gibt ein zweidimensionales Array zurück mit einer Dimension für überhalb des Pfades und einer unterhalb</returns>
         private Vector2D[,] GetPathHitbox()
         {
             Vector2D[,] pathHitbox = new Vector2D[2, BalloonPath.Length * 2 - 2];
