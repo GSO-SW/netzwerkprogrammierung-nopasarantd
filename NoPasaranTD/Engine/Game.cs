@@ -13,7 +13,8 @@ namespace NoPasaranTD.Engine
 	{
 		private readonly Random random = new Random();
 
-		private uint currentTick; // TODO: Zu alle referenzen zu Servertick ändern
+		// TODO: Alle referenzen zu Servertick ändern
+		public uint CurrentTick { get; private set; }
 
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
@@ -31,17 +32,50 @@ namespace NoPasaranTD.Engine
         #region Game logic region
         public void Update()
 		{
-			for (int i = 0; i < Towers.Count; i++)
-				Towers[i].Update(this, TowerTarget(i));
-            for (int i = 0; i < Balloons.Count; i++)
-                Balloons[i].PathPosition += 1f; // TODO get speed
+			// Aktualisiere Türme
+			for (int i = Towers.Count - 1; i >= 0; i--)
+				Towers[i].Update(this, FindTargetForTower(i));
+
+            for (int i = Balloons.Count - 1; i >= 0; i--)
+			{ // Aktualisiere Ballons
+				Balloons[i].PathPosition += StaticInfo.GetBalloonVelocity(Balloons[i].Type);
+				if (Balloons[i].PathPosition >= CurrentMap.PathLength)
+					Balloons.RemoveAt(i);
+			}
             UILayout.Update();
 
-			ManageBalloonSpawn();
-			currentTick++; // Emuliere Servertick
+			ManageBalloonSpawn(); // Spawne Ballons
+			CurrentTick++; // Emuliere Servertick
 		}
 
-		public void Render(Graphics g) => UILayout.Render(g);
+		public void Render(Graphics g)
+		{
+            // Zeichne Map
+            g.DrawImage(CurrentMap.BackgroundImage,
+                0, 0, Engine.RenderWidth, Engine.RenderHeight);
+
+            for (int i = Balloons.Count - 1; i >= 0; i--)
+			{ // Zeichne Ballons
+				Brush brush;
+				switch (Balloons[i].Type)
+				{ // TODO: Ändern durch Texturen
+					case BalloonType.Red: brush = Brushes.Red; break;
+					case BalloonType.Blue: brush = Brushes.Blue; break;
+					case BalloonType.Green: brush = Brushes.Green; break;
+					case BalloonType.Purple: brush = Brushes.Purple; break;
+					case BalloonType.Black: brush = Brushes.Black; break;
+					case BalloonType.Gold: brush = Brushes.Gold; break;
+					default: continue; // Ignoriere jeden unbekannten Ballon
+				}
+
+				Vector2D pos = CurrentMap.GetPathPosition(Balloons[i].PathPosition);
+				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 10);
+			}
+
+			for (int i = Towers.Count - 1; i >= 0; i--)
+				Towers[i].Render(g);
+			UILayout.Render(g);
+		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
 		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
@@ -49,38 +83,11 @@ namespace NoPasaranTD.Engine
 		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
 		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
 		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
-        #endregion
-
-        /// <summary>
-        /// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
-        /// </summary>
-        /// <param name="tower"></param>
-        /// <returns>Index des Ziels in der Liste Balloons.</br>
-        /// Ohne Ballon in Reichweite -1</returns>
-        public int TowerTarget(int tower)
-		{
-			List<int> ballonsInRange = new List<int>();
-			// Alle Ballons in der Reichweite des Turms bestimmen
-			for (int i = 0; i < Balloons.Count; i++)
-			{
-				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
-				Vector2D towerCentre = new Vector2D(Towers[tower].Hitbox.Location.X + Towers[tower].Hitbox.Width / 2, Towers[tower].Hitbox.Location.Y + Towers[tower].Hitbox.Height / 2); // Zentrale Position des Turmes
-				if ((currentPosition - towerCentre).Magnitude <= Towers[tower].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-					ballonsInRange.Add(i);
-			}
-			if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
-				return -1;
-
-			int farthestIndex = 0;
-			for (int i = 0; i < ballonsInRange.Count; i++) // Alle Ballons im Radius checken welcher am weitesten ist
-				if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
-					farthestIndex = i;
-			return ballonsInRange[farthestIndex];
-		}
+		#endregion
 
 		private void ManageBalloonSpawn()
 		{
-			if (currentTick % 1000 == 0)
+			if (CurrentTick % 1000 == 0)
 			{ // Spawne jede Sekunde einen Ballon
 				Balloon balloon = new Balloon
 				{
@@ -93,6 +100,65 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
+		/// <summary>
+		/// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns>Index des Ziels in der Liste Balloons.</br>
+		/// Ohne Ballon in Reichweite -1</returns>
+		private int FindTargetForTower(int index)
+		{
+			List<int> ballonsInRange = new List<int>();
+			// Alle Ballons in der Reichweite des Turms bestimmen
+			for (int i = Balloons.Count - 1; i >= 0; i--)
+			{
+				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
+				Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
+				if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+					ballonsInRange.Add(i);
+			}
+			if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+				return -1;
+
+			int farthestIndex = 0;
+			for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
+				if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
+					farthestIndex = i;
+			return ballonsInRange[farthestIndex];
+		}
+
+		/// <summary>
+		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
+		/// </summary>
+		/// <param name="rect">Zu kontrollierendes Rechteck</param>
+		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
+		public bool IsTowerValidPosition(Rectangle rect)
+		{
+			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
+				if (Towers[i].Hitbox.IntersectsWith(rect))
+					return false;
+
+			for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
+				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(rect))
+					return false;
+
+			return CurrentMap.IsCollidingWithPath(rect); //Überprüft, ob es eine Kollision mit dem Pfad gibt
+		}
+
+		/// <summary>
+		/// Fügt einen Ballon eine bestimmte Menge an Schaden hinzu.<br/>
+		/// Sollte der Ballon danach keinen gültigen Typ mehr haben, wird er von der Liste entfernt.
+		/// </summary>
+		/// <param name="index">Der index des Ballons</param>
+		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
+		public void DamageBalloon(int index, int damage)
+        {
+			if(Balloons[index].Type - damage > BalloonType.None)
+				Balloons[index].Type -= damage;
+			else
+				Balloons.RemoveAt(index);
+		}
+
 		public void AddTower(Tower t)
 		{
 			// TODO network communication
@@ -103,80 +169,6 @@ namespace NoPasaranTD.Engine
 		{
 			// TODO network communication
 			Towers.Remove(t);
-		}
-
-		/// <summary>
-		/// Kontrolliert, ob das angegebene Recheck einen Abstand von X Einheiten zum nächsten Pfadpunkt hat und ob keine Hitbox des Pfades getroffen wurde
-		/// </summary>
-		/// <param name="rect">Zu überprüfendes Rechteck</param>
-		/// <returns>False wenn es eine Überschneidung gibt</returns>
-		public bool TowerCollisionPath(Rectangle rect)
-		{
-			Vector2D[] cornersV = new Vector2D[4]; // Speichern der Ecken des Rechtecks
-			for (int i = 0; i < 2; i++) // Alle Ecken durchgehen
-				for (int j = 0; j < 2; j++)
-					cornersV[i * 2 + j] = new Vector2D(rect.X + i * rect.Width, rect.Y + j * rect.Height); // Ecken abspeichern
-			Vector2D save = cornersV[2]; // Ecke 2 mit 3 tauschen um eine durchgehende Reihenfolge zu haben
-			cornersV[2] = cornersV[3];
-			cornersV[3] = save;
-
-			for (int i = 0; i < cornersV.Length; i++) // Alle Ecken durchgehen
-			{
-				Vector2D connectionRecV;
-				if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
-					connectionRecV = cornersV[i + 1] - cornersV[i];
-				else // Bei dem letzten punkt wieder auf den ersten springen
-					connectionRecV = cornersV[0] - cornersV[i];
-
-				//Durchgehen aller Pfadpunkte und schauen ob innerhalb des Radius ein Stück des Rechtecks ist
-				foreach (var item in CurrentMap.BalloonPath)
-				{
-					// Nächster Punkt auf der Gerade des Rechtecks berechnet
-					float closestPointDistance = -1 * (((cornersV[i].X - item.X) * connectionRecV.X + (cornersV[i].Y - item.Y) * connectionRecV.Y) / (connectionRecV.X * connectionRecV.X + connectionRecV.Y * connectionRecV.Y));
-					if (closestPointDistance < 0) // Sollte der Punkt außerhalb der Länge des Rechtecks liegen wird auf die entsprechende Seite gesetzt
-						closestPointDistance = 0;
-					else if (closestPointDistance > 1)
-						closestPointDistance = 1;
-
-					if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < 24) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
-						return false;
-				}
-
-				// Alle Hitboxen des Pfades durchgehen und auf Kollisionen kontrollieren
-				for (int j = 0; j < CurrentMap.BalloonPath.Length - 1; j++)
-				{
-					for (int k = 0; k < 2; k++) // Hitbox ober- und unterhalb kontrollieren
-					{
-						Vector2D pathLocationV = CurrentMap.BallonPathHitbox[k, j * 2];
-						Vector2D pathDirectionV = CurrentMap.BallonPathHitbox[k, j * 2 + 1] - pathLocationV;
-						// Wert der Variable für die Geradengleichung an der Schnittstelle
-						float collisionVariablePathF = ((pathLocationV.Y - cornersV[i].Y) * connectionRecV.X + (cornersV[i].X - pathLocationV.X) * connectionRecV.Y) / (pathDirectionV.X * connectionRecV.Y - pathDirectionV.Y * connectionRecV.X);
-						float collisionVariableRecF = ((cornersV[i].Y - pathLocationV.Y) * pathDirectionV.X + (pathLocationV.X - cornersV[i].X) * pathDirectionV.Y) / (connectionRecV.X * pathDirectionV.Y - connectionRecV.Y * pathDirectionV.X);
-						// Kontrolle, ob die Schnittstelle zwischen Gerade und Seite des Rechtecks innerhalb der Intervalle von [0,1] liegt
-						if (collisionVariablePathF >= 0 && collisionVariablePathF <= 1 && collisionVariableRecF >= 0 && collisionVariableRecF <= 1)
-							return false;
-					}
-				}
-			}
-			return true;
-		}
-
-		/// <summary>
-		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
-		/// </summary>
-		/// <param name="rect">Zu kontrollierendes Rechteck</param>
-		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
-		public bool IsTowerValidPosition(Rectangle rect)
-		{
-			foreach (var item in Towers)  //Überprüft, ob es eine Kollision mit einem Turm gibt
-				if (item.Hitbox.IntersectsWith(rect)) 
-					return false;
-
-			foreach (var item in CurrentMap.Obstacles) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
-				if (item.Hitbox.IntersectsWith(rect))
-					return false;
-
-			return TowerCollisionPath(rect); //Überprüft, ob es eine Kollision mit dem Pfad gibt
 		}
 	}
 }

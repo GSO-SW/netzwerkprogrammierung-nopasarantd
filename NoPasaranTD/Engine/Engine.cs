@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
 
 namespace NoPasaranTD.Engine
@@ -60,6 +61,38 @@ namespace NoPasaranTD.Engine
     {
 
         #region Bildschirm Eigenschaften
+        private static Bitmap renderBuffer;
+        internal static Bitmap RenderBuffer
+        {
+            get
+            {
+                if(renderBuffer == null 
+                    || renderBuffer.Width != RenderWidth 
+                    || renderBuffer.Height != RenderHeight)
+                {
+                    renderBuffer?.Dispose();
+                    renderBuffer = new Bitmap(RenderWidth, RenderHeight);
+                }
+                return renderBuffer;
+            }
+        }
+
+        private static Graphics renderGraphics;
+        internal static Graphics RenderGraphics
+        {
+            get
+            {
+                if(renderGraphics == null
+                    || renderGraphics.ClipBounds.Width != RenderBuffer.Width
+                    || renderGraphics.ClipBounds.Height != RenderBuffer.Height)
+                {
+                    renderGraphics?.Dispose();
+                    renderGraphics = Graphics.FromImage(RenderBuffer);
+                }
+                return renderGraphics;
+            }
+        }
+
         public static int RenderWidth { get; set; } = 1280;
         public static int RenderHeight { get; set; } = 720;
         public static int Framerate { get; set; } = 240;

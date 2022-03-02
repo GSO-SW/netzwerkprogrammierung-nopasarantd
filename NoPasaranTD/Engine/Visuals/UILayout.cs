@@ -66,7 +66,7 @@ namespace NoPasaranTD.Engine.Visuals
             if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
                 return;
 
-            if (!game.TowerCollisionPath(args.MovedObject))
+            if (!game.IsTowerValidPosition(args.MovedObject))
                 return;
 
             placedTowers.Add(args.MovedObject);
@@ -103,7 +103,7 @@ namespace NoPasaranTD.Engine.Visuals
             // TODO: Testcode, ausgewählter Tower soll gerendert werden
             // unabhängig davon ob er bewegt wird oder nicht!
             // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
-            // Bei platziere,n die Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
+            // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
             if (placingTowerDragDrop.IsMoving)
                 g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
             foreach (var item in placedTowers)

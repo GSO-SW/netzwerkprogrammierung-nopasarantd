@@ -4,7 +4,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -17,11 +16,11 @@ namespace NoPasaranTD.Engine
         {
             InitializeComponent();
             LoadDefaultGame();
-        } 
+        }
 
-        private async void LoadDefaultGame()
+        private void LoadDefaultGame()
         {
-            Map map = await MapData.GetMapByPathAsync("test2");
+            Map map = MapData.GetMapByFile("test2");
             map.Initialize();
             currentGame = new Game(map);
         }
@@ -43,7 +42,7 @@ namespace NoPasaranTD.Engine
             Engine.MouseX = x;
             Engine.MouseY = y;
 
-            currentGame?.MouseUp(new MouseEventArgs(
+            currentGame.MouseUp(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
@@ -61,7 +60,7 @@ namespace NoPasaranTD.Engine
             Engine.MouseX = x;
             Engine.MouseY = y;
 
-            currentGame?.MouseDown(new MouseEventArgs(
+            currentGame.MouseDown(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
@@ -79,34 +78,26 @@ namespace NoPasaranTD.Engine
             Engine.MouseX = x;
             Engine.MouseY = y;
 
-            currentGame?.MouseMove(new MouseEventArgs(
+            currentGame.MouseMove(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
         #endregion
 
         #region Keyboard region
-        private void Display_KeyUp(object sender, KeyEventArgs e) => currentGame?.KeyUp(e);
-        private void Display_KeyDown(object sender, KeyEventArgs e) => currentGame?.KeyDown(e);
+        private void Display_KeyUp(object sender, KeyEventArgs e) => currentGame.KeyUp(e);
+        private void Display_KeyDown(object sender, KeyEventArgs e) => currentGame.KeyDown(e);
         #endregion
 
         private void Display_Paint(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            float scaledWidth = (float)ClientSize.Width / Engine.RenderWidth;
-            float scaledHeight = (float)ClientSize.Height / Engine.RenderHeight;
-            g.ScaleTransform(scaledWidth, scaledHeight); // Skaliere den Inhalt dementsprechend
-            {
-                currentGame?.Render(g);
-            }
-            g.ResetTransform(); // Setze Transformationsmatrix zurück
-        }
+            => e.Graphics.DrawImage(Engine.RenderBuffer, 0, 0, ClientSize.Width, ClientSize.Height);
 
         private void GameLoop()
         {
             ulong ticksUnhandled = 0;
+
+            Func<bool> focusAction = () => Focused;
+            Action refreshAction = () => Refresh();
 
             int lastTick = Environment.TickCount;
             while (Visible)
@@ -117,16 +108,21 @@ namespace NoPasaranTD.Engine
                 ticksUnhandled += (ulong)deltaTick;
                 lastTick = currTick;
 
-                while(ticksUnhandled > 0)
+                while (ticksUnhandled > 0)
                 {
-                    currentGame?.Update();
+                    currentGame.Update();
                     ticksUnhandled --;
                 }
 
                 try
                 { // TODO: Fehlerfrei und threadübergreiffend aktualisieren
-                    if ((bool)Invoke((Func<bool>)(() => Focused)))
-                        Invoke((Action)(() => Refresh()));
+                    if ((bool)Invoke(focusAction))
+                    {
+                        Engine.RenderGraphics.Clear(Color.White);
+                        Engine.RenderGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        currentGame.Render(Engine.RenderGraphics);
+                        Invoke(refreshAction);
+                    }
                 }
                 catch (Exception) { break; }
 
