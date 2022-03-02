@@ -82,6 +82,24 @@ namespace NoPasaranTD.Engine
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
+
+        /// <summary>
+        /// Berechne die Mausposition auf dem Bildschirm und führe alle registrierten Events aus
+        /// </summary>
+        private void Display_MouseWheel(object sender, MouseEventArgs e)
+        {
+            // x & y zwischenspeichern, augfrund von anderen Events,
+            // die Engine.MouseX und Engine.MouseY ändern könnten
+            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+
+            Engine.MouseX = x;
+            Engine.MouseY = y;
+
+            currentGame.MouseWheel(new MouseEventArgs(
+                e.Button, e.Clicks, x, y, e.Delta
+            ));
+        }
         #endregion
 
         #region Keyboard region
@@ -107,9 +125,6 @@ namespace NoPasaranTD.Engine
             Func<bool> focusAction = () => Focused;
             Action refreshAction = () => Refresh();
 
-            int fpsCount = 0;
-            int lastFPSMs = Environment.TickCount;
-
             int lastTick = Environment.TickCount;
             while (Visible)
             {
@@ -125,13 +140,6 @@ namespace NoPasaranTD.Engine
                     ticksUnhandled --;
                 }
 
-                if(Environment.TickCount - lastFPSMs >= 1000)
-                {
-                    lastFPSMs = Environment.TickCount;
-                    Console.WriteLine(fpsCount);
-                    fpsCount = 0;
-                }
-
                 try
                 { // TODO: Fehlerfrei und threadübergreiffend aktualisieren
                     if ((bool)Invoke(focusAction))
@@ -140,7 +148,6 @@ namespace NoPasaranTD.Engine
                         Engine.RenderGraphics.SmoothingMode = SmoothingMode.AntiAlias;
                         currentGame.Render(Engine.RenderGraphics);
                         Invoke(refreshAction);
-                        fpsCount++;
                     }
                 }
                 catch (Exception) { break; }
@@ -148,6 +155,5 @@ namespace NoPasaranTD.Engine
                 Engine.Sync();
             }
         }
-
     }
 }

@@ -5,7 +5,6 @@ using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -51,14 +50,6 @@ namespace NoPasaranTD.Engine
 
 		public void Render(Graphics g)
 		{
-			// Zeichne Map
-			Matrix m = g.Transform;
-			float w = (float)Engine.RenderWidth / CurrentMap.BackgroundImage.Width;
-			float h = (float)Engine.RenderHeight / CurrentMap.BackgroundImage.Height;
-			g.ScaleTransform(w, h);
-            g.DrawImage(CurrentMap.BackgroundImage, 0, 0);
-			g.Transform = m;
-
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
 				Brush brush;
@@ -88,6 +79,7 @@ namespace NoPasaranTD.Engine
 		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
 		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
 		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
+		public void MouseWheel(MouseEventArgs e) { }
 		#endregion
 
 		private void ManageBalloonSpawn()
