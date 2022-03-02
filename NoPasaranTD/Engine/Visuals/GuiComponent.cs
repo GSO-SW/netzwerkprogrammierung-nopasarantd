@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine.Visuals
@@ -26,21 +21,17 @@ namespace NoPasaranTD.Engine.Visuals
 
         /// <summary>
         /// Befindet sich die Maus über dem Control zurzeit?
-        /// private protected => Nur Privater oder Vererbter instanzen wird das Verändern ermöglicht
         /// </summary>
-        public bool IsMouseOver { get; private protected set; } = false;
+        public bool IsMouseOver { get => Bounds.Contains(Engine.MouseX, Engine.MouseY); }
 
-        public GuiComponent() 
-        {
-            Engine.OnMouseMove += MouseMoveBase;
-        }
+		public virtual void Update() { }
+		public virtual void Render(Graphics g) { }
 
-        public void MouseMoveBase(MouseEventArgs args)
-        {
-            if (Bounds.Contains(args.Location))
-                IsMouseOver = true;
-            else
-                IsMouseOver = false;
-        }       
-    }
+		public virtual void KeyUp(KeyEventArgs e) { }
+		public virtual void KeyDown(KeyEventArgs e) { }
+
+		public virtual void MouseUp(MouseEventArgs e) { }
+		public virtual void MouseDown(MouseEventArgs e) { }
+		public virtual void MouseMove(MouseEventArgs e) { }
+	}
 }

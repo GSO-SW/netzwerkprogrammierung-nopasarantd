@@ -5,9 +5,7 @@ using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
@@ -20,24 +18,46 @@ namespace NoPasaranTD.Engine
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
-		public UILayout UILayout { get; private set; }
-
+		public UILayout UILayout { get; }
 
 		public Game(Map map)
 		{
 			CurrentMap = map;
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
-			Engine.OnUpdate += Update;
+			UILayout = new UILayout(this);
 		}
 
-		/// <summary>
-		/// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
-		/// </summary>
-		/// <param name="tower"></param>
-		/// <returns>Index des Ziels in der Liste Balloons.</br>
-		/// Ohne Ballon in Reichweite -1</returns>
-		public int TowerTarget(int tower)
+        #region Game logic region
+        public void Update()
+		{
+			for (int i = 0; i < Towers.Count; i++)
+				Towers[i].Update(this, TowerTarget(i));
+            for (int i = 0; i < Balloons.Count; i++)
+                Balloons[i].PathPosition += 1f; // TODO get speed
+            UILayout.Update();
+
+			ManageBalloonSpawn();
+			currentTick++; // Emuliere Servertick
+		}
+
+		public void Render(Graphics g) => UILayout.Render(g);
+
+		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
+		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
+
+		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
+		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
+		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
+        #endregion
+
+        /// <summary>
+        /// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
+        /// </summary>
+        /// <param name="tower"></param>
+        /// <returns>Index des Ziels in der Liste Balloons.</br>
+        /// Ohne Ballon in Reichweite -1</returns>
+        public int TowerTarget(int tower)
 		{
 			List<int> ballonsInRange = new List<int>();
 			// Alle Ballons in der Reichweite des Turms bestimmen
@@ -56,17 +76,6 @@ namespace NoPasaranTD.Engine
 				if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
 					farthestIndex = i;
 			return ballonsInRange[farthestIndex];
-		}
-
-		public void Update()
-		{
-			for (int i = 0; i < Towers.Count; i++)
-				Towers[i].Update(this, TowerTarget(i));
-			for (int i = 0; i < Balloons.Count; i++)
-				Balloons[i].PathPosition += 1f; // TODO get speed
-
-			ManageBalloonSpawn();
-			currentTick++; // Emuliere Servertick
 		}
 
 		private void ManageBalloonSpawn()

@@ -1,51 +1,35 @@
 ﻿using NoPasaranTD.Data;
-using NoPasaranTD.Engine.Visuals;
 using NoPasaranTD.Model;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
     public partial class Display : Form
     {
+
         private Game currentGame;
         public Display()
         {
             InitializeComponent();
-            LoadMap();
+            LoadDefaultGame();
         } 
 
-        private async void LoadMap()
+        private async void LoadDefaultGame()
         {
-            currentGame = new Game(await MapData.GetMapByPathAsync("test2"));
-            currentGame.CurrentMap.Initialize();
+            Map map = await MapData.GetMapByPathAsync("test2");
+            map.Initialize();
+            currentGame = new Game(map);
         }
 
         private void Display_Load(object sender, EventArgs e)
             => new Thread(GameLoop).Start();
 
         #region Mouse region
-        /// <summary>
-        /// Berechne die Mausposition auf dem Bildschirm und führe alle registrierten Events aus
-        /// </summary>
-        private void Display_MouseDown(object sender, MouseEventArgs e)
-        {
-            // x & y zwischenspeichern, augfrund von anderen Events,
-            // die Engine.MouseX und Engine.MouseY ändern könnten
-            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
-            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
-
-            Engine.MouseX = x;
-            Engine.MouseY = y;
-
-            Engine.OnMouseDown?.Invoke(new MouseEventArgs(
-                e.Button, e.Clicks, x, y, e.Delta
-            ));
-        }
-
         /// <summary>
         /// Berechne die Mausposition auf dem Bildschirm und führe alle registrierten Events aus
         /// </summary>
@@ -59,7 +43,25 @@ namespace NoPasaranTD.Engine
             Engine.MouseX = x;
             Engine.MouseY = y;
 
-            Engine.OnMouseUp?.Invoke(new MouseEventArgs(
+            currentGame?.MouseUp(new MouseEventArgs(
+                e.Button, e.Clicks, x, y, e.Delta
+            ));
+        }
+
+        /// <summary>
+        /// Berechne die Mausposition auf dem Bildschirm und führe alle registrierten Events aus
+        /// </summary>
+        private void Display_MouseDown(object sender, MouseEventArgs e)
+        {
+            // x & y zwischenspeichern, augfrund von anderen Events,
+            // die Engine.MouseX und Engine.MouseY ändern könnten
+            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+
+            Engine.MouseX = x;
+            Engine.MouseY = y;
+
+            currentGame?.MouseDown(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
@@ -77,15 +79,15 @@ namespace NoPasaranTD.Engine
             Engine.MouseX = x;
             Engine.MouseY = y;
 
-            Engine.OnMouseMove?.Invoke(new MouseEventArgs(
+            currentGame?.MouseMove(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
             ));
         }
         #endregion
 
         #region Keyboard region
-        private void Display_KeyDown(object sender, KeyEventArgs e) => Engine.OnKeyDown?.Invoke(e);
-        private void Display_KeyUp(object sender, KeyEventArgs e) => Engine.OnKeyUp?.Invoke(e);
+        private void Display_KeyUp(object sender, KeyEventArgs e) => currentGame?.KeyUp(e);
+        private void Display_KeyDown(object sender, KeyEventArgs e) => currentGame?.KeyDown(e);
         #endregion
 
         private void Display_Paint(object sender, PaintEventArgs e)
@@ -97,7 +99,7 @@ namespace NoPasaranTD.Engine
             float scaledHeight = (float)ClientSize.Height / Engine.RenderHeight;
             g.ScaleTransform(scaledWidth, scaledHeight); // Skaliere den Inhalt dementsprechend
             {
-                Engine.OnRender?.Invoke(g);
+                currentGame?.Render(g);
             }
             g.ResetTransform(); // Setze Transformationsmatrix zurück
         }
@@ -117,7 +119,7 @@ namespace NoPasaranTD.Engine
 
                 while(ticksUnhandled > 0)
                 {
-                    Engine.OnUpdate?.Invoke();
+                    currentGame?.Update();
                     ticksUnhandled --;
                 }
 
@@ -131,5 +133,6 @@ namespace NoPasaranTD.Engine
                 Engine.Sync();
             }
         }
+
     }
 }

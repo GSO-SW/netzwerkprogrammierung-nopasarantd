@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-    public delegate void MouseEventHandler(MouseEventArgs e);
-    public delegate void KeyEventHandler(KeyEventArgs e);
-
-    public delegate void RenderEventHandler(Graphics g);
-    public delegate void UpdateEventHandler();
-
     /// <summary>
     /// Klasse zum errechnen von Durchschnitten
     /// </summary>
@@ -67,18 +59,6 @@ namespace NoPasaranTD.Engine
     public static class Engine
     {
 
-        #region Event handlers
-        public static MouseEventHandler OnMouseDown;
-        public static MouseEventHandler OnMouseUp;
-        public static MouseEventHandler OnMouseMove;
-
-        public static KeyEventHandler OnKeyDown;
-        public static KeyEventHandler OnKeyUp;
-
-        public static RenderEventHandler OnRender;
-        public static UpdateEventHandler OnUpdate;
-        #endregion
-
         #region Bildschirm Eigenschaften
         public static int RenderWidth { get; set; } = 1280;
         public static int RenderHeight { get; set; } = 720;
@@ -87,7 +67,7 @@ namespace NoPasaranTD.Engine
         public static int MouseX { get; internal set; }
         public static int MouseY { get; internal set; }
         #endregion
-
+        
         #region Synchronize region
         private static readonly Stopwatch sleepWatch = new Stopwatch();
         private static readonly RunningAverage sleepAverage = new RunningAverage(10, 1);
