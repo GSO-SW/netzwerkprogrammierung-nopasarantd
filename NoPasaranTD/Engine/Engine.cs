@@ -95,7 +95,7 @@ namespace NoPasaranTD.Engine
 
         public static int RenderWidth { get; set; } = 1280;
         public static int RenderHeight { get; set; } = 720;
-        public static int Framerate { get; set; } = 240;
+        public static int Framerate { get; set; } = 60;
 
         public static int MouseX { get; internal set; }
         public static int MouseY { get; internal set; }

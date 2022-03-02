@@ -90,7 +90,15 @@ namespace NoPasaranTD.Engine
         #endregion
 
         private void Display_Paint(object sender, PaintEventArgs e)
-            => e.Graphics.DrawImage(Engine.RenderBuffer, 0, 0, ClientSize.Width, ClientSize.Height);
+        {
+            float scaledWidth = (float)ClientSize.Width / Engine.RenderBuffer.Width;
+            float scaledHeight = (float)ClientSize.Height / Engine.RenderBuffer.Height;
+
+            Graphics g = e.Graphics;
+            g.ScaleTransform(scaledWidth, scaledHeight);
+            g.DrawImage(Engine.RenderBuffer, 0, 0);
+            g.ResetTransform();
+        }
 
         private void GameLoop()
         {
@@ -98,6 +106,9 @@ namespace NoPasaranTD.Engine
 
             Func<bool> focusAction = () => Focused;
             Action refreshAction = () => Refresh();
+
+            int fpsCount = 0;
+            int lastFPSMs = Environment.TickCount;
 
             int lastTick = Environment.TickCount;
             while (Visible)
@@ -114,6 +125,13 @@ namespace NoPasaranTD.Engine
                     ticksUnhandled --;
                 }
 
+                if(Environment.TickCount - lastFPSMs >= 1000)
+                {
+                    lastFPSMs = Environment.TickCount;
+                    Console.WriteLine(fpsCount);
+                    fpsCount = 0;
+                }
+
                 try
                 { // TODO: Fehlerfrei und threadübergreiffend aktualisieren
                     if ((bool)Invoke(focusAction))
@@ -122,6 +140,7 @@ namespace NoPasaranTD.Engine
                         Engine.RenderGraphics.SmoothingMode = SmoothingMode.AntiAlias;
                         currentGame.Render(Engine.RenderGraphics);
                         Invoke(refreshAction);
+                        fpsCount++;
                     }
                 }
                 catch (Exception) { break; }

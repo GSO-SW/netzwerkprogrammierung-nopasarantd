@@ -5,6 +5,7 @@ using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -38,21 +39,25 @@ namespace NoPasaranTD.Engine
 
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Aktualisiere Ballons
-				Balloons[i].PathPosition += StaticInfo.GetBalloonVelocity(Balloons[i].Type);
+				Balloons[i].PathPosition += 0.075f * StaticInfo.GetBalloonVelocity(Balloons[i].Type);
 				if (Balloons[i].PathPosition >= CurrentMap.PathLength)
 					Balloons.RemoveAt(i);
 			}
             UILayout.Update();
 
-			ManageBalloonSpawn(); // Spawne Ballons
+            ManageBalloonSpawn(); // Spawne Ballons
 			CurrentTick++; // Emuliere Servertick
 		}
 
 		public void Render(Graphics g)
 		{
-            // Zeichne Map
-            g.DrawImage(CurrentMap.BackgroundImage,
-                0, 0, Engine.RenderWidth, Engine.RenderHeight);
+			// Zeichne Map
+			Matrix m = g.Transform;
+			float w = (float)Engine.RenderWidth / CurrentMap.BackgroundImage.Width;
+			float h = (float)Engine.RenderHeight / CurrentMap.BackgroundImage.Height;
+			g.ScaleTransform(w, h);
+            g.DrawImage(CurrentMap.BackgroundImage, 0, 0);
+			g.Transform = m;
 
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
@@ -74,8 +79,8 @@ namespace NoPasaranTD.Engine
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
-			UILayout.Render(g);
-		}
+            UILayout.Render(g);
+        }
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
 		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
