@@ -27,6 +27,7 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
+			AddTower(new TowerCanon(100,100));
 		}
 
         #region Game logic region
