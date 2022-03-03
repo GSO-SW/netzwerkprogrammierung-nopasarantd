@@ -7,7 +7,7 @@ namespace NoPasaranTD.Model
 {
     public abstract class Tower
     {
-        public Rectangle Hitbox { get; set; }
+        public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
         public uint Level { get; set; }
 
         public uint Strength { get => StaticInfo.GetTowerDelay(GetType()); }
@@ -34,12 +34,20 @@ namespace NoPasaranTD.Model
         uint delay;
         uint strength;
         double range;
-        public TowerCanon(int posX = 0, int posY = 0)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="posX">centralized</param>
+        /// <param name="posY">centralized</param>
+        /// <param name="sizeX"></param>
+        /// <param name="sizeY"></param>
+        public TowerCanon(int posX, int posY)
         {
-            Hitbox.Offset(posX - Hitbox.X,posY - Hitbox.Y);
+            sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
+            Hitbox = new Rectangle(posX-sizeX/2, posY-sizeY/2, sizeX, sizeY);
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple);
-            penBlack = new Pen(Color.Purple); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple);
+            penBlack = new Pen(Color.Black); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple, 2.3f);
             font = SystemFonts.DefaultFont;
             time = 0;
             timeLastShot = 0;
@@ -60,7 +68,7 @@ namespace NoPasaranTD.Model
             
             if (justShotSomeUglyAss)
             {
-                float factor = System.Math.Max((- time + timeLastShot) * (float)shotAnimationLength / delay ,0);
+                float factor = 1 - System.Math.Max( (time - timeLastShot) / (delay * (float)shotAnimationLength), 0);
                 float halfSizeX = sizeX*0.5f, halfSizeY = sizeY*0.5f;
                 g.DrawLine(penRed, centerX, centerY, lastBalloonPos.X, lastBalloonPos.Y);
                 g.FillEllipse(bruhPurple, centerX-halfSizeX*factor, centerY-halfSizeY*factor, sizeX*factor, sizeY*factor);
@@ -73,13 +81,12 @@ namespace NoPasaranTD.Model
         {
             time = sw.ElapsedMilliseconds;
 
-            if (time > timeLastShot + delay)
+            if (targetIndex != -1 && time > timeLastShot + delay)
             {
                 timeLastShot = time;
                 justShotSomeUglyAss = true;
-                game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
                 lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                
+                game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
             }
             
         }

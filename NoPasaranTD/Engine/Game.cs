@@ -27,12 +27,14 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
-			AddTower(new TowerCanon(100,100));
+			AddTower(new TowerCanon(350,200));
 		}
 
         #region Game logic region
         public void Update()
 		{
+			if (FindTargetForTower(0) == 0)
+				;
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this, FindTargetForTower(i));
@@ -85,7 +87,7 @@ namespace NoPasaranTD.Engine
 
 		private void ManageBalloonSpawn()
 		{
-			if (CurrentTick % 1000 == 0)
+			if (CurrentTick % 1200 == 0)
 			{ // Spawne jede Sekunde einen Ballon
 				Balloon balloon = new Balloon
 				{

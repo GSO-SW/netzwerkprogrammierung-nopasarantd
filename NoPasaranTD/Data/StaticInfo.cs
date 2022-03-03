@@ -128,17 +128,17 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
-            {typeof(TowerTest),     150},
+            {typeof(TowerCanon),     150},
         };
 
         private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
         {
-            //{typeof(TowerCanon),     new Size(1, 1)},
+            {typeof(TowerCanon),     new Size(50, 50)},
         };
 
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
-            {typeof(TowerTest),     250},
+            {typeof(TowerCanon),     2500},
         };
         #endregion // Dictionary für die Türme
     }
