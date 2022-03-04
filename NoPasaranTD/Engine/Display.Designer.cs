@@ -28,7 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.tmrRender = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
+            // 
+            // tmrRender
+            // 
+            this.tmrRender.Enabled = true;
+            this.tmrRender.Interval = 1;
+            this.tmrRender.Tick += new System.EventHandler(this.tmrRender_Tick);
             // 
             // Display
             // 
@@ -46,13 +54,15 @@
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Display_KeyUp);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Display_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Display_MouseMove);
-            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Display_MouseWheel);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Display_MouseUp);
+            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Display_MouseWheel);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer tmrRender;
     }
 }
 
