@@ -60,12 +60,12 @@ namespace NoPasaranTD.Engine
 
 		public void Update()
 		{
-			if (tickCount == 1000)
-			{
-				tickCount = 0;
-				Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
-            }
-			tickCount++;
+			//if (tickCount == 1000)
+			//{
+			//	tickCount = 0;
+			//	Balloons.Add(new Balloon() { PathPosition = 0, Type = BalloonType.Black });
+   //         }
+			//tickCount++;
 
 			for (int i = 0; i < Towers.Count; i++)
 			{

@@ -52,8 +52,6 @@ namespace NoPasaranTD.Engine.Visuals
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
 
-        private List<Rectangle> placedTowers = new List<Rectangle>();
-
         public UILayout(Game gameObj)
         {
             TowerBuildMenu.DefineItems();
@@ -74,34 +72,23 @@ namespace NoPasaranTD.Engine.Visuals
 
             if (!game.TowerCollisionPath(args.MovedObject))
                 return;
-
-            placedTowers.Add(args.MovedObject);
-
-            Tower placedTower = null;
-            
+        
             if (args.Context is TowerTest)
-                placedTower = new TowerTest() { Hitbox = args.MovedObject };
-            // TODO: Towers Spezifizeiren
-
-            game.AddTower(placedTower);
+                game.AddTower(new TowerTest() { Hitbox = args.MovedObject });
+            // TODO: Towers Spezifizeiren           
         }
 
         private void TowerBuildMenu_SelectionChanged()
         {
-            int width = 50;
-            int height = 50;
-
             placingTowerDragDrop.Context = TowerBuildMenu.SelectedItem;
             // TODO: Größe des Rechteckes auf TowerType spezifieren
-            placingTowerDragDrop.Start(new Rectangle(Engine.MouseX - width/2, Engine.MouseY - height/2 , width, height));
+            placingTowerDragDrop.Start(TowerBuildMenu.SelectedItem.Hitbox);
         }
 
         private void Render(Graphics g)
         {
             if (placingTowerDragDrop.IsMoving)
-                g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
-            foreach (var item in placedTowers)
-                g.FillRectangle(Brushes.Blue, item);
+                g.FillRectangle(Brushes.Red, ((Tower)placingTowerDragDrop.Context).Hitbox);
         }
     }
 }
