@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using NoPasaranTD.Model.Towers;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,20 +30,20 @@ namespace NoPasaranTD.Engine.Visuals
             Items = new NotifyCollection<Tower>()
             {
                 new TowerCanon(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
+                new TowerCanon(),
             },            
         };
 
@@ -68,9 +69,7 @@ namespace NoPasaranTD.Engine.Visuals
             if (!game.IsTowerValidPosition(args.MovedObject))
                 return;
 
-            if (args.Context is TowerTest)
-                game.AddTower(new TowerTest() { Hitbox = args.MovedObject });
-            else if (args.Context is TowerCanon && StaticInfo.GetTowerPrice(typeof(TowerCanon)) <= game.Money)
+            if (args.Context is TowerCanon && StaticInfo.GetTowerPrice(typeof(TowerCanon)) <= game.Money)
             {
                 game.AddTower(new TowerCanon() { Hitbox = args.MovedObject });
                 game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerCanon));

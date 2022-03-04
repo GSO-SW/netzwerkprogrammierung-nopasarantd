@@ -69,7 +69,7 @@ namespace NoPasaranTD.Engine
 				}
 
 				Vector2D pos = CurrentMap.GetPathPosition(Balloons[i].PathPosition);
-				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 10);
+				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 12);
             }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)

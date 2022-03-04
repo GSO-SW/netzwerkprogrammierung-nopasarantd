@@ -124,7 +124,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, uint> TowerDamage = new Dictionary<Type, uint>()
         {
-            {typeof(TowerCanon),     5},
+            {typeof(TowerCanon),     1},
         };
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
