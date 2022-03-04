@@ -21,6 +21,8 @@ namespace NoPasaranTD.Engine
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
 
+		public int Money { get; set; }
+
 		public Game(Map map)
 		{
 			CurrentMap = map;
@@ -28,6 +30,7 @@ namespace NoPasaranTD.Engine
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
 			AddTower(new TowerCanon(350,200));
+			Money = 100;//StaticInfo.Money // TODO: Mit StaticInfo Verbinden
 		}
 
         #region Game logic region
@@ -74,7 +77,7 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
             UILayout.Render(g);
-        }
+		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
 		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
@@ -152,11 +155,17 @@ namespace NoPasaranTD.Engine
 		/// <param name="index">Der index des Ballons</param>
 		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
 		public void DamageBalloon(int index, int damage)
-        {
-			if(Balloons[index].Type - damage > BalloonType.None)
-				Balloons[index].Type -= damage;
+		{
+			if (Balloons[index].Type - damage > BalloonType.None)
+			{
+				Balloons[index].Type -= damage; // Aufaddieren des Geldes
+				Money += damage;
+			}
 			else
+			{
+				Money += Convert.ToInt32(Balloons[index].Type); // Nut für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
 				Balloons.RemoveAt(index);
+			}
 		}
 
 		public void AddTower(Tower t)

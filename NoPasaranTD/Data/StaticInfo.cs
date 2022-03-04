@@ -113,17 +113,17 @@ namespace NoPasaranTD.Data
         #region Tower
         private static readonly Dictionary<Type, string> TowerName = new Dictionary<Type, string>()
         {
-            //{typeof(TowerCanon),     "Canon"},
+            {typeof(TowerCanon),     "Canon"},
         };
 
         private static readonly Dictionary<Type, uint> TowerPrice = new Dictionary<Type, uint>()
         {
-            //{typeof(TowerCanon),     40},
+            {typeof(TowerCanon),     40},
         };
 
         private static readonly Dictionary<Type, uint> TowerDamage = new Dictionary<Type, uint>()
         {
-            {typeof(TowerCanon),     1},
+            {typeof(TowerCanon),     5},
         };
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
