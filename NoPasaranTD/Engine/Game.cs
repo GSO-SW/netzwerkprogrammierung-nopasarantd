@@ -103,39 +103,39 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		/// <summary>
-		/// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns>Index des Ziels in der Liste Balloons.</br>
-		/// Ohne Ballon in Reichweite -1</returns>
-		private int FindTargetForTower(int index)
-		{
-			List<int> ballonsInRange = new List<int>();
-			// Alle Ballons in der Reichweite des Turms bestimmen
-			for (int i = Balloons.Count - 1; i >= 0; i--)
-			{
-				Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
-				Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
-				if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-					ballonsInRange.Add(i);
-			}
-			if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
-				return -1;
+        /// <summary>
+        /// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns>Index des Ziels in der Liste Balloons.</br>
+        /// Ohne Ballon in Reichweite -1</returns>
+        private int FindTargetForTower(int index)
+        {
+            List<int> ballonsInRange = new List<int>();
+            // Alle Ballons in der Reichweite des Turms bestimmen
+            for (int i = Balloons.Count - 1; i >= 0; i--)
+            {
+                Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
+                Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
+                if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+                    ballonsInRange.Add(i);
+            }
+            if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+                return -1;
 
-			int farthestIndex = 0;
-			for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
-				if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
-					farthestIndex = i;
-			return ballonsInRange[farthestIndex];
-		}
+            int farthestIndex = 0;
+            for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
+                if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
+                    farthestIndex = i;
+            return ballonsInRange[farthestIndex];
+        }
 
-		/// <summary>
-		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
-		/// </summary>
-		/// <param name="rect">Zu kontrollierendes Rechteck</param>
-		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
-		public bool IsTowerValidPosition(Rectangle rect)
+        /// <summary>
+        /// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
+        /// </summary>
+        /// <param name="rect">Zu kontrollierendes Rechteck</param>
+        /// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
+        public bool IsTowerValidPosition(Rectangle rect)
 		{
 			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
 				if (Towers[i].Hitbox.IntersectsWith(rect))
@@ -163,7 +163,7 @@ namespace NoPasaranTD.Engine
 			}
 			else
 			{
-				Money += Convert.ToInt32(Balloons[index].Type); // Nut für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				Money += (int)Balloons[index].Strength; // Nut für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
 				Balloons.RemoveAt(index);
 			}
 		}
