@@ -51,7 +51,7 @@ namespace NoPasaranTD.Model.Towers
 
             g.FillRectangle(bruhBlack, Hitbox);
             g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
-            g.DrawString((delay - time + timeLastShot).ToString(), font, bruhBlack, Hitbox.Location);
+            g.DrawString((delay - time + timeLastShot).ToString(), font, bruhRed, Hitbox.Location);
 
             if (justShotSomeUglyAss)
             {

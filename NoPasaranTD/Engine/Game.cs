@@ -1,6 +1,7 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine.Visuals;
 using NoPasaranTD.Model;
+using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
