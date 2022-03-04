@@ -28,7 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.tmrRender = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
+            // 
+            // tmrRender
+            // 
+            this.tmrRender.Enabled = true;
+            this.tmrRender.Interval = 1;
+            this.tmrRender.Tick += new System.EventHandler(this.tmrRender_Tick);
             // 
             // Display
             // 
@@ -53,6 +61,8 @@
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer tmrRender;
     }
 }
 

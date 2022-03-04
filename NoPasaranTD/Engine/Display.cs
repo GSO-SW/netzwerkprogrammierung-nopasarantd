@@ -2,7 +2,6 @@
 using NoPasaranTD.Model;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -107,23 +106,26 @@ namespace NoPasaranTD.Engine
         private void Display_KeyDown(object sender, KeyEventArgs e) => currentGame.KeyDown(e);
         #endregion
 
+        #region Render region
         private void Display_Paint(object sender, PaintEventArgs e)
         {
-            float scaledWidth = (float)ClientSize.Width / Engine.RenderBuffer.Width;
-            float scaledHeight = (float)ClientSize.Height / Engine.RenderBuffer.Height;
+            float scaledWidth = (float)ClientSize.Width / Engine.RenderWidth;
+            float scaledHeight = (float)ClientSize.Height / Engine.RenderHeight;
 
             Graphics g = e.Graphics;
             g.ScaleTransform(scaledWidth, scaledHeight);
-            g.DrawImageUnscaled(Engine.RenderBuffer, 0, 0);
+            { // Spiel rendern
+                currentGame.Render(g);
+            }
             g.ResetTransform();
         }
+
+        private void tmrRender_Tick(object sender, EventArgs e) => Refresh();
+        #endregion
 
         private void GameLoop()
         {
             ulong ticksUnhandled = 0;
-
-            Func<bool> focusAction = () => Focused;
-            Action refreshAction = () => Refresh();
 
             int lastTick = Environment.TickCount;
             while (Visible)
@@ -140,20 +142,13 @@ namespace NoPasaranTD.Engine
                     ticksUnhandled --;
                 }
 
-                try
-                { // TODO: Fehlerfrei und threadübergreiffend aktualisieren
-                    if ((bool)Invoke(focusAction))
-                    {
-                        Engine.RenderGraphics.Clear(Color.White);
-                        Engine.RenderGraphics.SmoothingMode = SmoothingMode.AntiAlias;
-                        currentGame.Render(Engine.RenderGraphics);
-                        Invoke(refreshAction);
-                    }
-                }
-                catch (Exception) { break; }
+                int fps = Math.Max(1, 1000 / Engine.Framerate);
+                if (tmrRender.Interval != fps)
+                    Invoke((Action)(() => tmrRender.Interval = fps));
 
                 Engine.Sync();
             }
         }
+
     }
 }
