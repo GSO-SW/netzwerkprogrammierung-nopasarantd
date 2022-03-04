@@ -31,7 +31,7 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
-			Money = 100;//StaticInfo.Money // TODO: Mit StaticInfo Verbinden
+			Money = StaticInfo.StartMoney; // TODO: Mit StaticInfo Verbinden
 		}
 
         #region Game logic region
@@ -88,7 +88,7 @@ namespace NoPasaranTD.Engine
             UILayout.Render(g);
 
 			Font fontArial = new Font("Arial", 10, FontStyle.Regular);
-			g.DrawString(Money + " €", fontArial, new SolidBrush(Color.Black), 0, 0);
+			g.DrawString(Money + " BTC", fontArial, new SolidBrush(Color.Black), 0, 0);
 
             for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
             {

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Newtonsoft.Json;
+using NoPasaranTD.Data;
 
 namespace NoPasaranTD.Model
 {
@@ -126,7 +127,7 @@ namespace NoPasaranTD.Model
                     else if (closestPointDistance > 1)
                         closestPointDistance = 1;
 
-                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < 24) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < StaticInfo.PathWidth) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
                         return false;
                 }
 
@@ -189,7 +190,7 @@ namespace NoPasaranTD.Model
                     // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
                     Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
                     // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
-                    double multiplicatorD = Math.Sqrt((24 * 24) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
+                    double multiplicatorD = Math.Sqrt((StaticInfo.PathWidth * StaticInfo.PathWidth) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
                     // In beide Richungen orthogonal vom Vektor aus schauen 
