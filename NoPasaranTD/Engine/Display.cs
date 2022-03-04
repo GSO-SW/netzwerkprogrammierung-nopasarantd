@@ -114,7 +114,7 @@ namespace NoPasaranTD.Engine
 
             Graphics g = e.Graphics;
             g.ScaleTransform(scaledWidth, scaledHeight);
-            g.DrawImage(Engine.RenderBuffer, 0, 0);
+            g.DrawImageUnscaled(Engine.RenderBuffer, 0, 0);
             g.ResetTransform();
         }
 

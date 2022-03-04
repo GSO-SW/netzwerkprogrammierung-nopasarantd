@@ -5,6 +5,7 @@ using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -50,6 +51,16 @@ namespace NoPasaranTD.Engine
 
 		public void Render(Graphics g)
 		{
+			{ // Zeichne Karte
+				float scaledWidth = (float)Engine.RenderWidth / CurrentMap.BackgroundImage.Width;
+				float scaledHeight = (float)Engine.RenderHeight / CurrentMap.BackgroundImage.Height;
+
+				Matrix m = g.Transform;
+				g.ScaleTransform(scaledWidth, scaledHeight);
+				g.DrawImageUnscaled(CurrentMap.BackgroundImage, 0, 0);
+				g.Transform = m;
+            }
+
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
 				Brush brush;

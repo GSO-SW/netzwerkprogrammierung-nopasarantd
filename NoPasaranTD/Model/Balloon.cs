@@ -1,4 +1,6 @@
-﻿namespace NoPasaranTD.Model
+﻿using NoPasaranTD.Data;
+
+namespace NoPasaranTD.Model
 {
     /// <summary>
     /// Model Klasse eines Ballon Objektes
@@ -21,11 +23,6 @@
         /// Die derzeitige Position des Ballones auf dem Pfad in Prozentangabe
         /// </summary>
         public float PathPosition { get; set; }
-
-        /// <summary>
-        /// Die Stärke des Ballones (Abhängig vom Ballon Typen)
-        /// </summary>
-        public uint Strength { get /* TODO: Zurgiff auf StaticInfo */; }
 
     }
 
