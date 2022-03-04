@@ -10,14 +10,53 @@ namespace NoPasaranTD.Data
 {
     public static class StaticInfo
     {
-        
 
-        #region GetTower methoden
+        #region Startwerte
+        public static int StartMoney = 150;
+        public static int StartHP = 100;
+        public static int PathWidth = 24;
+        #endregion
+
+        #region Obstacle
+        private static readonly Dictionary<Type, Bitmap> ObstacleImage = new Dictionary<Type, Bitmap>()
+        {
+
+        };
+        
+        private static readonly Dictionary<Type, Size> ObstacleSize = new Dictionary<Type, Size>()
+        {
+
+        };
+
+        
+        #endregion
+
+        #region GetObstacle Methoden
+
+        public static Bitmap GetObstacleImage(Type type)
+        {
+            ObstacleImage.TryGetValue(type, out Bitmap obstacleimg);
+            return obstacleimg;
+        }
+
+        public static Size GetObstacleSize(Type type)
+        {
+            ObstacleSize.TryGetValue(type, out Size obstaclesize);
+            return obstaclesize;
+        }
+        #endregion
+
+        #region GetTower Methoden
 
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der TowerDaten/Werte 
         /// </summary>
-        
+        public static Bitmap GetTowerImage(Type type)
+        {
+            TowerImage.TryGetValue(type, out Bitmap towerimg);
+            return towerimg;
+        }
+
         public static string GetTowerName(Type type)
         {
             TowerName.TryGetValue(type, out string name);
@@ -51,7 +90,7 @@ namespace NoPasaranTD.Data
         }
         #endregion
 
-        #region GetBallon methoden 
+        #region GetBallon Methoden 
 
         public static Size GetBalloonSize = new Size(10,10);
 
@@ -111,6 +150,12 @@ namespace NoPasaranTD.Data
         #endregion  // Dictionary für die Ballons
 
         #region Tower
+
+        private static readonly Dictionary<Type, Bitmap> TowerImage = new Dictionary<Type, Bitmap>()
+        {
+
+        };
+
         private static readonly Dictionary<Type, string> TowerName = new Dictionary<Type, string>()
         {
             //{typeof(TowerCanon),     "Canon"},
