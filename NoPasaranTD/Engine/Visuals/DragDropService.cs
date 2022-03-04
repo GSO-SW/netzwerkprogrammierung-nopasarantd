@@ -15,13 +15,6 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public event DragDropFinishHandler DragDropFinish;
 
-        public DragDropService()
-        {
-            Engine.OnUpdate += Update;
-            Engine.OnMouseDown += MouseDown;
-            Engine.OnMouseUp += MouseUp;
-        }
-
         /// <summary>
         /// Wie kann der Drag Vorgang als Drop bestätigt werden?
         /// </summary>
@@ -52,7 +45,7 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public object Context { get; set; }
 
-        private void Update()
+        public void Update()
         {
             if (IsMoving)
                 MovedObject = new Rectangle(Engine.MouseX - MovedObject.Width/2, Engine.MouseY - MovedObject.Height / 2, MovedObject.Width, MovedObject.Height);
@@ -65,11 +58,6 @@ namespace NoPasaranTD.Engine.Visuals
         public void Start(Rectangle visual)
         {
             MovedObject = visual;
-
-            Engine.OnUpdate += Update;
-            Engine.OnMouseDown += MouseDown;
-            Engine.OnMouseUp += MouseUp;
-
             IsMoving = true;
         }
             
@@ -78,28 +66,16 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public void StopSuccessfully()
         {
-            Engine.OnUpdate -= Update;
-            Engine.OnMouseDown -= MouseDown;
-            Engine.OnMouseUp -= MouseUp;
-
             IsMoving = false;
-
             DragDropFinish?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context });
         }
 
         /// <summary>
         /// Stopt und verlässt den DragDrop Vorgang
         /// </summary>
-        public void Leave()
-        {
-            Engine.OnUpdate -= Update;
-            Engine.OnMouseDown -= MouseDown;
-            Engine.OnMouseUp -= MouseUp;
-
-            IsMoving = false;
-        }
+        public void Leave() => IsMoving = false;
             
-        private void MouseDown(MouseEventArgs args)
+        public void MouseDown(MouseEventArgs args)
         {
             if (LeaveSetting == DragDropMode.MouseRightButtonDown && args.Button == MouseButtons.Right)
                 Leave();
@@ -107,7 +83,7 @@ namespace NoPasaranTD.Engine.Visuals
                 Leave();
         }
 
-        private void MouseUp(MouseEventArgs args)
+        public void MouseUp(MouseEventArgs args)
         {
             if (MoveSetting == DragDropMoveMode.Pressed)
             {
@@ -116,14 +92,6 @@ namespace NoPasaranTD.Engine.Visuals
                 else if (ApplySetting == DragDropMode.MouseRightButtonUp && args.Button == MouseButtons.Right)
                     StopSuccessfully();
             }
-        }
-
-        // Deabonniert alle Event Methoden bei Destuktion eines DragDrop Service Objektes
-        ~DragDropService()
-        {
-            Engine.OnUpdate -= Update;
-            Engine.OnMouseDown -= MouseDown;
-            Engine.OnMouseUp -= MouseUp;
         }
     }
 

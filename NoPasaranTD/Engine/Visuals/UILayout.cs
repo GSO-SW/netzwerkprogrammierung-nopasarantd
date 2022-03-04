@@ -1,11 +1,7 @@
-﻿using NoPasaranTD.Data;
-using NoPasaranTD.Model;
-using System;
+﻿using NoPasaranTD.Model;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine.Visuals
 {
@@ -60,8 +56,6 @@ namespace NoPasaranTD.Engine.Visuals
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
 
             game = gameObj;
-
-            Engine.OnRender += Render;
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
@@ -70,7 +64,7 @@ namespace NoPasaranTD.Engine.Visuals
             if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
                 return;
 
-            if (!game.TowerCollisionPath(args.MovedObject))
+            if (!game.IsTowerValidPosition(args.MovedObject))
                 return;
         
             if (args.Context is TowerTest)
@@ -85,10 +79,40 @@ namespace NoPasaranTD.Engine.Visuals
             placingTowerDragDrop.Start(TowerBuildMenu.SelectedItem.Hitbox);
         }
 
-        private void Render(Graphics g)
+        public void Update()
         {
+            placingTowerDragDrop.Update();
+            TowerBuildMenu.Update();
+        }
+
+        public void Render(Graphics g)
+        {   
+            TowerBuildMenu.Render(g);
+
+            // TODO: Testcode, ausgewählter Tower soll gerendert werden
+            // unabhängig davon ob er bewegt wird oder nicht!
+            // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
+            // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
             if (placingTowerDragDrop.IsMoving)
                 g.FillRectangle(Brushes.Red, ((Tower)placingTowerDragDrop.Context).Hitbox);
         }
+
+        public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
+        public void KeyDown(KeyEventArgs args) => TowerBuildMenu.KeyDown(args);
+
+        public void MouseUp(MouseEventArgs e)
+        {
+            TowerBuildMenu.MouseUp(e);
+            placingTowerDragDrop.MouseUp(e);
+        }
+
+        public void MouseDown(MouseEventArgs e)
+        {
+            TowerBuildMenu.MouseDown(e);
+            placingTowerDragDrop.MouseDown(e);
+        }
+
+        public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
+
     }
 }

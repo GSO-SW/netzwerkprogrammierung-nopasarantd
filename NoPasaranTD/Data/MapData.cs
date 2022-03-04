@@ -15,13 +15,42 @@ namespace NoPasaranTD.Data
     {
         /// <summary>
         /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
-        /// Die Methode erlaubt keine parallele zugriffe !
+        /// Die Methode erlaubt keine parallele zugriffe und läuft synchron!
         /// </summary>       
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns></returns>
         /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
         /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
-        public static async Task<Map> GetMapByPathAsync(string fileName)
+        public static Map GetMapByFile(string fileName)
+        {
+            Map obj = null;
+            string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
+
+            // Prüft ob die Datei bereits existiert
+            if (!File.Exists(savePath))
+                throw new FileNotFoundException(savePath);
+
+            using (StreamReader streamReader = new StreamReader(savePath))
+            {
+                string rawData = streamReader.ReadToEnd();
+
+                try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
+                catch (Exception) { throw new Exception("Failed loading Map"); }
+
+                streamReader.Close();
+            }
+            return obj;
+        }
+
+        /// <summary>
+        /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
+        /// Die Methode erlaubt keine parallele zugriffe und läuft asynchron!
+        /// </summary>       
+        /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        public static async Task<Map> GetMapByFileAsync(string fileName)
         {
             Map obj = null;      
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";

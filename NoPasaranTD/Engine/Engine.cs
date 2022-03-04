@@ -2,16 +2,9 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-    public delegate void MouseEventHandler(MouseEventArgs e);
-    public delegate void KeyEventHandler(KeyEventArgs e);
-
-    public delegate void RenderEventHandler(Graphics g);
-    public delegate void UpdateEventHandler();
-
     /// <summary>
     /// Klasse zum errechnen von Durchschnitten
     /// </summary>
@@ -67,27 +60,47 @@ namespace NoPasaranTD.Engine
     public static class Engine
     {
 
-        #region Event handlers
-        public static MouseEventHandler OnMouseDown;
-        public static MouseEventHandler OnMouseUp;
-        public static MouseEventHandler OnMouseMove;
-
-        public static KeyEventHandler OnKeyDown;
-        public static KeyEventHandler OnKeyUp;
-
-        public static RenderEventHandler OnRender;
-        public static UpdateEventHandler OnUpdate;
-        #endregion
-
         #region Bildschirm Eigenschaften
+        private static Bitmap renderBuffer;
+        internal static Bitmap RenderBuffer
+        {
+            get
+            {
+                if(renderBuffer == null 
+                    || renderBuffer.Width != RenderWidth 
+                    || renderBuffer.Height != RenderHeight)
+                {
+                    renderBuffer?.Dispose();
+                    renderBuffer = new Bitmap(RenderWidth, RenderHeight);
+                }
+                return renderBuffer;
+            }
+        }
+
+        private static Graphics renderGraphics;
+        internal static Graphics RenderGraphics
+        {
+            get
+            {
+                if(renderGraphics == null
+                    || renderGraphics.ClipBounds.Width != RenderBuffer.Width
+                    || renderGraphics.ClipBounds.Height != RenderBuffer.Height)
+                {
+                    renderGraphics?.Dispose();
+                    renderGraphics = Graphics.FromImage(RenderBuffer);
+                }
+                return renderGraphics;
+            }
+        }
+
         public static int RenderWidth { get; set; } = 1280;
         public static int RenderHeight { get; set; } = 720;
-        public static int Framerate { get; set; } = 240;
+        public static int Framerate { get; set; } = 60;
 
         public static int MouseX { get; internal set; }
         public static int MouseY { get; internal set; }
         #endregion
-
+        
         #region Synchronize region
         private static readonly Stopwatch sleepWatch = new Stopwatch();
         private static readonly RunningAverage sleepAverage = new RunningAverage(10, 1);

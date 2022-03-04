@@ -25,16 +25,10 @@ namespace NoPasaranTD.Engine.Visuals
         #region Constructor
 
         public ListContainer()
-        {
-            Items.CollectionChanged += ItemsCollectionChanged;
-
-            Engine.OnRender += Render;
-            Engine.OnMouseDown += MouseLeftButton;
-            Engine.OnKeyDown += KeyPressed;
-        }
+            => Items.CollectionChanged += ItemsCollectionChanged;
 
         #endregion
-        #region Privat Member
+        #region Private Members
 
         private List<ItemContainer<T>> items = new List<ItemContainer<T>>(); // Liste von allen Visuellen Item Containern
         private ItemContainer<T> selectedItem; // Der derzeitige ausgewählte Item Container
@@ -98,7 +92,7 @@ namespace NoPasaranTD.Engine.Visuals
         public T SelectedItem { get => selectedItem.DataContext; }
         
         #endregion      
-        #region Public Methodes
+        #region Public Methods
 
         /// <summary>
         /// Zu jedem Model-Objekt wird ein eigener Item Container erstellt
@@ -120,45 +114,76 @@ namespace NoPasaranTD.Engine.Visuals
             }                                
         }
 
-        #endregion
-        #region Private Methodes
-
-        public void Render(Graphics g) =>
-            g.FillRectangle(BackgroundColor, Bounds);
-                
-        private void MouseLeftButton(MouseEventArgs args)
+        public override void Update()
         {
-            for (int i = 0; i < items.Count; i++)
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].Update();
+        }
+
+        public override void Render(Graphics g)
+        {
+            g.FillRectangle(BackgroundColor, Bounds);
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].Render(g);
+        }
+
+        public override void KeyUp(KeyEventArgs e)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].KeyUp(e);
+        }
+
+        public override void KeyDown(KeyEventArgs args)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                items[i].KeyDown(args);
+
+                // TODO: Mouse Wheel benutzen und Scollbar implementieren
+                if (args.KeyCode == Keys.Right && IsMouseOver)
+                {
+                    if (!items[items.Count - 1].Visible)
+                        items[i].TranslateTransform(-ScrollSteps, 0);
+                }
+                else if (args.KeyCode == Keys.Left && IsMouseOver)
+                {
+                    if (!items[0].Visible)
+                        items[i].TranslateTransform(ScrollSteps, 0);
+                }
+            }
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].MouseUp(e);
+        }
+
+        public override void MouseDown(MouseEventArgs e)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                items[i].MouseDown(e);
                 if (items[i].IsMouseOver)
                 {
                     selectedItem = items[i];
                     SelectionChanged?.Invoke();
-                }                               
+                }
+            }
         }
+
+        public override void MouseMove(MouseEventArgs e)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].MouseMove(e);
+        }
+
+        #endregion
+        #region Private Methods
 
         private void ItemsCollectionChanged() =>
             DefineItems();
 
-        private void KeyPressed(KeyEventArgs args)
-        {
-            // TODO: Mouse Wheel benutzen und Scollbar implementieren
-            if (args.KeyCode == Keys.Right && IsMouseOver)
-            {
-                if (!items[items.Count - 1].Visible)
-                {
-                    foreach (var item in items)
-                        item.TranslateTransform(-ScrollSteps, 0);
-                }              
-            }
-            else if (args.KeyCode == Keys.Left && IsMouseOver)
-            {
-                if (!items[0].Visible) 
-                {
-                    foreach (var item in items)
-                        item.TranslateTransform(ScrollSteps, 0);
-                }               
-            }
-        }    
         #endregion
     }
 

@@ -1,4 +1,6 @@
-﻿namespace NoPasaranTD.Model
+﻿using NoPasaranTD.Data;
+
+namespace NoPasaranTD.Model
 {
     /// <summary>
     /// Model Klasse eines Ballon Objektes
@@ -25,7 +27,7 @@
         /// <summary>
         /// Die Stärke des Ballones (Abhängig vom Ballon Typen)
         /// </summary>
-        public uint Strength { get /* TODO: Zurgiff auf StaticInfo */; }
+        public uint Strength { get => StaticInfo.GetBallonStrength(Type); }
 
     }
 

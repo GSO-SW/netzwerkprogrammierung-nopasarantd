@@ -40,14 +40,6 @@ namespace NoPasaranTD.Engine.Visuals
     /// </summary>
     public class TowerItemContainer : ItemContainer<Tower>
     {
-        #region Constructor
-
-        public TowerItemContainer()
-        {
-            Engine.OnRender += DrawItem;         
-        }
-
-        #endregion
         #region Public Properties
 
         /// <summary>
@@ -82,27 +74,17 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public Image Content { get; set; }
 
-        /// <summary>
-        /// Ist der Container Sichtbar oder nicht
-        /// </summary>
-        public bool IsOpen
-        {
-            set
-            {
-                if (!value)
-                    Engine.OnRender -= DrawItem;
-                else
-                    Engine.OnRender += DrawItem;
-            }
-        }
+        #endregion
+        #region Private Methods
+
+        // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
+        private void PositionChanged()
+            => Visible = Position.X >= ParentBounds.X && Position.X + ItemSize.Width <= ParentBounds.X + ParentBounds.Width;
 
         #endregion
-        #region Private Members
+        #region Public Methods
 
-        #endregion
-        #region Private Methodes
-
-        private void DrawItem(Graphics g)
+        public override void Render(Graphics g)
         {
             // TODO: Ausehen auf Towerart spezialisieren
             if (Visible)
@@ -113,7 +95,7 @@ namespace NoPasaranTD.Engine.Visuals
                     g.FillRectangle(BackgroundBrush, Bounds);
                 //try { g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6); }
                 //catch (Exception) { }
-            }                              
+            }
         }
 
         /// <summary>
@@ -123,15 +105,6 @@ namespace NoPasaranTD.Engine.Visuals
         /// <param name="offY"></param>
         public override void TranslateTransform(int offX, int offY) =>
             Position = new Point(offX + Position.X, offY + Position.Y);
-
-        // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
-        private void PositionChanged()
-        {
-            if (Position.X >= ParentBounds.X && Position.X + ItemSize.Width <=  ParentBounds.X + ParentBounds.Width)
-                Visible = true;
-            else
-                Visible = false;
-        }
 
         #endregion
     }
