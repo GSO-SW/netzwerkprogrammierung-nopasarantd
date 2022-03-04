@@ -1,4 +1,6 @@
-﻿using NoPasaranTD.Model;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Model;
+using NoPasaranTD.Model.Towers;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -27,26 +29,15 @@ namespace NoPasaranTD.Engine.Visuals
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
             {
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
-                new TowerTest(),
+                new TowerCanon(),
             },            
         };
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
+        
+        private Tower selectedTower = null;
+        public Tower SelectedTower { get { return selectedTower; } set { selectedTower = value; SelectedTowerChanged(); } }
 
         public UILayout(Game gameObj)
         {
@@ -66,17 +57,27 @@ namespace NoPasaranTD.Engine.Visuals
 
             if (!game.IsTowerValidPosition(args.MovedObject))
                 return;
-        
-            if (args.Context is TowerTest)
-                game.AddTower(new TowerTest() { Hitbox = args.MovedObject });
+
+            if (args.Context != null)
+                game.AddTower((Tower)args.Context);
+             
             // TODO: Towers Spezifizeiren           
         }
 
         private void TowerBuildMenu_SelectionChanged()
         {
-            placingTowerDragDrop.Context = TowerBuildMenu.SelectedItem;
-            // TODO: Größe des Rechteckes auf TowerType spezifieren
-            placingTowerDragDrop.Start(TowerBuildMenu.SelectedItem.Hitbox);
+            Tower tower = null;
+
+            if (TowerBuildMenu.SelectedItem is TowerCanon)
+                tower = new TowerCanon();
+           
+            if (tower != null)
+            {
+                tower.Hitbox = new Rectangle(new Point(Engine.MouseX, Engine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
+                placingTowerDragDrop.Context = tower;
+                placingTowerDragDrop.Start(tower.Hitbox);
+            }
+            // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
 
         public void Update()
@@ -88,13 +89,20 @@ namespace NoPasaranTD.Engine.Visuals
         public void Render(Graphics g)
         {   
             TowerBuildMenu.Render(g);
+            DrawGameStats(g);
 
             // TODO: Testcode, ausgewählter Tower soll gerendert werden
             // unabhängig davon ob er bewegt wird oder nicht!
             // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
             // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
-            if (placingTowerDragDrop.IsMoving)
-                g.FillRectangle(Brushes.Red, ((Tower)placingTowerDragDrop.Context).Hitbox);
+            if (placingTowerDragDrop.Context != null)
+            {
+                if (placingTowerDragDrop.IsMoving)
+                {
+                    ((Tower)placingTowerDragDrop.Context).Hitbox = placingTowerDragDrop.MovedObject;
+                    ((Tower)placingTowerDragDrop.Context).Render(g);
+                }               
+            }         
         }
 
         public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
@@ -114,5 +122,18 @@ namespace NoPasaranTD.Engine.Visuals
 
         public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
 
+        private void SelectedTowerChanged()
+        {
+
+        }
+
+        void DrawGameStats(Graphics g)
+        {
+            g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);           
+            g.DrawString(game.Health + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
+            g.DrawString(game.CurrentRound + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
+        }
+
+        
     }
 }

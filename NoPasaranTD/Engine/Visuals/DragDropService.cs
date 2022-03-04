@@ -68,6 +68,7 @@ namespace NoPasaranTD.Engine.Visuals
         {
             IsMoving = false;
             DragDropFinish?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context });
+            Context = null;
         }
 
         /// <summary>

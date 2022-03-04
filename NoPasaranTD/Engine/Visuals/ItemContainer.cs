@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Model;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -74,6 +75,10 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public Image Content { get; set; }
 
+        public SolidBrush Foreground { get; set; } = new SolidBrush(Color.FromArgb(200, 14, 14, 14));
+
+        private StringFormat priceFormat = new StringFormat();
+
         #endregion
         #region Private Methods
 
@@ -95,6 +100,10 @@ namespace NoPasaranTD.Engine.Visuals
                     g.FillRectangle(BackgroundBrush, Bounds);
                 //try { g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6); }
                 //catch (Exception) { }
+
+                Size size = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font);
+                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(),GuiComponent.StandartHeader2Font,Foreground,Bounds.X + Bounds.Width/2 - size.Width/2,Bounds.Y+Bounds.Height-40);
+                
             }
         }
 
@@ -105,6 +114,11 @@ namespace NoPasaranTD.Engine.Visuals
         /// <param name="offY"></param>
         public override void TranslateTransform(int offX, int offY) =>
             Position = new Point(offX + Position.X, offY + Position.Y);
+
+        private void Init()
+        {
+            priceFormat.Alignment = StringAlignment.Center;
+        }
 
         #endregion
     }

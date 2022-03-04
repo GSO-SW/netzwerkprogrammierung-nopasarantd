@@ -28,10 +28,9 @@ namespace NoPasaranTD.Model.Towers
         double range;
         /// <param name="posX">centralized</param>
         /// <param name="posY">centralized</param>
-        public TowerCanon(int posX, int posY)
+        public TowerCanon()
         {
             sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
-            Hitbox = new Rectangle(posX - sizeX / 2, posY - sizeY / 2, sizeX, sizeY);
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple);
             penBlack = new Pen(Color.Black); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple, 2.3f);
@@ -45,6 +44,7 @@ namespace NoPasaranTD.Model.Towers
             sw = new Stopwatch();
             sw.Start();
         }
+
         public override void Render(Graphics g)
         {
             centerX = Hitbox.X + Hitbox.Width / 2; centerY = Hitbox.Y + Hitbox.Height / 2; sizeX = Hitbox.Width; sizeY = Hitbox.Height;
