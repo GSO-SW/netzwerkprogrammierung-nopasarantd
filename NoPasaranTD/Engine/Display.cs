@@ -2,7 +2,6 @@
 using NoPasaranTD.Model;
 using System;
 using System.Drawing;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -23,9 +22,6 @@ namespace NoPasaranTD.Engine
             map.Initialize();
             currentGame = new Game(map);
         }
-
-        private void Display_Load(object sender, EventArgs e)
-            => new Thread(GameLoop).Start();
 
         #region Mouse region
         /// <summary>
@@ -120,35 +116,24 @@ namespace NoPasaranTD.Engine
             g.ResetTransform();
         }
 
-        private void tmrRender_Tick(object sender, EventArgs e) => Refresh();
-        #endregion
-
-        private void GameLoop()
+        private void tmrGameUpdate_Tick(object sender, EventArgs e)
         {
-            ulong ticksUnhandled = 0;
-
-            int lastTick = Environment.TickCount;
-            while (Visible)
+            Engine.Update();
+            while (Engine.ElapsedTicks > 0)
             {
-                // TODO: Ändern zu jetzige Server-Ticks
-                int currTick = Environment.TickCount;
-                int deltaTick = currTick - lastTick;
-                ticksUnhandled += (ulong)deltaTick;
-                lastTick = currTick;
-
-                while (ticksUnhandled > 0)
-                {
-                    currentGame.Update();
-                    ticksUnhandled --;
-                }
-
-                int fps = Math.Max(1, 1000 / Engine.Framerate);
-                if (tmrRender.Interval != fps)
-                    Invoke((Action)(() => tmrRender.Interval = fps));
-
-                Engine.Sync();
+                currentGame.Update();
+                Engine.ElapsedTicks--;
             }
+
+            { // Framerate aktualisieren (falls geändert)
+                int fps = Math.Max(1, 1000 / Engine.Framerate);
+                if (tmrGameUpdate.Interval != fps)
+                    tmrGameUpdate.Interval = fps;
+            }
+
+            Refresh();
         }
+        #endregion
 
     }
 }

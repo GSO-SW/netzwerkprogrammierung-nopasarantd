@@ -29,14 +29,14 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.tmrRender = new System.Windows.Forms.Timer(this.components);
+            this.tmrGameUpdate = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
-            // tmrRender
+            // tmrGameUpdate
             // 
-            this.tmrRender.Enabled = true;
-            this.tmrRender.Interval = 1;
-            this.tmrRender.Tick += new System.EventHandler(this.tmrRender_Tick);
+            this.tmrGameUpdate.Enabled = true;
+            this.tmrGameUpdate.Interval = 1;
+            this.tmrGameUpdate.Tick += new System.EventHandler(this.tmrGameUpdate_Tick);
             // 
             // Display
             // 
@@ -48,7 +48,6 @@
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "NoPasaranTD";
-            this.Load += new System.EventHandler(this.Display_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Display_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Display_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Display_KeyUp);
@@ -62,7 +61,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Timer tmrRender;
+        private System.Windows.Forms.Timer tmrGameUpdate;
     }
 }
 
