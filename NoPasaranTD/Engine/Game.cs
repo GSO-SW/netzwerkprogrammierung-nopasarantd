@@ -29,15 +29,12 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
-			AddTower(new TowerCanon(350,200));
 			Money = 100;//StaticInfo.Money // TODO: Mit StaticInfo Verbinden
 		}
 
         #region Game logic region
         public void Update()
 		{
-			if (FindTargetForTower(0) == 0)
-				;
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this, FindTargetForTower(i));
@@ -72,11 +69,19 @@ namespace NoPasaranTD.Engine
 
 				Vector2D pos = CurrentMap.GetPathPosition(Balloons[i].PathPosition);
 				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 10);
-			}
+            }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
             UILayout.Render(g);
+
+			Font fontArial = new Font("Arial", 10, FontStyle.Regular);
+			g.DrawString(Money + " €", fontArial, new SolidBrush(Color.Black), 0, 0);
+
+            for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+            {
+				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
+            }
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);

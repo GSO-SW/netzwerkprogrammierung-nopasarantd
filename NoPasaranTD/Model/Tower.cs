@@ -41,10 +41,9 @@ namespace NoPasaranTD.Model
         /// <param name="posY">centralized</param>
         /// <param name="sizeX"></param>
         /// <param name="sizeY"></param>
-        public TowerCanon(int posX, int posY)
+        public TowerCanon()
         {
             sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
-            Hitbox = new Rectangle(posX-sizeX/2, posY-sizeY/2, sizeX, sizeY);
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple);
             penBlack = new Pen(Color.Black); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple, 2.3f);

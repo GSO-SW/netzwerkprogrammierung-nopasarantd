@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Model;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Model;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -27,7 +28,7 @@ namespace NoPasaranTD.Engine.Visuals
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
             {
-                new TowerTest(),
+                new TowerCanon(),
                 new TowerTest(),
                 new TowerTest(),
                 new TowerTest(),
@@ -48,8 +49,6 @@ namespace NoPasaranTD.Engine.Visuals
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
 
-        private List<Rectangle> placedTowers = new List<Rectangle>();
-
         public UILayout(Game gameObj)
         {
             TowerBuildMenu.DefineItems();
@@ -69,15 +68,14 @@ namespace NoPasaranTD.Engine.Visuals
             if (!game.IsTowerValidPosition(args.MovedObject))
                 return;
 
-            placedTowers.Add(args.MovedObject);
-
-            Tower placedTower = null;
-            
             if (args.Context is TowerTest)
-                placedTower = new TowerTest() { Hitbox = args.MovedObject };
+                game.AddTower(new TowerTest() { Hitbox = args.MovedObject });
+            else if (args.Context is TowerCanon && StaticInfo.GetTowerPrice(typeof(TowerCanon)) <= game.Money)
+            {
+                game.AddTower(new TowerCanon() { Hitbox = args.MovedObject });
+                game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerCanon));
+            }
             // TODO: Towers Spezifizeiren
-
-            game.AddTower(placedTower);
         }
 
         private void TowerBuildMenu_SelectionChanged()
@@ -106,8 +104,6 @@ namespace NoPasaranTD.Engine.Visuals
             // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
             if (placingTowerDragDrop.IsMoving)
                 g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
-            foreach (var item in placedTowers)
-                g.FillRectangle(Brushes.Blue, item);
         }
 
         public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
