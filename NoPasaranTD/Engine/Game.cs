@@ -30,7 +30,7 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
-			Money = 100;//StaticInfo.Money // TODO: Mit StaticInfo Verbinden
+			Money = 10000;//StaticInfo.Money // TODO: Mit StaticInfo Verbinden
 		}
 
         #region Game logic region

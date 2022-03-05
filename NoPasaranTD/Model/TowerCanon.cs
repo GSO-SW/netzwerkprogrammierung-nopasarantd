@@ -48,16 +48,18 @@ namespace NoPasaranTD.Model.Towers
         }
         public override void Render(Graphics g)
         {
+            
             centerX = Hitbox.X + Hitbox.Width / 2; centerY = Hitbox.Y + Hitbox.Height / 2; sizeX = Hitbox.Width; sizeY = Hitbox.Height;
 
             g.FillRectangle(bruhBlack, Hitbox);
             g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
+            
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - time + timeLastShot).ToString(), font, bruhLightGray, Hitbox.Location); 
 
             if (justShotSomeUglyAss)
             {
-                float factor = 1 - System.Math.Max((time - timeLastShot) / (delay * (float)shotAnimationLength), 0);
+                float factor = 1 - Math.Max(Math.Min((time - timeLastShot) / (delay * (float)shotAnimationLength), 1), 0);
                 float halfSizeX = sizeX * 0.5f, halfSizeY = sizeY * 0.5f;
                 if ( Math.Pow(
                     (centerX-lastBalloonPos.X) * (centerX - lastBalloonPos.X)
@@ -72,6 +74,7 @@ namespace NoPasaranTD.Model.Towers
 
         public override void Update(Game game, int targetIndex)
         {
+            
             time = sw.ElapsedMilliseconds;
 
             if (targetIndex != -1 && time > timeLastShot + delay)
