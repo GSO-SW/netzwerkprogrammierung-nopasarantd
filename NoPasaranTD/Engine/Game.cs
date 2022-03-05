@@ -24,6 +24,7 @@ namespace NoPasaranTD.Engine
 		public UILayout UILayout { get; }
 
 		public int Money { get; set; }
+		public int HealthPoints { get; set; }
 
 		public Game(Map map)
 		{
@@ -31,7 +32,8 @@ namespace NoPasaranTD.Engine
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
-			Money = StaticInfo.StartMoney; // TODO: Mit StaticInfo Verbinden
+			Money = StaticInfo.StartMoney;
+			HealthPoints = StaticInfo.StartHP;
 		}
 
         #region Game logic region
@@ -45,7 +47,10 @@ namespace NoPasaranTD.Engine
 			{ // Aktualisiere Ballons
 				Balloons[i].PathPosition += 0.075f * StaticInfo.GetBalloonVelocity(Balloons[i].Type);
 				if (Balloons[i].PathPosition >= CurrentMap.PathLength)
+				{
+					HealthPoints -= (int)Balloons[i].Strength;
 					Balloons.RemoveAt(i);
+				}
 			}
             UILayout.Update();
 
@@ -89,8 +94,9 @@ namespace NoPasaranTD.Engine
 
 			Font fontArial = new Font("Arial", 10, FontStyle.Regular);
 			g.DrawString(Money + " BTC", fontArial, new SolidBrush(Color.Black), 0, 0);
+			g.DrawString(HealthPoints + " Leben", fontArial, new SolidBrush(Color.Black), 0, 30);
 
-            for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
             {
 				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
             }
