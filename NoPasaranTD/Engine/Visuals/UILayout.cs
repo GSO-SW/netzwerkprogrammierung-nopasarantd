@@ -33,6 +33,11 @@ namespace NoPasaranTD.Engine.Visuals
             },            
         };
 
+        public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
+        {
+
+        };
+       
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
         
@@ -89,12 +94,14 @@ namespace NoPasaranTD.Engine.Visuals
         public void Render(Graphics g)
         {   
             TowerBuildMenu.Render(g);
+            TestButton.Render(g);
             DrawGameStats(g);
 
             // TODO: Testcode, ausgewählter Tower soll gerendert werden
             // unabhängig davon ob er bewegt wird oder nicht!
             // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
             // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
+            // TODO ÜBERARBEITET: Alpha in der Tower Render Methode nach validierung einstellen
             if (placingTowerDragDrop.Context != null)
             {
                 if (placingTowerDragDrop.IsMoving)

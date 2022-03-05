@@ -101,8 +101,9 @@ namespace NoPasaranTD.Engine.Visuals
                 //try { g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6); }
                 //catch (Exception) { }
 
-                Size size = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font);
-                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(),GuiComponent.StandartHeader2Font,Foreground,Bounds.X + Bounds.Width/2 - size.Width/2,Bounds.Y+Bounds.Height-40);
+                // Die Größe des angezeigten Preises
+                Size priceSize = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font);
+                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(),GuiComponent.StandartHeader2Font,Foreground,Bounds.X + Bounds.Width/2 - priceSize.Width/2,Bounds.Y+Bounds.Height- priceSize.Height-5);
                 
             }
         }
