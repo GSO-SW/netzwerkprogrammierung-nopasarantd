@@ -154,16 +154,18 @@ namespace NoPasaranTD.Engine
 		/// </summary>
 		/// <param name="index">Der index des Ballons</param>
 		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
-		public void DamageBalloon(int index, int damage)
+		public void DamageBalloon(int index, int damage, int indexTower)
 		{
 			if (Balloons[index].Type - damage > BalloonType.None)
 			{
 				Balloons[index].Type -= damage; // Aufaddieren des Geldes
 				Money += damage;
+				Towers[indexTower].NumberKills += (ulong)damage;
 			}
 			else
 			{
 				Money += (int)Balloons[index].Strength; // Nut für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				Towers[indexTower].NumberKills += (ulong)Balloons[index].Strength;
 				Balloons.RemoveAt(index);
 			}
 		}

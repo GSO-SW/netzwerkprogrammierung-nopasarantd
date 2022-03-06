@@ -25,7 +25,7 @@ namespace NoPasaranTD.Engine.Visuals
             ItemSize = new System.Drawing.Size(100, 130),
             Position = new System.Drawing.Point(20, Engine.RenderHeight - 150),
             ContainerSize = new System.Drawing.Size(Engine.RenderWidth - 40, 130),
-            BackgroundColor = Brushes.SlateGray,
+            BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
             {
@@ -35,9 +35,14 @@ namespace NoPasaranTD.Engine.Visuals
 
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-
+            Bounds = new System.Drawing.Rectangle(Engine.RenderWidth-250,5,240,400),        
+            Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
+            ButtonFont = GuiComponent.StandartText1Font,
+            Visible = false,
+            Foreground = Brushes.Black,
+            TextFont = GuiComponent.StandartText1Font,
         };
-       
+
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
         
@@ -47,6 +52,7 @@ namespace NoPasaranTD.Engine.Visuals
         public UILayout(Game gameObj)
         {
             TowerBuildMenu.DefineItems();
+            TowerDetailsContainer.Init(gameObj);
 
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
@@ -92,9 +98,10 @@ namespace NoPasaranTD.Engine.Visuals
         }
 
         public void Render(Graphics g)
-        {   
+        {
+            TowerDetailsContainer.Render(g);   
             TowerBuildMenu.Render(g);
-            TestButton.Render(g);
+
             DrawGameStats(g);
 
             // TODO: Testcode, ausgewählter Tower soll gerendert werden
@@ -109,7 +116,8 @@ namespace NoPasaranTD.Engine.Visuals
                     ((Tower)placingTowerDragDrop.Context).Hitbox = placingTowerDragDrop.MovedObject;
                     ((Tower)placingTowerDragDrop.Context).Render(g);
                 }               
-            }         
+            }  
+            
         }
 
         public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
@@ -124,7 +132,18 @@ namespace NoPasaranTD.Engine.Visuals
         public void MouseDown(MouseEventArgs e)
         {
             TowerBuildMenu.MouseDown(e);
+            TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
+
+            foreach (var item in game.Towers)
+            {
+                if (item.Hitbox.Contains(e.Location))
+                {
+                    SelectedTower = item;
+                    TowerDetailsContainer.Visible = true;
+                    TowerDetailsContainer.Context = item;
+                }
+            }
         }
 
         public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
@@ -139,8 +158,6 @@ namespace NoPasaranTD.Engine.Visuals
             g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);           
             g.DrawString(game.Health + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
             g.DrawString(game.CurrentRound + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
-        }
-
-        
+        }        
     }
 }

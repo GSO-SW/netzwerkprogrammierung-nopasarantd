@@ -30,6 +30,8 @@ namespace NoPasaranTD.Engine.Visuals
             Bounds = bounds;
         }
 
+        public ButtonContainer() { }
+
         public override void MouseDown(MouseEventArgs e)
         {
             if (Bounds.Contains(e.Location))
@@ -45,7 +47,7 @@ namespace NoPasaranTD.Engine.Visuals
             else
             {
                 Color borderColor = (BorderBrush as SolidBrush).Color;
-                g.FillRectangle(new SolidBrush(Color.FromArgb(255,borderColor.R/2,borderColor.G/2,borderColor.B/2)), Bounds);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(255,(int)(borderColor.R/1.5), (int)(borderColor.G/1.5), (int)(borderColor.B/1.5))), Bounds);
             }
                 
             g.FillRectangle(Background, innerBackground);
@@ -54,7 +56,7 @@ namespace NoPasaranTD.Engine.Visuals
             if (Content is string)
             {
                 Size fontSize = TextRenderer.MeasureText(Content as string, StringFont);
-                g.DrawString(Content as string, StringFont, Foreground, new PointF(Bounds.X + Bounds.Width / 2 - fontSize.Width / 2, Bounds.Y + Bounds.Height / 2 - fontSize.Height / 2));
+                g.DrawString(Content as string, StringFont, Foreground, new PointF(innerBackground.X + innerBackground.Width / 2 - fontSize.Width / 2, innerBackground.Y + innerBackground.Height / 2 - fontSize.Height / 2));
             }
             else if (Content is Image) // Zeichnet ein Bild wenn die Content Property ein Image ist
             {

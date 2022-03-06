@@ -36,6 +36,7 @@ namespace NoPasaranTD.Engine.Visuals
 
         public static Font StandartHeader1Font = new Font("Arial",24);
         public static Font StandartHeader2Font = new Font("Arial", 16,FontStyle.Bold,GraphicsUnit.Point);
+        public static Font StandartText1Font = new Font("Arial", 11, FontStyle.Regular, GraphicsUnit.Point);
 
     }
 }

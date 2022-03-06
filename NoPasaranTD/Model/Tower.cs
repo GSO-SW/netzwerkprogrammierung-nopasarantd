@@ -20,6 +20,7 @@ namespace NoPasaranTD.Model
         public uint Strength { get => StaticInfo.GetTowerDamage(GetType()); }
         public uint Delay { get => StaticInfo.GetTowerDelay(GetType()); }
         public double Range { get => StaticInfo.GetTowerRange(GetType()); }
+        public ulong NumberKills { get; set; }
         
         public abstract void Render(Graphics g);
         public abstract void Update(Game game, int targetIndex);
