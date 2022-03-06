@@ -10,36 +10,44 @@ namespace NoPasaranMS
 {
 	static class UDPHolePunching
 	{
-		public static void Connect(List<Socket> tcpClients, int port)
+		public static void Connect(List<Socket> clientTcpSockets, int port)
 		{
 			try
 			{
-				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending 'StartP2P' to {new StringBuilder().AppendJoin(", ", tcpClients.Select(x => x.RemoteEndPoint))}");
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending 'StartP2P' to {new StringBuilder().AppendJoin(", ", clientTcpSockets.Select(x => x.RemoteEndPoint))}");
+				// setup local udp
 				var localEndpoint = new IPEndPoint(IPAddress.Any, port);
-				using var udp = new UdpClient(port);
-				for (int i = 0; i < tcpClients.Count; i++)
-					tcpClients[i].Send(Encoding.ASCII.GetBytes("StartP2P#" + port + '|' + i));
-				var clientEndpoints = new IPEndPoint[tcpClients.Count];
+				using var serverUdpSocket = new UdpClient(port);
+				// each client gets send an id over tcp and sends it back over udp
+				// send each client the above port and their id
+				for (int i = 0; i < clientTcpSockets.Count; i++)
+					clientTcpSockets[i].Send(Encoding.ASCII.GetBytes("StartP2P#" + port + '|' + i));
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] receiving endpoints");
-				for (int i = 0; i < tcpClients.Count; i++)
+				// receive hello messages from clients and save their endpoints by id
+				var clientUdpEndpoints = new IPEndPoint[clientTcpSockets.Count];
+				for (int i = 0; i < clientTcpSockets.Count; i++)
 				{
 					var ep = new IPEndPoint(0, 0);
-					int id = int.Parse(Encoding.ASCII.GetString(udp.Receive(ref ep)));
-					clientEndpoints[id] = ep;
+					int id = int.Parse(Encoding.ASCII.GetString(serverUdpSocket.Receive(ref ep)));
+					clientUdpEndpoints[id] = ep;
 				}
-				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] received: {new StringBuilder().AppendJoin<IPEndPoint>(", ", clientEndpoints)}");
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] received: {new StringBuilder().AppendJoin<IPEndPoint>(", ", clientUdpEndpoints)}");
 				Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] sending out endpoints");
-				for (int i = 0; i < tcpClients.Count; i++)
+
+				for (int i = 0; i < clientTcpSockets.Count; i++)
 				{
+					// pack endpoints into string "ep1|ep2|ep3"
 					var sb = new StringBuilder();
-					for (int j = 0; j < clientEndpoints.Length; j++)
+					for (int j = 0; j < clientUdpEndpoints.Length; j++)
 						if (i != j)
-							sb.Append(clientEndpoints[j]).Append('|');
+							sb.Append(clientUdpEndpoints[j]).Append('|');
 					sb.Remove(sb.Length - 1, 1); // remove trailing '|'
-					tcpClients[i].Send(Encoding.ASCII.GetBytes(sb.ToString()));
+					// send out the string
+					clientTcpSockets[i].Send(Encoding.ASCII.GetBytes(sb.ToString()));
 					Console.Write('.');
 				}
-				udp.Close();
+				// and we're done
+				serverUdpSocket.Close();
 				Console.WriteLine("Done");
 			}
 			catch (Exception e)
@@ -49,7 +57,7 @@ namespace NoPasaranMS
 			}
 			finally
 			{
-				foreach (var socket in tcpClients)
+				foreach (var socket in clientTcpSockets)
 					socket.Close();
 			}
 		}
