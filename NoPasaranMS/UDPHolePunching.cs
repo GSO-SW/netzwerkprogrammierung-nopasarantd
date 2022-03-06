@@ -25,7 +25,7 @@ namespace NoPasaranMS
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] receiving endpoints");
 				// receive hello messages from clients and save their endpoints by id
 				var clientUdpEndpoints = new IPEndPoint[clientTcpSockets.Count];
-				for (int i = 0; i < clientTcpSockets.Count; i++)
+				while (clientUdpEndpoints.Any(ep => ep == null))
 				{
 					var ep = new IPEndPoint(0, 0);
 					int id = int.Parse(Encoding.ASCII.GetString(serverUdpSocket.Receive(ref ep)));
