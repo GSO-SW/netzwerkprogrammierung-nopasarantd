@@ -1,7 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -33,6 +32,9 @@ namespace NoPasaranTD.Engine.Visuals
             },            
         };
 
+        /// <summary>
+        /// Die Übersicht der Daten des ausgewählten Towers
+        /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
             Bounds = new System.Drawing.Rectangle(Engine.RenderWidth-250,5,240,400),        
@@ -47,7 +49,10 @@ namespace NoPasaranTD.Engine.Visuals
         private DragDropService placingTowerDragDrop = new DragDropService();
         
         private Tower selectedTower = null;
-        public Tower SelectedTower { get { return selectedTower; } set { selectedTower = value; SelectedTowerChanged(); } }
+        /// <summary>
+        /// Der Ausgweählte Tower. Wird beim draufklicken zugewiesen
+        /// </summary>
+        public Tower SelectedTower { get { return selectedTower; } set { selectedTower = value; } }
 
         public UILayout(Game gameObj)
         {
@@ -148,15 +153,13 @@ namespace NoPasaranTD.Engine.Visuals
 
         public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
 
-        private void SelectedTowerChanged()
-        {
-
-        }
-
         void DrawGameStats(Graphics g)
         {
-            g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);           
+            // Die Kontostandanzeige des derzeitigen Spieles
+            g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
+            // Die Lebensanzeige des derzeitigen Spieles
             g.DrawString(game.Health + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
+            // Die Zahl der derzeitigen Runde
             g.DrawString(game.CurrentRound + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
         }        
     }
