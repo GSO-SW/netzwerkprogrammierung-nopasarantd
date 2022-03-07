@@ -62,7 +62,7 @@ namespace NoPasaranTD.Engine.Visuals
                 // Anzeige des Balloon Name
                 g.DrawString(Context.ToString(), GuiComponent.StandartHeader2Font, Foreground, closeButton.Bounds.X + closeButton.Bounds.Width + 5, Bounds.Y + 5);
                 // Anzeige der getroffenen Balloons
-                g.DrawString("Number damaged Baloons: " + Context.NumberKills, TextFont, Foreground, Bounds.X + 5, Bounds.Y + 40);
+                g.DrawString("Layers destroyed: " + Context.NumberKills, TextFont, Foreground, Bounds.X + 5, Bounds.Y + 40);
                 // Anzeige der Range 
                 g.DrawString("Range:  " + Context.Range, TextFont, Foreground, Bounds.X + 5, Bounds.Y + 40 + normalTextHeight + 5);
                 // Anzeige der Stärke

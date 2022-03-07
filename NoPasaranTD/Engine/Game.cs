@@ -92,10 +92,6 @@ namespace NoPasaranTD.Engine
 				Towers[i].Render(g);
             UILayout.Render(g);
 
-			Font fontArial = new Font("Arial", 10, FontStyle.Regular);
-			g.DrawString(Money + " BTC", fontArial, new SolidBrush(Color.Black), 0, 0);
-			g.DrawString(HealthPoints + " Leben", fontArial, new SolidBrush(Color.Black), 0, 30);
-
 			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
             {
 				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
