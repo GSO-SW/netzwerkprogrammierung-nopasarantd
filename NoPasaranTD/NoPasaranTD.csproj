@@ -61,9 +61,11 @@
       <DependentUpon>Display.cs</DependentUpon>
     </Compile>
     <Compile Include="Engine\Visuals\BuildMenuContainer.cs" />
+    <Compile Include="Engine\Visuals\ButtonContainer.cs" />
     <Compile Include="Engine\Visuals\DragDropService.cs" />
     <Compile Include="Engine\Visuals\GuiComponent.cs" />
     <Compile Include="Engine\Visuals\ItemContainer.cs" />
+    <Compile Include="Engine\Visuals\TowerDetailsContainer.cs" />
     <Compile Include="Engine\Visuals\UILayout.cs" />
     <Compile Include="Engine\Game.cs" />
     <Compile Include="Model\Balloon.cs" />

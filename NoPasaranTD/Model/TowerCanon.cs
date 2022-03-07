@@ -27,6 +27,7 @@ namespace NoPasaranTD.Model.Towers
         uint delay;
         uint strength;
         double range;
+
         /// <param name="posX">centralized</param>
         /// <param name="posY">centralized</param>
         public TowerCanon()
@@ -46,6 +47,7 @@ namespace NoPasaranTD.Model.Towers
             sw = new Stopwatch();
             sw.Start();
         }
+
         public override void Render(Graphics g)
         {
             centerX = Hitbox.X + Hitbox.Width / 2; centerY = Hitbox.Y + Hitbox.Height / 2; sizeX = Hitbox.Width; sizeY = Hitbox.Height;
@@ -80,9 +82,11 @@ namespace NoPasaranTD.Model.Towers
                 lastBaloonIndex = targetIndex;
                 justShotSomeUglyAss = true;
                 lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
+                game.DamageBalloon(targetIndex, (int)strength, game.Towers.IndexOf(this)); // TODO: uint to int could be an oof conversion
             }
             if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
         }
+
+        public override string ToString() => "Canon";
     }
 }
