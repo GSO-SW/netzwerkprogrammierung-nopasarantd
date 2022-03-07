@@ -116,8 +116,14 @@ namespace NoPasaranTD.Engine.Visuals
             // unabhängig davon ob er bewegt wird oder nicht!
             // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
             // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
-            if (placingTowerDragDrop.IsMoving)
-                g.FillRectangle(Brushes.Red, placingTowerDragDrop.MovedObject);
+            if (placingTowerDragDrop.Context != null)
+            {
+                if (placingTowerDragDrop.IsMoving)
+                {
+                    ((Tower)placingTowerDragDrop.Context).Hitbox = placingTowerDragDrop.MovedObject;
+                    ((Tower)placingTowerDragDrop.Context).Render(g);
+                }
+            }
         }
 
         public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
@@ -153,9 +159,9 @@ namespace NoPasaranTD.Engine.Visuals
             // Die Kontostandanzeige des derzeitigen Spieles
             g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
             // Die Lebensanzeige des derzeitigen Spieles
-            g.DrawString(game.Health + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
+            g.DrawString("x" + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
             // Die Zahl der derzeitigen Runde
-            g.DrawString(game.CurrentRound + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
+            g.DrawString("x" + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
         }        
     }
 }
