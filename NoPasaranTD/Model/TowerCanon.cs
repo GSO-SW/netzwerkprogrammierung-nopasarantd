@@ -40,8 +40,8 @@ namespace NoPasaranTD.Model.Towers
         private float aimAngle = 0; // Nächster Rotationswinkel des Geschützes der Kanone
         private ulong ticks = 0; // Anzahl vergangener Ticks
 
-        private Matrix currentTransform; // Derzeitige Transformationsmatrix
-        private Matrix rotatedTransform = new Matrix(); // Rotierte Transformationsmatrix
+        
+        //private Matrix rotatedTransform = new Matrix(); // Rotierte Transformationsmatrix
 
         /// <param name="posX">centralized</param>
         /// <param name="posY">centralized</param>
@@ -72,23 +72,19 @@ namespace NoPasaranTD.Model.Towers
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - time + timeLastShot).ToString(), font, bruhLightGray, Hitbox.Location); 
 
+           
             RotateBarrel(lastBalloonPos);
+            
+            barrel = new Rectangle(- 5, - 5, 10, 50);
+            Matrix currentTransform = g.Transform; // Derzeitige Transformationsmatrix
 
-            barrel = new Rectangle(Hitbox.X + Hitbox.Width / 2 - 5, Hitbox.Y + Hitbox.Height / 2 - 5, 10, 50);
-            shootPosition = new Point(barrel.X + barrel.Width / 2, barrel.Y + barrel.Height);
-            currentTransform = g.Transform;
-
-            rotatedTransform.Reset(); // Reset der Rotationsmatrix
-            rotatedTransform.RotateAt(currentAngle, new PointF(barrel.X + barrel.Width / 2, barrel.Y)); // Rotationsmatrix wird auf den derzeitigen Winkel gesetzt
-            g.Transform = rotatedTransform;
+            g.TranslateTransform(centerX, centerY);
+            g.RotateTransform(currentAngle); // Rotationsmatrix wird auf den derzeitigen Winkel gesetzt
             // Die genutzte Transformationsmatrix ist die Rotationsmatix
-
             g.FillRectangle(bruhRed, barrel);
-            rotatedTransform.TransformPoints(new Point[] { shootPosition });
 
             // Die Originalmatrix wird wieder angewandt
             g.Transform = currentTransform;
-
             if (justShotSomeUglyAss)
             {
                 float factor = 1 - System.Math.Max((time - timeLastShot) / (delay * (float)shotAnimationLength), 0);
@@ -106,22 +102,26 @@ namespace NoPasaranTD.Model.Towers
 
         public override void Update(Game game, int targetIndex)
         {
+            ticks++;
             time = sw.ElapsedMilliseconds;
 
-            if (targetIndex != -1 && time > timeLastShot + delay)
+            if (targetIndex != -1)
             {
-                timeLastShot = time;
-                lastBaloonIndex = targetIndex;
-                justShotSomeUglyAss = true;
                 lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                game.DamageBalloon(targetIndex, (int)strength, game.Towers.IndexOf(this)); // TODO: uint to int could be an oof conversion
+                if (time > timeLastShot + delay)
+                {
+                    timeLastShot = time;
+                    lastBaloonIndex = targetIndex;
+                    justShotSomeUglyAss = true;                    
+                    game.DamageBalloon(targetIndex, (int)strength, game.Towers.IndexOf(this)); // TODO: uint to int could be an oof conversion
+                }               
             }
             if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
 
             if (currentAngle < aimAngle && ticks % 10 == 1 && aimAngle - currentAngle > 5)
-                currentAngle += 1.5F;
+                currentAngle += 2.5F;
             else if (currentAngle > aimAngle && ticks % 10 == 1 && currentAngle - aimAngle > 5)
-                currentAngle -= 1.5F;
+                currentAngle -= 2.5F;
         }
 
         private void RotateBarrel(Vector2D targetPosition)
