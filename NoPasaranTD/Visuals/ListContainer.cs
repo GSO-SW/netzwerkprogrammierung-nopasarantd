@@ -185,16 +185,47 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseWheel(MouseEventArgs e)
         {
-            int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
-            int factorY = Orientation == Orientation.Vertical ? 1 : 0;
+            if (items.Count == 0) return;
+
+            bool firstOutOfBounds, lastOutOfBounds;
+            { // Definiere ob erster oder letzter außerhalb des bereiches ist
+                ItemContainer<T> firstItem = items[0];
+                ItemContainer<T> lastItem = items[items.Count - 1];
+                if (Orientation == Orientation.Horizontal)
+                { // Check für horizontales Scrolling
+                    firstOutOfBounds = firstItem.Position.X < Bounds.X + Margin
+                        || firstItem.Position.X + firstItem.ItemSize.Width > Bounds.X + Bounds.Width - Margin;
+                    lastOutOfBounds = lastItem.Position.X < Bounds.X + Margin
+                        || lastItem.Position.X + lastItem.ItemSize.Width > Bounds.X + Bounds.Width - Margin;
+                }
+                else
+                { // Check für vertikales Scrolling
+                    firstOutOfBounds = firstItem.Position.Y < Bounds.Y + Margin
+                        || firstItem.Position.Y + firstItem.ItemSize.Height > Bounds.Y + Bounds.Height - Margin;
+                    lastOutOfBounds = lastItem.Position.Y < Bounds.Y + Margin
+                        || lastItem.Position.Y + lastItem.ItemSize.Height > Bounds.Y + Bounds.Height - Margin;
+                }
+            }
+
+            // Falls keines der Items außerhalb des sichtbereiches ist, soll nicht gescrollt werden
+            if (!firstOutOfBounds && !lastOutOfBounds) return;
 
             int delta = e.Delta < 0 ? -1 : 1;
+
+            // Falls nach oben gescrollt werden soll, aber das erste item nicht außerhalb des sichtbereiches ist, soll nicht gescrollt werden
+            if (delta > 0 && !firstOutOfBounds) return;
+
+            // Falls nach unten gescrollt werden soll, aber das letzte item nicht außerhalb des sichtbereiches ist, soll nicht gescrollt werden
+            if (delta < 0 && !lastOutOfBounds) return;
+
+            int scrollX = Orientation == Orientation.Horizontal ? 1 : 0;
+            int scrollY = Orientation == Orientation.Vertical ? 1 : 0;
             for (int i = items.Count - 1; i >= 0; i--)
             {
                 items[i].MouseWheel(e);
                 items[i].TranslateTransform(
-                    delta * ScrollSteps * factorX,
-                    delta * ScrollSteps * factorY
+                    delta * ScrollSteps * scrollX,
+                    delta * ScrollSteps * scrollY
                 );
             }
         }
