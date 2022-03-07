@@ -22,7 +22,8 @@ namespace NoPasaranTD.Visuals.Ingame
         public ListContainer<Tower, TowerItemContainer> TowerBuildMenu { get; set; } = new ListContainer<Tower, TowerItemContainer>()
         {
             Margin = 10,
-            ItemSize = new System.Drawing.Size(100, 130),
+            Orientation = Orientation.Horizontal,
+            ItemSize = new System.Drawing.Size(100, 110),
             Position = new System.Drawing.Point(20, StaticEngine.RenderHeight - 150),
             ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 40, 130),
             BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),

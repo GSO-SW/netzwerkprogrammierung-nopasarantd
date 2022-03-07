@@ -45,9 +45,6 @@ namespace NoPasaranTD.Visuals.Ingame
         public Image Content { get; set; }
 
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.FromArgb(200, 14, 14, 14));
-
-        private StringFormat priceFormat = new StringFormat();
-
         #endregion
         #region Private Methods
 
@@ -84,12 +81,6 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <param name="offY"></param>
         public override void TranslateTransform(int offX, int offY) =>
             Position = new Point(offX + Position.X, offY + Position.Y);
-
-        private void Init()
-        {
-            priceFormat.Alignment = StringAlignment.Center;
-        }
-
         #endregion
     }
 }

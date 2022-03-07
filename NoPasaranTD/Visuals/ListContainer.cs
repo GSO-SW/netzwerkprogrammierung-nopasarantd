@@ -32,10 +32,14 @@ namespace NoPasaranTD.Visuals
 
         private List<ItemContainer<T>> items = new List<ItemContainer<T>>(); // Liste von allen Visuellen Item Containern
         private ItemContainer<T> selectedItem; // Der derzeitige ausgewählte Item Container
-             
+
         #endregion
 
         #region Public Properties
+        /// <summary>
+        /// Orientation beim scrollen
+        /// </summary>
+        public Orientation Orientation { get; set; } = Orientation.Vertical;
 
         /// <summary>
         /// Die Größe des Containers
@@ -100,6 +104,10 @@ namespace NoPasaranTD.Visuals
         public void DefineItems()
         {
             items.Clear();
+
+            int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
+            int factorY = Orientation == Orientation.Vertical ? 1 : 0;
+
             for (int i = 0; i < Items.Count; i++)
             {
                 // Platziert für jedes Model Objekt einen eigenen Container im List-Container
@@ -107,8 +115,12 @@ namespace NoPasaranTD.Visuals
 
                 item.ParentBounds = Bounds;
                 item.DataContext = Items[i];
-                item.ItemSize = new Size(ItemSize.Width, ItemSize.Height - Margin*2);
-                item.Position = new Point(Position.X + i*(ItemSize.Width + Margin) + Margin, Position.Y + Margin);   
+                item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
+
+                item.Position = new Point(
+                    Position.X + i*(ItemSize.Width + Margin)*factorX + Margin,
+                    Position.Y + i*(ItemSize.Height + Margin)*factorY + Margin
+                );
                 
                 items.Add(item);
             }                                
@@ -136,21 +148,7 @@ namespace NoPasaranTD.Visuals
         public override void KeyDown(KeyEventArgs args)
         {
             for (int i = items.Count - 1; i >= 0; i--)
-            {
                 items[i].KeyDown(args);
-
-                // TODO: Mouse Wheel benutzen und Scollbar implementieren
-                if (args.KeyCode == Keys.Right && IsMouseOver)
-                {
-                    if (!items[items.Count - 1].Visible)
-                        items[i].TranslateTransform(-ScrollSteps, 0);
-                }
-                else if (args.KeyCode == Keys.Left && IsMouseOver)
-                {
-                    if (!items[0].Visible)
-                        items[i].TranslateTransform(ScrollSteps, 0);
-                }
-            }
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -176,6 +174,22 @@ namespace NoPasaranTD.Visuals
         {
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseMove(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
+            int factorY = Orientation == Orientation.Vertical ? 1 : 0;
+
+            int delta = e.Delta < 0 ? -1 : 1;
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                items[i].MouseWheel(e);
+                items[i].TranslateTransform(
+                    delta * ScrollSteps * factorX,
+                    delta * ScrollSteps * factorY
+                );
+            }
         }
 
         #endregion

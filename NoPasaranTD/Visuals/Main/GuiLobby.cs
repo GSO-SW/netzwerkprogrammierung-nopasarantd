@@ -12,8 +12,8 @@ namespace NoPasaranTD.Visuals.Main
 
         private static readonly SolidBrush BACKGROUND_COLOR = new SolidBrush(Color.FromArgb(75, Color.Black));
 
+        private ListContainer<object, LobbyItemContainer> lobbyList { get; }
         private ButtonContainer btnCreateLobby { get; }
-        private ButtonContainer btnJoinLobby { get; }
 
         private Game backgroundGame;
         public GuiLobby()
@@ -34,11 +34,36 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(435, 65), towerSize) });
             }
 
-            btnCreateLobby = CreateButton("Create Lobby", new Rectangle(25, StaticEngine.RenderHeight - 95, 125, 30));
-            btnJoinLobby = CreateButton("Join Lobby", new Rectangle(25, StaticEngine.RenderHeight - 55, 125, 30));
+            lobbyList = new ListContainer<object, LobbyItemContainer>()
+            {
+                Margin = 10,
+                ItemSize = new Size((int)(StaticEngine.RenderWidth / 1.5f) - 20, 100),
+
+                Position = new Point(StaticEngine.RenderWidth / 6, StaticEngine.RenderHeight / 6 - 20),
+                ContainerSize = new Size((int)(StaticEngine.RenderWidth / 1.5f), (int)(StaticEngine.RenderHeight / 1.5f)),
+                BackgroundColor = new SolidBrush(Color.FromArgb(225, Color.Gray)),
+
+                Items = new NotifyCollection<object>()
+            };
+
+            for(int i = 0; i < 5; i++)
+                lobbyList.Items.Add(i);
+            lobbyList.DefineItems();
+
+            btnCreateLobby = CreateButton("Create Lobby", new Rectangle(
+                lobbyList.Position.X + lobbyList.ContainerSize.Width - 150, 
+                lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5, 
+                150, 30
+            ));
+
+            btnCreateLobby.ButtonClicked += () => Program.LoadGame("test2");
         }
 
-        public override void Update() => backgroundGame.Update();
+        public override void Update()
+        {
+            backgroundGame.Update();
+            lobbyList.Update();
+        }
 
         public override void Render(Graphics g)
         {
@@ -48,22 +73,45 @@ namespace NoPasaranTD.Visuals.Main
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
 
             btnCreateLobby.Render(g);
-            btnJoinLobby.Render(g);
+            lobbyList.Render(g);
         }
 
-        public override void KeyUp(KeyEventArgs e) => backgroundGame.KeyUp(e);
-        public override void KeyDown(KeyEventArgs e) => backgroundGame.KeyDown(e);
+        public override void KeyUp(KeyEventArgs e)
+        {
+            backgroundGame.KeyUp(e);
+            lobbyList.KeyUp(e);
+        }
 
-        public override void MouseUp(MouseEventArgs e) => backgroundGame.MouseUp(e);
+        public override void KeyDown(KeyEventArgs e)
+        {
+            backgroundGame.KeyDown(e);
+            lobbyList.KeyDown(e);
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            backgroundGame.MouseUp(e);
+            lobbyList.MouseUp(e);
+        }
+
         public override void MouseDown(MouseEventArgs e)
         {
             backgroundGame.MouseDown(e);
             btnCreateLobby.MouseDown(e);
-            btnJoinLobby.MouseDown(e);
+            lobbyList.MouseDown(e);
         }
 
-        public override void MouseMove(MouseEventArgs e) => backgroundGame.MouseMove(e);
-        public override void MouseWheel(MouseEventArgs e) => backgroundGame.MouseWheel(e);
+        public override void MouseMove(MouseEventArgs e)
+        {
+            backgroundGame.MouseMove(e);
+            lobbyList.MouseMove(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            backgroundGame.MouseWheel(e);
+            lobbyList.MouseWheel(e);
+        }
 
         private static ButtonContainer CreateButton(string text, Rectangle bounds)
         {
