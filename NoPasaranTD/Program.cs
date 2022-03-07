@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Windows.Forms;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Visuals;
 
 namespace NoPasaranTD
 {
     internal static class Program
     {
+        private static StaticDisplay display;
+
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
@@ -14,7 +17,17 @@ namespace NoPasaranTD
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new StaticDisplay());
+            {
+                display = new StaticDisplay();
+                display.LoadGame(null);
+            }
+            Application.Run(display);
         }
+
+        public static void LoadGame(string mapFile)
+            => display.LoadGame(mapFile);
+
+        public static void LoadScreen(GuiComponent screen)
+            => display.LoadScreen(screen);
     }
 }

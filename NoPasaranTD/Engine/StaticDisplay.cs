@@ -1,7 +1,7 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
 using NoPasaranTD.Visuals;
-using NoPasaranTD.Visuals.Screen;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -15,10 +15,7 @@ namespace NoPasaranTD.Engine
         private Game currentGame;
 
         public StaticDisplay()
-        {
-            InitializeComponent();
-            LoadGame(null);
-        }
+            => InitializeComponent();
 
         public void LoadGame(string mapFile)
         {

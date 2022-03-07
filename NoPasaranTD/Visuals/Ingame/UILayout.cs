@@ -12,7 +12,7 @@ namespace NoPasaranTD.Visuals.Ingame
     /// Das UI Layout innerhalb eines Gameplays </br>
     /// Enthält: Tower Baumenü, Tower Platzierung 
     /// </summary>
-    public class UILayout
+    public class UILayout : GuiComponent
     {
         // Game instanz in dem das UI Layout zu finden ist
         private Game game;
@@ -100,14 +100,16 @@ namespace NoPasaranTD.Visuals.Ingame
             // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
 
-        public void Update()
+        public override void Update()
         {
+            if (!Active) return;
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
         }
 
-        public void Render(Graphics g)
+        public override void Render(Graphics g)
         {
+            if (!Visible) return;
             TowerDetailsContainer.Render(g);   
             TowerBuildMenu.Render(g);
 
@@ -127,17 +129,27 @@ namespace NoPasaranTD.Visuals.Ingame
             }
         }
 
-        public void KeyUp(KeyEventArgs e) => TowerBuildMenu.KeyUp(e);
-        public void KeyDown(KeyEventArgs args) => TowerBuildMenu.KeyDown(args);
-
-        public void MouseUp(MouseEventArgs e)
+        public override void KeyUp(KeyEventArgs e)
         {
+            if(Active) TowerBuildMenu.KeyUp(e);
+        }
+
+        public override void KeyDown(KeyEventArgs args)
+        {
+            if(Active)
+                TowerBuildMenu.KeyDown(args);
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            if (!Active) return;
             TowerBuildMenu.MouseUp(e);
             placingTowerDragDrop.MouseUp(e);
         }
 
-        public void MouseDown(MouseEventArgs e)
+        public override void MouseDown(MouseEventArgs e)
         {
+            if (!Active) return;
             TowerBuildMenu.MouseDown(e);
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
@@ -153,8 +165,17 @@ namespace NoPasaranTD.Visuals.Ingame
             }
         }
 
-        public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
-        public void MouseWheel(MouseEventArgs e) => TowerBuildMenu.MouseWheel(e);
+        public override void MouseMove(MouseEventArgs e)
+        {
+            if(Active)
+                TowerBuildMenu.MouseMove(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            if(Active)
+                TowerBuildMenu.MouseWheel(e);
+        }
 
         void DrawGameStats(Graphics g)
         {
