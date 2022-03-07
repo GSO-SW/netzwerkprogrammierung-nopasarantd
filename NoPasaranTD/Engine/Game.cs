@@ -41,7 +41,7 @@ namespace NoPasaranTD.Engine
 		{
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
-				Towers[i].Update(this, FindTargetForTower(i));
+				Towers[i].Update(this, i);
 
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Aktualisiere Ballons
@@ -70,7 +70,12 @@ namespace NoPasaranTD.Engine
 				g.Transform = m;
             }
 
-            for (int i = Balloons.Count - 1; i >= 0; i--)
+			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+			{
+				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
+			}
+
+			for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
 				Brush brush;
 				switch (Balloons[i].Type)
@@ -95,11 +100,6 @@ namespace NoPasaranTD.Engine
 			Font fontArial = new Font("Arial", 10, FontStyle.Regular);
 			g.DrawString(Money + " BTC", fontArial, new SolidBrush(Color.Black), 0, 0);
 			g.DrawString(HealthPoints + " Leben", fontArial, new SolidBrush(Color.Black), 0, 30);
-
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-            {
-				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
-            }
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
@@ -132,7 +132,7 @@ namespace NoPasaranTD.Engine
         /// <param name="index"></param>
         /// <returns>Index des Ziels in der Liste Balloons.</br>
         /// Ohne Ballon in Reichweite -1</returns>
-        private int FindTargetForTower(int index)
+        public int FindTargetForTower(int index)
         {
             List<int> ballonsInRange = new List<int>();
 			// Alle Ballons in der Reichweite des Turms bestimmen
@@ -146,7 +146,7 @@ namespace NoPasaranTD.Engine
                     // Checken ob der neue Ballon weiter ist als der bisher weiteste
                     if (Towers[index].GetBallonFunc(Balloons[ballonsInRange.Count - 1], Balloons[ballonsInRange[0]]))
                     {
-						ballonsInRange.Insert(0, ballonsInRange.Count - 1); // Bisherige Wahl an Stelle 0 schreiben
+						ballonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
 						ballonsInRange.RemoveAt(ballonsInRange.Count - 1);
                     }
 				}                   

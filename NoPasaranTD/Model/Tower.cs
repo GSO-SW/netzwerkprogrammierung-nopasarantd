@@ -20,7 +20,7 @@ namespace NoPasaranTD.Model
 
 
         public abstract void Render(Graphics g);
-        public abstract void Update(Game game, int targetIndex);
+        public abstract void Update(Game game, int TowerIndex);
 
         #region BallonChecks
         /// <summary>

@@ -71,17 +71,21 @@ namespace NoPasaranTD.Model.Towers
             }
         }
 
-        public override void Update(Game game, int targetIndex)
+        public override void Update(Game game, int TowerIndex)
         {
             time = sw.ElapsedMilliseconds;
 
-            if (targetIndex != -1 && time > timeLastShot + delay)
+            if (time > timeLastShot + delay)
             {
-                timeLastShot = time;
-                lastBaloonIndex = targetIndex;
-                justShotSomeUglyAss = true;
-                lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
+                int targetIndex = game.FindTargetForTower(TowerIndex);
+                if (targetIndex != -1)
+                {
+                    timeLastShot = time;
+                    lastBaloonIndex = targetIndex;
+                    justShotSomeUglyAss = true;
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
+                    game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
+                }
             }
             if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
         }
