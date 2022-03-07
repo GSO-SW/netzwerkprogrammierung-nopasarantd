@@ -60,11 +60,12 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
-    <Compile Include="Visuals\Ingame\BuildMenuContainer.cs" />
+    <Compile Include="Visuals\ListContainer.cs" />
     <Compile Include="Visuals\ButtonContainer.cs" />
     <Compile Include="Visuals\DragDropService.cs" />
     <Compile Include="Visuals\GuiComponent.cs" />
-    <Compile Include="Visuals\Ingame\ItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\TowerItemContainer.cs" />
+    <Compile Include="Visuals\ItemContainer.cs" />
     <Compile Include="Visuals\Ingame\TowerDetailsContainer.cs" />
     <Compile Include="Visuals\Ingame\UILayout.cs" />
     <Compile Include="Engine\Game.cs" />

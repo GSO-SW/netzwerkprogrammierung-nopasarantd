@@ -1,41 +1,10 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
-    /// <summary>
-    /// Basisklasse für Item Containers eines List Containers
-    /// </summary>
-    /// <typeparam name="T">Container Typ z.b TowerItemContainer</typeparam>
-    public abstract class ItemContainer<T> : GuiComponent
-    {
-        /// <summary>
-        /// Der Model Context des Item Containers
-        /// </summary>
-        public abstract T DataContext { get; set; }
-        /// <summary>
-        /// Die Position des Item Containers auf dem Bildschirm
-        /// </summary>
-        public abstract Point Position { get; set; }
-
-        /// <summary>
-        /// Die Größe des Item-Containers
-        /// </summary>
-        public abstract Size ItemSize { get; set; }
-
-        public Rectangle ParentBounds { get; set; }  
-
-        public abstract void TranslateTransform(int offX, int offY);
-    }
-
     /// <summary>
     /// Item Container speziell für Towers Objekte
     /// </summary>
@@ -46,7 +15,7 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Hintergrund Farbe des Items
         /// </summary>
-        public Brush BackgroundBrush { get; set; } = Brushes.Thistle;    
+        public Brush BackgroundBrush { get; set; } = Brushes.Thistle;
         /// <summary>
         /// Model Item
         /// </summary>
@@ -55,19 +24,19 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Position des Item-Containers auf dem Screen
         /// </summary>
-        public override Point Position 
-        { 
-            get { return new Point(Bounds.X, Bounds.Y); } 
-            set { Bounds = new Rectangle(value, ItemSize); PositionChanged(); } 
+        public override Point Position
+        {
+            get { return new Point(Bounds.X, Bounds.Y); }
+            set { Bounds = new Rectangle(value, ItemSize); PositionChanged(); }
         }
 
         /// <summary>
         /// Größe des Items
         /// </summary>
-        public override Size ItemSize 
-        { 
-            get { return new Size(Bounds.Width, Bounds.Height); } 
-            set { Bounds = new Rectangle(Position, value); } 
+        public override Size ItemSize
+        {
+            get { return new Size(Bounds.Width, Bounds.Height); }
+            set { Bounds = new Rectangle(Position, value); }
         }
 
         /// <summary>
@@ -103,8 +72,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
                 // Die Größe des angezeigten Preises
                 Size priceSize = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font);
-                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(),GuiComponent.StandartHeader2Font,Foreground,Bounds.X + Bounds.Width/2 - priceSize.Width/2,Bounds.Y+Bounds.Height- priceSize.Height-5);
-                
+                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font, Foreground, Bounds.X + Bounds.Width / 2 - priceSize.Width / 2, Bounds.Y + Bounds.Height - priceSize.Height - 5);
+
             }
         }
 
