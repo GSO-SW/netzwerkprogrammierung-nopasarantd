@@ -31,6 +31,7 @@ namespace NoPasaranTD.Model.Towers
         /// <param name="posY">centralized</param>
         public TowerCanon()
         {
+            GetBallonFunc = FarthestBallonCheck;
             sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);

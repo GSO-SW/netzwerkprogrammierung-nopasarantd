@@ -121,7 +121,7 @@ namespace NoPasaranTD.Engine
 				};
 
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(0, values.Length - 1)];
+				balloon.Type = values[random.Next(1, values.Length - 1)];
 				Balloons.Add(balloon);
 			}
 		}
@@ -135,7 +135,6 @@ namespace NoPasaranTD.Engine
         private int FindTargetForTower(int index)
         {
             List<int> ballonsInRange = new List<int>();
-			int farthestIndex = 0;
 			// Alle Ballons in der Reichweite des Turms bestimmen
 			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
@@ -144,16 +143,18 @@ namespace NoPasaranTD.Engine
                 if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
                 {
                     ballonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
-					// Checken ob der neue Ballon weiter ist als der bisher weiteste
-					if (Balloons[ballonsInRange[ballonsInRange.Count - 1]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
-						farthestIndex = ballonsInRange.Count - 1;
-				}
-                    
+                    // Checken ob der neue Ballon weiter ist als der bisher weiteste
+                    if (Towers[index].GetBallonFunc(Balloons[ballonsInRange.Count - 1], Balloons[ballonsInRange[0]]))
+                    {
+						ballonsInRange.Insert(0, ballonsInRange.Count - 1); // Bisherige Wahl an Stelle 0 schreiben
+						ballonsInRange.RemoveAt(ballonsInRange.Count - 1);
+                    }
+				}                   
             }
             if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
                 return -1;
 
-            return ballonsInRange[farthestIndex];
+            return ballonsInRange[0];
         }
 
         /// <summary>
