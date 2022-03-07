@@ -38,8 +38,8 @@ namespace NoPasaranTD.Model
     {
         None,
         Red,
-        Blue,
         Green,
+        Blue,
         Purple,
         Black,
         Gold,

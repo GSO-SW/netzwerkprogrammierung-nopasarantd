@@ -135,21 +135,24 @@ namespace NoPasaranTD.Engine
         private int FindTargetForTower(int index)
         {
             List<int> ballonsInRange = new List<int>();
-            // Alle Ballons in der Reichweite des Turms bestimmen
-            for (int i = Balloons.Count - 1; i >= 0; i--)
+			int farthestIndex = 0;
+			// Alle Ballons in der Reichweite des Turms bestimmen
+			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
                 Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
                 Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
                 if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-                    ballonsInRange.Add(i);
+                {
+                    ballonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
+					// Checken ob der neue Ballon weiter ist als der bisher weiteste
+					if (Balloons[ballonsInRange[ballonsInRange.Count - 1]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
+						farthestIndex = ballonsInRange.Count - 1;
+				}
+                    
             }
             if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
                 return -1;
 
-            int farthestIndex = 0;
-            for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
-                if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
-                    farthestIndex = i;
             return ballonsInRange[farthestIndex];
         }
 
