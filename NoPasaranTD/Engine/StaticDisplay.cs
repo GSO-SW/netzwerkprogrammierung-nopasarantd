@@ -1,5 +1,7 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using NoPasaranTD.Visuals;
+using NoPasaranTD.Visuals.Screen;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -9,19 +11,33 @@ namespace NoPasaranTD.Engine
     public partial class StaticDisplay : Form
     {
 
+        private GuiComponent currentScreen;
         private Game currentGame;
+
         public StaticDisplay()
         {
             InitializeComponent();
-            LoadDefaultGame();
+            LoadGame(null);
         }
 
-        private void LoadDefaultGame()
+        public void LoadGame(string mapFile)
         {
-            Map map = MapData.GetMapByFile("test2");
-            map.Initialize();
-            currentGame = new Game(map);
+            if (mapFile == null)
+            {
+                currentGame = null; // Entlade Spiel
+                LoadScreen(new GuiLobby()); // Lade Hauptmenu
+            }
+            else
+            {
+                // Lade map und initialisiere sie
+                Map map = MapData.GetMapByFile(mapFile); map.Initialize();
+                currentGame = new Game(map);
+                LoadScreen(null); // Screen entladen
+            }
         }
+
+        public void LoadScreen(GuiComponent screen)
+            => currentScreen = screen;
 
         #region Mouse region
         /// <summary>
@@ -37,9 +53,12 @@ namespace NoPasaranTD.Engine
             StaticEngine.MouseX = x;
             StaticEngine.MouseY = y;
 
-            currentGame.MouseUp(new MouseEventArgs(
+            MouseEventArgs args = new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
-            ));
+            );
+
+            currentGame?.MouseUp(args);
+            currentScreen?.MouseUp(args);
         }
 
         /// <summary>
@@ -55,9 +74,12 @@ namespace NoPasaranTD.Engine
             StaticEngine.MouseX = x;
             StaticEngine.MouseY = y;
 
-            currentGame.MouseDown(new MouseEventArgs(
+            MouseEventArgs args = new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
-            ));
+            );
+
+            currentGame?.MouseDown(args);
+            currentScreen?.MouseDown(args);
         }
 
         /// <summary>
@@ -73,9 +95,12 @@ namespace NoPasaranTD.Engine
             StaticEngine.MouseX = x;
             StaticEngine.MouseY = y;
 
-            currentGame.MouseMove(new MouseEventArgs(
+            MouseEventArgs args = new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
-            ));
+            );
+
+            currentGame?.MouseMove(args);
+            currentScreen?.MouseMove(args);
         }
 
         /// <summary>
@@ -91,15 +116,27 @@ namespace NoPasaranTD.Engine
             StaticEngine.MouseX = x;
             StaticEngine.MouseY = y;
 
-            currentGame.MouseWheel(new MouseEventArgs(
+            MouseEventArgs args = new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
-            ));
+            );
+
+            currentGame?.MouseWheel(args);
+            currentScreen?.MouseWheel(args);
         }
         #endregion
 
         #region Keyboard region
-        private void Display_KeyUp(object sender, KeyEventArgs e) => currentGame.KeyUp(e);
-        private void Display_KeyDown(object sender, KeyEventArgs e) => currentGame.KeyDown(e);
+        private void Display_KeyUp(object sender, KeyEventArgs e)
+        {
+            currentGame?.KeyUp(e);
+            currentScreen?.KeyUp(e);
+        }
+
+        private void Display_KeyDown(object sender, KeyEventArgs e)
+        {
+            currentGame?.KeyDown(e);
+            currentScreen?.KeyDown(e);
+        }
         #endregion
 
         #region Render region
@@ -111,7 +148,8 @@ namespace NoPasaranTD.Engine
             Graphics g = e.Graphics;
             g.ScaleTransform(scaledWidth, scaledHeight);
             { // Spiel rendern
-                currentGame.Render(g);
+                currentGame?.Render(g);
+                currentScreen?.Render(g);
             }
             g.ResetTransform();
         }
@@ -121,7 +159,8 @@ namespace NoPasaranTD.Engine
             StaticEngine.Update();
             while (StaticEngine.ElapsedTicks > 0)
             {
-                currentGame.Update();
+                currentGame?.Update();
+                currentScreen?.Update();
                 StaticEngine.ElapsedTicks--;
             }
 

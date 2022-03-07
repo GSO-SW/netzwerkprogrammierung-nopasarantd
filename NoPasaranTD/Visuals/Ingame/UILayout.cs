@@ -154,6 +154,7 @@ namespace NoPasaranTD.Visuals.Ingame
         }
 
         public void MouseMove(MouseEventArgs e) => TowerBuildMenu.MouseMove(e);
+        public void MouseWheel(MouseEventArgs e) => TowerBuildMenu.MouseWheel(e);
 
         void DrawGameStats(Graphics g)
         {

@@ -104,7 +104,7 @@ namespace NoPasaranTD.Engine
 		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
 		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
 		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
-		public void MouseWheel(MouseEventArgs e) { }
+		public void MouseWheel(MouseEventArgs e) => UILayout.MouseWheel(e);
 		#endregion
 
 		private void ManageBalloonSpawn()
