@@ -14,7 +14,7 @@ namespace NoPasaranTD
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Display());
+            Application.Run(new StaticDisplay());
         }
     }
 }

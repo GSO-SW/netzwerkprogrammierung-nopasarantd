@@ -1,11 +1,12 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals.Ingame
 {
     /// <summary>
     /// Das UI Layout innerhalb eines Gameplays </br>
@@ -23,8 +24,8 @@ namespace NoPasaranTD.Engine.Visuals
         {
             Margin = 10,
             ItemSize = new System.Drawing.Size(100, 130),
-            Position = new System.Drawing.Point(20, Engine.RenderHeight - 150),
-            ContainerSize = new System.Drawing.Size(Engine.RenderWidth - 40, 130),
+            Position = new System.Drawing.Point(20, StaticEngine.RenderHeight - 150),
+            ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 40, 130),
             BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
@@ -38,7 +39,7 @@ namespace NoPasaranTD.Engine.Visuals
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(Engine.RenderWidth-250,5,240,400),        
+            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,400),        
             Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
             ButtonFont = GuiComponent.StandartText1Font,
             Visible = false,
@@ -92,7 +93,7 @@ namespace NoPasaranTD.Engine.Visuals
            
             if (tower != null)
             {
-                tower.Hitbox = new Rectangle(new Point(Engine.MouseX, Engine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
+                tower.Hitbox = new Rectangle(new Point(StaticEngine.MouseX, StaticEngine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
                 placingTowerDragDrop.Context = tower;
                 placingTowerDragDrop.Start(tower.Hitbox);
             }

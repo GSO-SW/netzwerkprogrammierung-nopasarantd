@@ -6,11 +6,11 @@ using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-    public partial class Display : Form
+    public partial class StaticDisplay : Form
     {
 
         private Game currentGame;
-        public Display()
+        public StaticDisplay()
         {
             InitializeComponent();
             LoadDefaultGame();
@@ -31,11 +31,11 @@ namespace NoPasaranTD.Engine
         {
             // x & y zwischenspeichern, augfrund von anderen Events,
             // die Engine.MouseX und Engine.MouseY ändern könnten
-            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
-            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+            int x = (int)((float)StaticEngine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)StaticEngine.RenderHeight / ClientSize.Height * e.Y);
 
-            Engine.MouseX = x;
-            Engine.MouseY = y;
+            StaticEngine.MouseX = x;
+            StaticEngine.MouseY = y;
 
             currentGame.MouseUp(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
@@ -49,11 +49,11 @@ namespace NoPasaranTD.Engine
         {
             // x & y zwischenspeichern, augfrund von anderen Events,
             // die Engine.MouseX und Engine.MouseY ändern könnten
-            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
-            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+            int x = (int)((float)StaticEngine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)StaticEngine.RenderHeight / ClientSize.Height * e.Y);
 
-            Engine.MouseX = x;
-            Engine.MouseY = y;
+            StaticEngine.MouseX = x;
+            StaticEngine.MouseY = y;
 
             currentGame.MouseDown(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
@@ -67,11 +67,11 @@ namespace NoPasaranTD.Engine
         {
             // x & y zwischenspeichern, augfrund von anderen Events,
             // die Engine.MouseX und Engine.MouseY ändern könnten
-            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
-            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+            int x = (int)((float)StaticEngine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)StaticEngine.RenderHeight / ClientSize.Height * e.Y);
 
-            Engine.MouseX = x;
-            Engine.MouseY = y;
+            StaticEngine.MouseX = x;
+            StaticEngine.MouseY = y;
 
             currentGame.MouseMove(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
@@ -85,11 +85,11 @@ namespace NoPasaranTD.Engine
         {
             // x & y zwischenspeichern, augfrund von anderen Events,
             // die Engine.MouseX und Engine.MouseY ändern könnten
-            int x = (int)((float)Engine.RenderWidth / ClientSize.Width * e.X);
-            int y = (int)((float)Engine.RenderHeight / ClientSize.Height * e.Y);
+            int x = (int)((float)StaticEngine.RenderWidth / ClientSize.Width * e.X);
+            int y = (int)((float)StaticEngine.RenderHeight / ClientSize.Height * e.Y);
 
-            Engine.MouseX = x;
-            Engine.MouseY = y;
+            StaticEngine.MouseX = x;
+            StaticEngine.MouseY = y;
 
             currentGame.MouseWheel(new MouseEventArgs(
                 e.Button, e.Clicks, x, y, e.Delta
@@ -105,8 +105,8 @@ namespace NoPasaranTD.Engine
         #region Render region
         private void Display_Paint(object sender, PaintEventArgs e)
         {
-            float scaledWidth = (float)ClientSize.Width / Engine.RenderWidth;
-            float scaledHeight = (float)ClientSize.Height / Engine.RenderHeight;
+            float scaledWidth = (float)ClientSize.Width / StaticEngine.RenderWidth;
+            float scaledHeight = (float)ClientSize.Height / StaticEngine.RenderHeight;
 
             Graphics g = e.Graphics;
             g.ScaleTransform(scaledWidth, scaledHeight);
@@ -118,15 +118,15 @@ namespace NoPasaranTD.Engine
 
         private void tmrGameUpdate_Tick(object sender, EventArgs e)
         {
-            Engine.Update();
-            while (Engine.ElapsedTicks > 0)
+            StaticEngine.Update();
+            while (StaticEngine.ElapsedTicks > 0)
             {
                 currentGame.Update();
-                Engine.ElapsedTicks--;
+                StaticEngine.ElapsedTicks--;
             }
 
             { // Framerate aktualisieren (falls geändert)
-                int fps = Math.Max(1, 1000 / Engine.Framerate);
+                int fps = Math.Max(1, 1000 / StaticEngine.Framerate);
                 if (tmrGameUpdate.Interval != fps)
                     tmrGameUpdate.Interval = fps;
             }

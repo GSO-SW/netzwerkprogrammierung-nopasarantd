@@ -2,7 +2,7 @@
 
 namespace NoPasaranTD.Engine
 {
-    public static class Engine
+    public static class StaticEngine
     {
 
         #region Bildschirmeigenschaften

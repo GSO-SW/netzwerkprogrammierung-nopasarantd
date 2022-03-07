@@ -1,6 +1,6 @@
 ﻿namespace NoPasaranTD.Engine
 {
-    partial class Display
+    partial class StaticDisplay
     {
         /// <summary>
         /// Erforderliche Designervariable.

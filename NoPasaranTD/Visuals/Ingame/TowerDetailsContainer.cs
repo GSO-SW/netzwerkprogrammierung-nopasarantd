@@ -1,8 +1,9 @@
-﻿using NoPasaranTD.Model;
+﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Model;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals.Ingame
 {
     /// <summary>
     /// Container für die Details und Optionen eines Towers

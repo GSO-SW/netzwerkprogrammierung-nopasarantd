@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals.Ingame
 {
     /// <summary>
     /// Basisklasse für Item Containers eines List Containers

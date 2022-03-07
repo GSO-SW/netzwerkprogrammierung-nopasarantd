@@ -54,31 +54,31 @@
   <ItemGroup>
     <Compile Include="Data\MapData.cs" />
     <Compile Include="Data\StaticInfo.cs" />
-    <Compile Include="Engine\Display.cs">
+    <Compile Include="Engine\StaticDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Engine\Display.Designer.cs">
-      <DependentUpon>Display.cs</DependentUpon>
+    <Compile Include="Engine\StaticDisplay.Designer.cs">
+      <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
-    <Compile Include="Engine\Visuals\BuildMenuContainer.cs" />
-    <Compile Include="Engine\Visuals\ButtonContainer.cs" />
-    <Compile Include="Engine\Visuals\DragDropService.cs" />
-    <Compile Include="Engine\Visuals\GuiComponent.cs" />
-    <Compile Include="Engine\Visuals\ItemContainer.cs" />
-    <Compile Include="Engine\Visuals\TowerDetailsContainer.cs" />
-    <Compile Include="Engine\Visuals\UILayout.cs" />
+    <Compile Include="Visuals\Ingame\BuildMenuContainer.cs" />
+    <Compile Include="Visuals\ButtonContainer.cs" />
+    <Compile Include="Visuals\DragDropService.cs" />
+    <Compile Include="Visuals\GuiComponent.cs" />
+    <Compile Include="Visuals\Ingame\ItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\TowerDetailsContainer.cs" />
+    <Compile Include="Visuals\Ingame\UILayout.cs" />
     <Compile Include="Engine\Game.cs" />
     <Compile Include="Model\Balloon.cs" />
     <Compile Include="Model\Map.cs" />
-    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\StaticEngine.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Tower.cs" />
     <Compile Include="Model\TowerCanon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\Vector2D.cs" />
-    <EmbeddedResource Include="Engine\Display.resx">
-      <DependentUpon>Display.cs</DependentUpon>
+    <EmbeddedResource Include="Engine\StaticDisplay.resx">
+      <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

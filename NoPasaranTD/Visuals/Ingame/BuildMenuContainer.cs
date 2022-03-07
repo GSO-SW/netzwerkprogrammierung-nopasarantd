@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals.Ingame
 {
     /// <summary>
     /// Eine Generische Listbox welche jeden beliebigen Item Container Typen annehmen kann

@@ -1,8 +1,8 @@
 ﻿using NoPasaranTD.Data;
-using NoPasaranTD.Engine.Visuals;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Utilities;
+using NoPasaranTD.Visuals.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -61,8 +61,8 @@ namespace NoPasaranTD.Engine
 		public void Render(Graphics g)
 		{
 			{ // Zeichne Karte
-				float scaledWidth = (float)Engine.RenderWidth / CurrentMap.BackgroundImage.Width;
-				float scaledHeight = (float)Engine.RenderHeight / CurrentMap.BackgroundImage.Height;
+				float scaledWidth = (float)StaticEngine.RenderWidth / CurrentMap.BackgroundImage.Width;
+				float scaledHeight = (float)StaticEngine.RenderHeight / CurrentMap.BackgroundImage.Height;
 
 				Matrix m = g.Transform;
 				g.ScaleTransform(scaledWidth, scaledHeight);

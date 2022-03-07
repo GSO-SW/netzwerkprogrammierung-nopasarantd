@@ -1,7 +1,8 @@
-﻿using System.Drawing;
+﻿using NoPasaranTD.Engine;
+using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals
 {
     public class GuiComponent 
     {
@@ -22,7 +23,7 @@ namespace NoPasaranTD.Engine.Visuals
         /// <summary>
         /// Befindet sich die Maus über dem Control zurzeit?
         /// </summary>
-        public bool IsMouseOver { get => Bounds.Contains(Engine.MouseX, Engine.MouseY); }
+        public bool IsMouseOver { get => Bounds.Contains(StaticEngine.MouseX, StaticEngine.MouseY); }
 
 		public virtual void Update() { }
 		public virtual void Render(Graphics g) { }

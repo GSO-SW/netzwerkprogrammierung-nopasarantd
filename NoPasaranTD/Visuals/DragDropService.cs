@@ -1,7 +1,8 @@
-﻿using System.Drawing;
+﻿using NoPasaranTD.Engine;
+using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals
 {
     /// <summary>
     /// Serviceklasse für einen Drag Drop Vorgang innerhalb der UI
@@ -48,7 +49,7 @@ namespace NoPasaranTD.Engine.Visuals
         public void Update()
         {
             if (IsMoving)
-                MovedObject = new Rectangle(Engine.MouseX - MovedObject.Width/2, Engine.MouseY - MovedObject.Height / 2, MovedObject.Width, MovedObject.Height);
+                MovedObject = new Rectangle(StaticEngine.MouseX - MovedObject.Width/2, StaticEngine.MouseY - MovedObject.Height / 2, MovedObject.Width, MovedObject.Height);
         }
 
         /// <summary>

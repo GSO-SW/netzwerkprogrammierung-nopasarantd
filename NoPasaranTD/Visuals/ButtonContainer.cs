@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine.Visuals
+namespace NoPasaranTD.Visuals
 {
     /// <summary>
     /// Ein Controlelemnt zur Bestätigung (Ein Button eben...)
