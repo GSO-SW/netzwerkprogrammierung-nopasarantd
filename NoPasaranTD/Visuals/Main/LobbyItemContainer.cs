@@ -85,7 +85,7 @@ namespace NoPasaranTD.Visuals.Main
 
         // Prüft ob sich der Container im sichtbaren Bereich befindet. Wenn ja, dann darf dieser gezeichnet werden. Wenn nicht, dann nicht.
         private void PositionChanged()
-            => Visible = Position.Y >= ParentBounds.Y && Position.Y + ItemSize.Height <= ParentBounds.Y + ParentBounds.Height;
+            => Visible = Position.Y + ItemSize.Height >= ParentBounds.Y && Position.Y <= ParentBounds.Y + ParentBounds.Height;
         #endregion
 
         public LobbyItemContainer()

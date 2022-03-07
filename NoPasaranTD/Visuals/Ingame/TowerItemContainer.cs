@@ -50,7 +50,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
         private void PositionChanged()
-            => Visible = Position.X >= ParentBounds.X && Position.X + ItemSize.Width <= ParentBounds.X + ParentBounds.Width;
+            => Visible = Position.X + ItemSize.Width >= ParentBounds.X && Position.X <= ParentBounds.X + ParentBounds.Width;
 
         #endregion
         #region Public Methods

@@ -135,8 +135,15 @@ namespace NoPasaranTD.Visuals
         public override void Render(Graphics g)
         {
             g.FillRectangle(BackgroundColor, Bounds);
+
+            Region clip = g.Clip; // Speichere ursprüngliche Region
+            g.Clip = new Region(Bounds); // Entferne alles was außerhalb ist
+
+            // Render Items innerhalb dieser Region
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].Render(g);
+
+            g.Clip = clip; // Setze ursprüngliche Region zurück
         }
 
         public override void KeyUp(KeyEventArgs e)
