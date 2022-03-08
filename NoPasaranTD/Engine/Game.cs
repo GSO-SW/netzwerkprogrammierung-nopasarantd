@@ -192,6 +192,7 @@ namespace NoPasaranTD.Engine
 		public void AddTower(Tower t)
 		{
 			// TODO network communication
+			t.IsSelected = false;
 			Towers.Add(t);
 		}
 
