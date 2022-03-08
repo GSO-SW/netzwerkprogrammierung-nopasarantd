@@ -31,7 +31,7 @@ namespace NoPasaranTD.Model.Towers
         /// <param name="posY">centralized</param>
         public TowerCanon()
         {
-            GetBallonFunc = FarthestBallonCheck;
+            GetBalloonFunc = FarthestBallonCheck;
             sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);
@@ -71,13 +71,13 @@ namespace NoPasaranTD.Model.Towers
             }
         }
 
-        public override void Update(Game game, int TowerIndex)
+        public override void Update(Game game)
         {
             time = sw.ElapsedMilliseconds;
 
             if (time > timeLastShot + delay)
             {
-                int targetIndex = game.FindTargetForTower(TowerIndex);
+                int targetIndex = game.FindTargetForTower(this);
                 if (targetIndex != -1)
                 {
                     timeLastShot = time;

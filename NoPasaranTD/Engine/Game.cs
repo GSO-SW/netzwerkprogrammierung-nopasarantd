@@ -41,7 +41,7 @@ namespace NoPasaranTD.Engine
 		{
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
-				Towers[i].Update(this, i);
+				Towers[i].Update(this);
 
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Aktualisiere Ballons
@@ -132,19 +132,19 @@ namespace NoPasaranTD.Engine
         /// <param name="index"></param>
         /// <returns>Index des Ziels in der Liste Balloons.</br>
         /// Ohne Ballon in Reichweite -1</returns>
-        public int FindTargetForTower(int index)
+        public int FindTargetForTower(Tower tower)
         {
             List<int> balloonsInRange = new List<int>();
 			// Alle Ballons in der Reichweite des Turms bestimmen
 			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
                 Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
-                Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
-                if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+                Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
+                if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
                 {
                     balloonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
                     // Checken ob der neue Ballon weiter ist als der bisher weiteste
-                    if (Towers[index].GetBalloonFunc(Balloons[balloonsInRange.Count - 1], Balloons[balloonsInRange[0]]))
+                    if (tower.GetBalloonFunc(Balloons[balloonsInRange.Count - 1], Balloons[balloonsInRange[0]]))
                     {
 						balloonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
 						balloonsInRange.RemoveAt(balloonsInRange.Count - 1);
