@@ -21,6 +21,7 @@ namespace NoPasaranTD.Model
         public uint Delay { get => StaticInfo.GetTowerDelay(GetType()); }
         public double Range { get => StaticInfo.GetTowerRange(GetType()); }
         public ulong NumberKills { get; set; }
+        public bool IsSelected { get; set; } = true;
         
         public abstract void Render(Graphics g);
         public abstract void Update(Game game, int targetIndex);

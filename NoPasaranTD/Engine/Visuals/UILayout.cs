@@ -136,7 +136,7 @@ namespace NoPasaranTD.Engine.Visuals
         }
 
         public void MouseDown(MouseEventArgs e)
-        {
+        {           
             TowerBuildMenu.MouseDown(e);
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
@@ -145,9 +145,13 @@ namespace NoPasaranTD.Engine.Visuals
             {
                 if (item.Hitbox.Contains(e.Location))
                 {
+                    if (SelectedTower != null)
+                        SelectedTower.IsSelected = false;
+
                     SelectedTower = item;
                     TowerDetailsContainer.Visible = true;
                     TowerDetailsContainer.Context = item;
+                    SelectedTower.IsSelected = true;
                 }
             }
         }
