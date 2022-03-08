@@ -16,13 +16,13 @@ namespace NoPasaranTD.Model
         public uint Delay { get => StaticInfo.GetTowerDelay(GetType()); }
         public double Range { get => StaticInfo.GetTowerRange(GetType()); }
 
-        public Func<Balloon, Balloon, bool> GetBallonFunc { get; set; }
+        public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
 
 
         public abstract void Render(Graphics g);
         public abstract void Update(Game game, int TowerIndex);
 
-        #region BallonChecks
+        #region BalloonChecks
         /// <summary>
         /// Kontrolliert, ob der Ballon Check weiter auf dem Pfad ist als der Ballon bCurrent
         /// </summary>

@@ -134,7 +134,7 @@ namespace NoPasaranTD.Engine
         /// Ohne Ballon in Reichweite -1</returns>
         public int FindTargetForTower(int index)
         {
-            List<int> ballonsInRange = new List<int>();
+            List<int> balloonsInRange = new List<int>();
 			// Alle Ballons in der Reichweite des Turms bestimmen
 			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
@@ -142,19 +142,19 @@ namespace NoPasaranTD.Engine
                 Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
                 if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
                 {
-                    ballonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
+                    balloonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
                     // Checken ob der neue Ballon weiter ist als der bisher weiteste
-                    if (Towers[index].GetBallonFunc(Balloons[ballonsInRange.Count - 1], Balloons[ballonsInRange[0]]))
+                    if (Towers[index].GetBalloonFunc(Balloons[balloonsInRange.Count - 1], Balloons[balloonsInRange[0]]))
                     {
-						ballonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
-						ballonsInRange.RemoveAt(ballonsInRange.Count - 1);
+						balloonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
+						balloonsInRange.RemoveAt(balloonsInRange.Count - 1);
                     }
 				}                   
             }
-            if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+            if (balloonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
                 return -1;
 
-            return ballonsInRange[0];
+            return balloonsInRange[0];
         }
 
         /// <summary>
