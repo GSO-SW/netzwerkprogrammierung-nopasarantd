@@ -12,7 +12,7 @@ namespace NoPasaranTD.Model.Towers
     {
         double shotAnimationLength = 0.2; // in percent of delay   E[0;1]
 
-        SolidBrush bruhBlack, bruhRed, bruhPurple, bruhLightGray, bruhFireColor, bruhDarkGray;
+        SolidBrush bruhBlack, bruhRed, bruhPurple, bruhLightGray, bruhFireColor, bruhDarkGray, brushSlateGray;
         Pen penBlack, penRed, penPurple;
         Stopwatch sw;
         Font font;
@@ -42,6 +42,7 @@ namespace NoPasaranTD.Model.Towers
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);
             bruhFireColor = new SolidBrush(Color.Orange);
             bruhDarkGray = new SolidBrush(Color.DarkGray);
+            brushSlateGray = new SolidBrush(Color.SlateGray);
             penBlack = new Pen(Color.Black); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple, 2.3f);
             font = new Font(FontFamily.GenericSerif, 7);
             time = 0;
@@ -77,7 +78,7 @@ namespace NoPasaranTD.Model.Towers
             };
 
             // Zeichnet die Hitbox des Towers
-            g.FillPolygon(bruhBlack, hitboxPolygonCorners);
+            g.FillPolygon(brushSlateGray, hitboxPolygonCorners);
             if (IsSelected)
                 g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
             
@@ -111,7 +112,7 @@ namespace NoPasaranTD.Model.Towers
                     + (centerY-lastBalloonPos.Y) * (centerY - lastBalloonPos.Y),
                     0.5 ) < range )
                     //g.DrawLine(penRed, barrel.X + barrel.Width/2,barrel.Y+barrel.Height,lastBalloonPos.X - centerX ,lastBalloonPos.Y - centerY);
-                g.FillEllipse(bruhFireColor,-barrel.Width + barrel.Width/4, barrel.Height-5, 15 * ticks % 40, 15 * ticks % 40); // Feueranimation als Ellipse
+                g.FillEllipse(bruhFireColor,-barrel.Width + barrel.Width/4, barrel.Height-5, 15 * ticks % 30, 15 * ticks % 30); // Feueranimation als Ellipse
                 
                 if (timeLastShot + delay * shotAnimationLength < time) justShotSomeUglyAss = false;
             }
