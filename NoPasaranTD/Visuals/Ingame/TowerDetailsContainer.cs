@@ -143,7 +143,11 @@ namespace NoPasaranTD.Visuals.Ingame
         }
            
         // Versteckt das Fenster wenn der Schließenbutton betätigt wird
-        private void CloseButton_ButtonClicked() =>
+        private void CloseButton_ButtonClicked()
+        {
             Visible = false;
+            Context.IsSelected = false;
+        } 
+            
     }
 }

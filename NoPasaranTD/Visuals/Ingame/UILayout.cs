@@ -158,9 +158,13 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 if (item.Hitbox.Contains(e.Location))
                 {
+                    if (SelectedTower != null)
+                        SelectedTower.IsSelected = false;
+
                     SelectedTower = item;
                     TowerDetailsContainer.Visible = true;
                     TowerDetailsContainer.Context = item;
+                    SelectedTower.IsSelected = true;
                 }
             }
         }
@@ -182,7 +186,7 @@ namespace NoPasaranTD.Visuals.Ingame
             // Die Kontostandanzeige des derzeitigen Spieles
             g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
             // Die Lebensanzeige des derzeitigen Spieles
-            g.DrawString("x" + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
+            g.DrawString(game.HealthPoints + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
             // Die Zahl der derzeitigen Runde
             g.DrawString("x" + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
         }        
