@@ -135,7 +135,7 @@ namespace NoPasaranTD.Model.Towers
                     lastBaloonIndex = targetIndex;
                     justShotSomeUglyAss = true;
                     lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                    game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(targetIndex, (int)strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
             if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
