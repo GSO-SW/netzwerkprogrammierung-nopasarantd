@@ -41,7 +41,7 @@ namespace NoPasaranTD.Engine
 		{
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
-				Towers[i].Update(this, FindTargetForTower(i));
+				Towers[i].Update(this);
 
             for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Aktualisiere Ballons
@@ -70,7 +70,12 @@ namespace NoPasaranTD.Engine
 				g.Transform = m;
             }
 
-            for (int i = Balloons.Count - 1; i >= 0; i--)
+			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+			{
+				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
+			}
+
+			for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
 				Brush brush;
 				switch (Balloons[i].Type)
@@ -117,7 +122,7 @@ namespace NoPasaranTD.Engine
 				};
 
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(0, values.Length - 1)];
+				balloon.Type = values[random.Next(1, values.Length - 1)];
 				Balloons.Add(balloon);
 			}
 		}
@@ -128,25 +133,29 @@ namespace NoPasaranTD.Engine
         /// <param name="index"></param>
         /// <returns>Index des Ziels in der Liste Balloons.</br>
         /// Ohne Ballon in Reichweite -1</returns>
-        private int FindTargetForTower(int index)
+        public int FindTargetForTower(Tower tower)
         {
-            List<int> ballonsInRange = new List<int>();
-            // Alle Ballons in der Reichweite des Turms bestimmen
-            for (int i = Balloons.Count - 1; i >= 0; i--)
+            List<int> balloonsInRange = new List<int>();
+			// Alle Ballons in der Reichweite des Turms bestimmen
+			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
                 Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
-                Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
-                if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-                    ballonsInRange.Add(i);
+                Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
+                if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+                {
+                    balloonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
+                    // Checken ob der neue Ballon weiter ist als der bisher weiteste
+                    if (tower.GetBalloonFunc(Balloons[balloonsInRange.Count - 1], Balloons[balloonsInRange[0]]))
+                    {
+						balloonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
+						balloonsInRange.RemoveAt(balloonsInRange.Count - 1);
+                    }
+				}                   
             }
-            if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+            if (balloonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
                 return -1;
 
-            int farthestIndex = 0;
-            for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
-                if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
-                    farthestIndex = i;
-            return ballonsInRange[farthestIndex];
+            return balloonsInRange[0];
         }
 
         /// <summary>

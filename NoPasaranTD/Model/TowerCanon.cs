@@ -37,6 +37,7 @@ namespace NoPasaranTD.Model.Towers
      
         public TowerCanon()
         {
+            GetBalloonFunc = FarthestBallonCheck;
             sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
             justShotSomeUglyAss = false;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);
@@ -120,21 +121,22 @@ namespace NoPasaranTD.Model.Towers
             g.Transform = currentTransform;
         }
 
-        public override void Update(Game game, int targetIndex)
+        public override void Update(Game game)
         {
             ticks++;
             time = sw.ElapsedMilliseconds;
 
-            if (targetIndex != -1)
+            if (time > timeLastShot + delay)
             {
-                lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
-                if (time > timeLastShot + delay)
+                int targetIndex = game.FindTargetForTower(this);
+                if (targetIndex != -1)
                 {
                     timeLastShot = time;
                     lastBaloonIndex = targetIndex;
-                    justShotSomeUglyAss = true;                    
-                    game.DamageBalloon(targetIndex, (int)strength, game.Towers.IndexOf(this)); // TODO: uint to int could be an oof conversion
-                }               
+                    justShotSomeUglyAss = true;
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
+                    game.DamageBalloon(targetIndex, (int)strength); // TODO: uint to int could be an oof conversion
+                }
             }
             if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
 
