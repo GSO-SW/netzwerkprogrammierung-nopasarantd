@@ -28,10 +28,13 @@ namespace NoPasaranTD.Visuals.Main
 
                 // Spawne Türme in Spielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(325, 200), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(215, 250), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(30, 45), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(435, 65), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
+                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
             }
 
             lobbyList = new ListContainer<object, LobbyItemContainer>()
