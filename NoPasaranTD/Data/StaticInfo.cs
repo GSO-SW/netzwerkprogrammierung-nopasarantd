@@ -3,9 +3,6 @@ using NoPasaranTD.Model.Towers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Data
 {
@@ -15,7 +12,6 @@ namespace NoPasaranTD.Data
         #region Startwerte
         public static int StartMoney = 150;
         public static int StartHP = 100;
-        public static int PathWidth = 24;
         #endregion
 
         #region Obstacle
@@ -91,14 +87,14 @@ namespace NoPasaranTD.Data
         }
         #endregion
 
-        #region GetBallon Methoden 
+        #region GetBalloon Methoden 
 
         public static Size GetBalloonSize = new Size(10,10);
 
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der BallonDaten/Werte 
         /// </summary>
-        public static uint GetBallonStrength(BalloonType type)
+        public static uint GetBalloonStrength(BalloonType type)
         {
             BalloonStrength.TryGetValue(type, out uint strength);
             return strength;

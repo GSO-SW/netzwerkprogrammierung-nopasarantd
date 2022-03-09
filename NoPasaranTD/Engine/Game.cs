@@ -1,6 +1,5 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
-using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using System;
@@ -11,11 +10,10 @@ using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-	public class Game
+    public class Game
 	{
 		private readonly Random random = new Random();
 
-		// TODO: Alle referenzen zu Servertick ändern
 		public uint CurrentTick { get; private set; }
 
 		public Map CurrentMap { get; }
@@ -55,7 +53,7 @@ namespace NoPasaranTD.Engine
             UILayout.Update();
 
             ManageBalloonSpawn(); // Spawne Ballons
-			CurrentTick++; // Emuliere Servertick
+			CurrentTick++;
 		}
 
 		public void Render(Graphics g)
@@ -84,18 +82,18 @@ namespace NoPasaranTD.Engine
 					default: continue; // Ignoriere jeden unbekannten Ballon
 				}
 
-				Vector2D pos = CurrentMap.GetPathPosition(Balloons[i].PathPosition);
-				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 12);
+				Vector2D pos = CurrentMap.GetPathPosition(
+					StaticEngine.RenderWidth, 
+					StaticEngine.RenderHeight,
+					Balloons[i].PathPosition
+				);
+
+				g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
             }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
             UILayout.Render(g);
-
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-            {
-				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
-            }
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
@@ -117,7 +115,7 @@ namespace NoPasaranTD.Engine
 				};
 
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(0, values.Length - 1)];
+				balloon.Type = values[random.Next(1, values.Length)];
 				Balloons.Add(balloon);
 			}
 		}
@@ -130,23 +128,28 @@ namespace NoPasaranTD.Engine
         /// Ohne Ballon in Reichweite -1</returns>
         private int FindTargetForTower(int index)
         {
-            List<int> ballonsInRange = new List<int>();
+            List<int> balloonsInRange = new List<int>();
             // Alle Ballons in der Reichweite des Turms bestimmen
             for (int i = Balloons.Count - 1; i >= 0; i--)
             {
-                Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
+                Vector2D currentPosition = CurrentMap.GetPathPosition(
+					StaticEngine.RenderWidth, 
+					StaticEngine.RenderHeight,
+					Balloons[i].PathPosition
+				); // Position des Ballons
+
                 Vector2D towerCentre = new Vector2D(Towers[index].Hitbox.Location.X + Towers[index].Hitbox.Width / 2, Towers[index].Hitbox.Location.Y + Towers[index].Hitbox.Height / 2); // Zentrale Position des Turmes
                 if ((currentPosition - towerCentre).Magnitude <= Towers[index].Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-                    ballonsInRange.Add(i);
+                    balloonsInRange.Add(i);
             }
-            if (ballonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
+            if (balloonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
                 return -1;
 
             int farthestIndex = 0;
-            for (int i = ballonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
-                if (Balloons[ballonsInRange[i]].PathPosition > Balloons[ballonsInRange[farthestIndex]].PathPosition)
+            for (int i = balloonsInRange.Count - 1; i >= 0; i--) // Alle Ballons im Radius checken welcher am weitesten ist
+                if (Balloons[balloonsInRange[i]].PathPosition > Balloons[balloonsInRange[farthestIndex]].PathPosition)
                     farthestIndex = i;
-            return ballonsInRange[farthestIndex];
+            return balloonsInRange[farthestIndex];
         }
 
         /// <summary>
@@ -164,7 +167,11 @@ namespace NoPasaranTD.Engine
 				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(rect))
 					return false;
 
-			return CurrentMap.IsCollidingWithPath(rect); //Überprüft, ob es eine Kollision mit dem Pfad gibt
+			return CurrentMap.IsCollidingWithPath(
+				StaticEngine.RenderWidth, 
+				StaticEngine.RenderHeight, 
+				rect
+			); //Überprüft, ob es eine Kollision mit dem Pfad gibt
 		}
 
 		/// <summary>
@@ -178,8 +185,8 @@ namespace NoPasaranTD.Engine
 			if (Balloons[index].Type - damage > BalloonType.None)
 			{
 				Balloons[index].Type -= damage; // Aufaddieren des Geldes
-				Money += damage;
 				Towers[indexTower].NumberKills += (ulong)damage;
+				Money += damage;
 			}
 			else
 			{
