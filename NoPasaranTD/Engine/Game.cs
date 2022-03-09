@@ -1,6 +1,5 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
-using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using System;
@@ -11,11 +10,10 @@ using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-	public class Game
+    public class Game
 	{
 		private readonly Random random = new Random();
 
-		// TODO: Alle referenzen zu Servertick ändern
 		public uint CurrentTick { get; private set; }
 
 		public Map CurrentMap { get; }
@@ -55,7 +53,7 @@ namespace NoPasaranTD.Engine
             UILayout.Update();
 
             ManageBalloonSpawn(); // Spawne Ballons
-			CurrentTick++; // Emuliere Servertick
+			CurrentTick++;
 		}
 
 		public void Render(Graphics g)
@@ -70,12 +68,7 @@ namespace NoPasaranTD.Engine
 				g.Transform = m;
             }
 
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-			{
-				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
-			}
-
-			for (int i = Balloons.Count - 1; i >= 0; i--)
+            for (int i = Balloons.Count - 1; i >= 0; i--)
 			{ // Zeichne Ballons
 				Brush brush;
 				switch (Balloons[i].Type)
@@ -89,18 +82,18 @@ namespace NoPasaranTD.Engine
 					default: continue; // Ignoriere jeden unbekannten Ballon
 				}
 
-				Vector2D pos = CurrentMap.GetPathPosition(Balloons[i].PathPosition);
-				g.FillEllipse(brush, pos.X - 5, pos.Y - 5, 10, 12);
+				Vector2D pos = CurrentMap.GetPathPosition(
+					StaticEngine.RenderWidth, 
+					StaticEngine.RenderHeight,
+					Balloons[i].PathPosition
+				);
+
+				g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
             }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
             UILayout.Render(g);
-
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-            {
-				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
-            }
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
@@ -122,7 +115,7 @@ namespace NoPasaranTD.Engine
 				};
 
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(1, values.Length - 1)];
+				balloon.Type = values[random.Next(1, values.Length)];
 				Balloons.Add(balloon);
 			}
 		}
@@ -173,7 +166,11 @@ namespace NoPasaranTD.Engine
 				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(rect))
 					return false;
 
-			return CurrentMap.IsCollidingWithPath(rect); //Überprüft, ob es eine Kollision mit dem Pfad gibt
+			return CurrentMap.IsCollidingWithPath(
+				StaticEngine.RenderWidth, 
+				StaticEngine.RenderHeight, 
+				rect
+			); //Überprüft, ob es eine Kollision mit dem Pfad gibt
 		}
 
 		/// <summary>
@@ -187,8 +184,8 @@ namespace NoPasaranTD.Engine
 			if (Balloons[index].Type - damage > BalloonType.None)
 			{
 				Balloons[index].Type -= damage; // Aufaddieren des Geldes
+				Towers[indexTower].NumberKills += (ulong)damage;
 				Money += damage;
-				tower.NumberKills += (ulong)damage;
 			}
 			else
 			{

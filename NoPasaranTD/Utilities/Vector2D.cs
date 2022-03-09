@@ -2,7 +2,8 @@
 using Newtonsoft.Json;
 
 namespace NoPasaranTD.Utilities
-{	
+{
+	[JsonObject(MemberSerialization.OptOut)]
 	public struct Vector2D
 	{
 		public float X { get; }
@@ -14,7 +15,10 @@ namespace NoPasaranTD.Utilities
 		public override int GetHashCode() => (X, Y).GetHashCode();
 		public override string ToString() => "(" + X + '|' + Y + ')';
 
+		[JsonIgnore]
 		public float Magnitude => (float)Math.Sqrt(X * X + Y * Y);
+
+		[JsonIgnore]
 		public float Angle => (float)Math.Atan2(Y, X);
 
 		public Vector2D Rotated(double angle)

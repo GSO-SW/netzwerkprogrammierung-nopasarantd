@@ -20,11 +20,11 @@ namespace NoPasaranTD.Model
     [JsonObject(MemberSerialization.OptOut)]
     public class Map
     {
+        public string Name { get; set; }
+        public Size Dimension { get; set; }
         public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
-
-        [JsonIgnore]
-        public Bitmap BackgroundImage { get; private set; }
+        public float PathWidth { get; set; }
 
         private string backgroundPath;
         public string BackgroundPath 
@@ -36,6 +36,9 @@ namespace NoPasaranTD.Model
                 BackgroundImage = new Bitmap(Environment.CurrentDirectory + BackgroundPath); 
             } 
         }
+
+        [JsonIgnore]
+        public Bitmap BackgroundImage { get; private set; }
 
         [JsonIgnore]
         public double PathLength { get; private set; }
@@ -69,12 +72,39 @@ namespace NoPasaranTD.Model
         }
 
         /// <summary>
+        /// Errechnet die Position auf dem Pfad anhand von der gegebenen Länge und übersetzt diese auf die Bildschirmposition.<br/>
+        /// Achtung: Bei änderung von 'BalloonPath' stellen Sie sicher, dass die 'Initialize'-Methode ausgeführt wurde!
+        /// </summary>
+        /// <param name="scaledWidth">Breite des Renderbereiches</param>
+        /// <param name="scaledHeight">Höhe des Renderbereiches</param>
+        /// <param name="length">Position auf dem Pfad in Längeneinheit</param>
+        /// <returns>Errechnete Position relational nach der Länge</returns>
+        public Vector2D GetPathPosition(int scaledWidth, int scaledHeight, double length)
+        {
+            Vector2D originalPos = GetPathPosition(length);
+            return new Vector2D(
+                originalPos.X / Dimension.Width * scaledWidth,
+                originalPos.Y / Dimension.Height * scaledHeight
+            );
+        }
+
+        public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
+        {
+            return IsCollidingWithPath(new Rectangle(
+                (int)((float)rect.X / scaledWidth * Dimension.Width),
+                (int)((float)rect.Y / scaledHeight * Dimension.Height),
+                (int)((float)rect.Width / scaledWidth * Dimension.Width),
+                (int)((float)rect.Height / scaledHeight * Dimension.Height)
+            ));
+        }
+
+        /// <summary>
         /// Errechnet die Position auf dem Pfad anhand von der gegebenen Länge.<br/>
         /// Achtung: Bei änderung von 'BalloonPath' stellen Sie sicher, dass die 'Initialize'-Methode ausgeführt wurde!
         /// </summary>
         /// <param name="length">Position auf dem Pfad in Längeneinheit</param>
         /// <returns>Errechnete Position relational nach der Länge</returns>
-        public Vector2D GetPathPosition(double length)
+        private Vector2D GetPathPosition(double length)
         {
             // Auswahl eines ungefähr richtigen Fragments
             int index = (int)((pathFragments.Length - 1) / PathLength * length);
@@ -99,7 +129,7 @@ namespace NoPasaranTD.Model
         /// </summary>
         /// <param name="rect">Zu überprüfendes Rechteck</param>
         /// <returns>False wenn es eine Überschneidung gibt</returns>
-        public bool IsCollidingWithPath(Rectangle rect)
+        private bool IsCollidingWithPath(Rectangle rect)
         {
             Vector2D[] cornersV = new Vector2D[4]; // Speichern der Ecken des Rechtecks
             for (int i = 0; i < 2; i++) // Alle Ecken durchgehen
@@ -127,7 +157,7 @@ namespace NoPasaranTD.Model
                     else if (closestPointDistance > 1)
                         closestPointDistance = 1;
 
-                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < StaticInfo.PathWidth) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathWidth) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
                         return false;
                 }
 
@@ -190,7 +220,7 @@ namespace NoPasaranTD.Model
                     // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
                     Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
                     // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
-                    double multiplicatorD = Math.Sqrt((StaticInfo.PathWidth * StaticInfo.PathWidth) / (directionV.X * directionV.X + directionV.Y * directionV.Y)); // TODO: Mit StaticInfo verbinden
+                    double multiplicatorD = Math.Sqrt((PathWidth * PathWidth) / (directionV.X * directionV.X + directionV.Y * directionV.Y));
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
                     // In beide Richungen orthogonal vom Vektor aus schauen 

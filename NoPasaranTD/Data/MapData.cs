@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using Newtonsoft.Json;
 using NoPasaranTD.Model;
+using NoPasaranTD.Utilities;
 
 namespace NoPasaranTD.Data
 {
@@ -23,19 +24,19 @@ namespace NoPasaranTD.Data
         /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
         public static Map GetMapByFile(string fileName)
         {
-            Map obj = null;
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
             // Prüft ob die Datei bereits existiert
             if (!File.Exists(savePath))
                 throw new FileNotFoundException(savePath);
 
+            Map obj;
             using (StreamReader streamReader = new StreamReader(savePath))
             {
                 string rawData = streamReader.ReadToEnd();
 
                 try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
-                catch (Exception) { throw new Exception("Failed loading Map"); }
+                catch (Exception ex) { throw new Exception("Failed loading Map", ex); }
 
                 streamReader.Close();
             }
@@ -52,19 +53,19 @@ namespace NoPasaranTD.Data
         /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
         public static async Task<Map> GetMapByFileAsync(string fileName)
         {
-            Map obj = null;      
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
             // Prüft ob die Datei bereits existiert
             if (!File.Exists(savePath))
                 throw new FileNotFoundException(savePath);
 
+            Map obj;
             using (StreamReader streamReader = new StreamReader(savePath))
             {           
                 string rawData = await streamReader.ReadToEndAsync();
 
                 try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
-                catch (Exception) { throw new Exception("Failed loading Map"); }
+                catch (Exception ex) { throw new Exception("Failed loading Map", ex); }
 
                 streamReader.Close();
             }
@@ -81,8 +82,7 @@ namespace NoPasaranTD.Data
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
-            FileStream fileStream = null;
-
+            FileStream fileStream;
             // Prüft ob die Datei bereits existiert
             if (!File.Exists(savePath))
                 fileStream = File.Create(savePath);
@@ -109,9 +109,12 @@ namespace NoPasaranTD.Data
             // Instanziert ein neues Map-Objekt
             Map mapObj = new Map()
             {
+                Name = dataMap.Name,
+                Dimension = dataMap.Dimension,
                 Obstacles = new List<Obstacle>(),
+                PathWidth = dataMap.PathWidth,
                 BackgroundPath = dataMap.BackgroundPath,
-                BalloonPath = new Utilities.Vector2D[dataMap.BalloonPath.Count]
+                BalloonPath = new Vector2D[dataMap.BalloonPath.Count]
             };
 
             // Erstellt alle Obstacle-Objekte aus dem JObject Objekt
@@ -128,9 +131,8 @@ namespace NoPasaranTD.Data
             {
                 float x = dataMap.BalloonPath[i].X;
                 float y = dataMap.BalloonPath[i].Y;
-
-                mapObj.BalloonPath[i] = new Utilities.Vector2D(x,y);
-            }               
+                mapObj.BalloonPath[i] = new Vector2D(x,y);
+            }
             return mapObj;
         }
     }  

@@ -1,21 +1,11 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace NoPasaranTD.Model
 {
     public abstract class Tower
     {
-        public Tower()
-        {
-            
-;
-        }
-
         public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
         public uint Level { get; set; }
 
