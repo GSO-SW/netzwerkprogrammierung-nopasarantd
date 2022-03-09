@@ -135,11 +135,11 @@ namespace NoPasaranTD.Model.Towers
                     timeLastShot = time;
                     lastBaloonIndex = targetIndex;
                     justShotSomeUglyAss = true;
-                    lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[targetIndex].PathPosition);
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex].PathPosition);
                     game.DamageBalloon(targetIndex, (int)strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
-            if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(game.Balloons[lastBaloonIndex].PathPosition);
+            if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBaloonIndex].PathPosition);
 
             if (currentAngle < aimAngle && ticks % 9 == 0 && aimAngle - currentAngle > 5)
                 currentAngle += 4.5F;

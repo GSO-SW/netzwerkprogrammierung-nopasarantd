@@ -132,7 +132,7 @@ namespace NoPasaranTD.Engine
 			// Alle Ballons in der Reichweite des Turms bestimmen
 			for (int i = Balloons.Count - 1; i >= 0; i--)
             {
-                Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[i].PathPosition); // Position des Ballons
+                Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[i].PathPosition); // Position des Ballons
                 Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
                 if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
                 {
@@ -184,7 +184,7 @@ namespace NoPasaranTD.Engine
 			if (Balloons[index].Type - damage > BalloonType.None)
 			{
 				Balloons[index].Type -= damage; // Aufaddieren des Geldes
-				Towers[indexTower].NumberKills += (ulong)damage;
+				tower.NumberKills += (ulong)damage;
 				Money += damage;
 			}
 			else
