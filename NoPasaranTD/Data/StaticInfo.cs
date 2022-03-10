@@ -64,7 +64,6 @@ namespace NoPasaranTD.Data
             TowerPrice.TryGetValue(type, out uint price);
             return price;
         }
-
         public static uint GetTowerDamage(Type type)
         {
             TowerDamage.TryGetValue(type, out uint damage);

@@ -132,7 +132,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            // TODO: Tower Upgraden
+            currentGame.UpgradeTower(Context);
         }
 
         public override void MouseDown(MouseEventArgs e)

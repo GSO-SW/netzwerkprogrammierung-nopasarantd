@@ -207,5 +207,11 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			Towers.Remove(t);
 		}
+
+		public void UpgradeTower(Tower t)
+        {
+			t.Level++;
+          
+        }
 	}
 }
