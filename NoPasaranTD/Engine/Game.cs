@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using System;
@@ -16,6 +17,8 @@ namespace NoPasaranTD.Engine
 
 		public uint CurrentTick { get; private set; }
 
+
+		public NetworkHandler NetworkHandler { get; set; }
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
@@ -24,8 +27,9 @@ namespace NoPasaranTD.Engine
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
 
-		public Game(Map map)
-		{
+		public Game(Map map, NetworkHandler networkHandler = null)
+		{			
+			NetworkHandler = networkHandler;
 			CurrentMap = map;
 			Towers = new List<Tower>();
 			Balloons = new List<Balloon>();

@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using NoPasaranTD.Networking;
 using NoPasaranTD.Visuals;
 using NoPasaranTD.Visuals.Main;
 using System;
@@ -17,7 +18,7 @@ namespace NoPasaranTD.Engine
         public StaticDisplay()
             => InitializeComponent();
 
-        public void LoadGame(string mapFile)
+        public void LoadGame(string mapFile, NetworkHandler handler = null)
         {
             if (mapFile == null)
             {
@@ -28,7 +29,7 @@ namespace NoPasaranTD.Engine
             {
                 // Lade map und initialisiere sie
                 Map map = MapData.GetMapByFileName(mapFile); map.Initialize();
-                currentGame = new Game(map);
+                currentGame = new Game(map, handler);
                 LoadScreen(null); // Screen entladen
             }
         }
