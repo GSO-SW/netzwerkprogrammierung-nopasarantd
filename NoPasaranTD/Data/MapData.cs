@@ -6,6 +6,7 @@ using System.Drawing;
 using Newtonsoft.Json;
 using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
+using System.Reflection;
 
 namespace NoPasaranTD.Data
 {
@@ -17,21 +18,19 @@ namespace NoPasaranTD.Data
         /// <summary>
         /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
         /// Die Methode erlaubt keine parallele zugriffe und läuft synchron!
-        /// </summary>       
+        /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns></returns>
         /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
         /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
-        public static Map GetMapByFile(string fileName)
+        public static Map GetMapByFileName(string fileName)
         {
-            string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
-
-            // Prüft ob die Datei bereits existiert
-            if (!File.Exists(savePath))
-                throw new FileNotFoundException(savePath);
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
 
             Map obj;
-            using (StreamReader streamReader = new StreamReader(savePath))
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader streamReader = new StreamReader(stream))
             {
                 string rawData = streamReader.ReadToEnd();
 
@@ -46,22 +45,20 @@ namespace NoPasaranTD.Data
         /// <summary>
         /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
         /// Die Methode erlaubt keine parallele zugriffe und läuft asynchron!
-        /// </summary>       
+        /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns></returns>
         /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
         /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
-        public static async Task<Map> GetMapByFileAsync(string fileName)
+        public static async Task<Map> GetMapByFileNameAsync(string fileName)
         {
-            string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
-
-            // Prüft ob die Datei bereits existiert
-            if (!File.Exists(savePath))
-                throw new FileNotFoundException(savePath);
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
 
             Map obj;
-            using (StreamReader streamReader = new StreamReader(savePath))
-            {           
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader streamReader = new StreamReader(stream))
+            {
                 string rawData = await streamReader.ReadToEndAsync();
 
                 try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
@@ -73,12 +70,12 @@ namespace NoPasaranTD.Data
         }
 
         /// <summary>
-        /// Speichert ein Map Objekt.</br>
-        /// Die Methode erlaubt keine parallele zugriffe !
+        /// Speichert ein Map Objekt asynchron.</br>
+        /// Die Methode erlaubt keine parallele zugriffe!
         /// </summary>
         /// <param name="fileName">Name der neu zu erstellenden Datei</param>
         /// <param name="map">Die zur speichernde Map</param>
-        public static async Task CreateNewMapAsync(string fileName, Map map)
+        public static async Task SaveMapAsync(Map map, string fileName)
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
@@ -93,7 +90,7 @@ namespace NoPasaranTD.Data
             {
                 await streamWriter.WriteAsync(JsonConvert.SerializeObject(map, Formatting.Indented));
                 streamWriter.Close();
-            }                
+            }
         }
 
         /// <summary>

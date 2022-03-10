@@ -27,7 +27,7 @@ namespace NoPasaranTD.Engine
             else
             {
                 // Lade map und initialisiere sie
-                Map map = MapData.GetMapByFile(mapFile); map.Initialize();
+                Map map = MapData.GetMapByFileName(mapFile); map.Initialize();
                 currentGame = new Game(map);
                 LoadScreen(null); // Screen entladen
             }

@@ -19,7 +19,7 @@ namespace NoPasaranTD.Visuals.Main
         public GuiLobby()
         {
             // Lade Spielszene
-            Map map = MapData.GetMapByFile("spentagon"); map.Initialize();
+            Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
             backgroundGame = new Game(map);
             {
                 // UILayout unsichtbar und inaktiv schalten

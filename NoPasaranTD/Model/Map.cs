@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using Newtonsoft.Json;
 using NoPasaranTD.Data;
+using System.Reflection;
+using System.IO;
 
 namespace NoPasaranTD.Model
 {
@@ -27,14 +29,20 @@ namespace NoPasaranTD.Model
         public float PathWidth { get; set; }
 
         private string backgroundPath;
-        public string BackgroundPath 
-        { 
-            get => backgroundPath; 
+        public string BackgroundPath
+        {
+            get => backgroundPath;
             set
-            { 
+            {
                 backgroundPath = value;
-                BackgroundImage = new Bitmap(Environment.CurrentDirectory + BackgroundPath); 
-            } 
+
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                string resourceName = "NoPasaranTD.Resources." + value;
+                using(Stream stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    BackgroundImage = new Bitmap(stream);
+                }
+            }
         }
 
         [JsonIgnore]
