@@ -25,7 +25,7 @@ namespace NoPasaranTD.Model
         public double Range { get => StaticInfo.GetTowerRange(GetType()); }
         public ulong NumberKills { get; set; }
         public bool IsSelected { get; set; } = true;
-        public List<int> SegmentsInRange { get; set; }
+        public List<int> SegmentsInRange { get; private set; }
 
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }

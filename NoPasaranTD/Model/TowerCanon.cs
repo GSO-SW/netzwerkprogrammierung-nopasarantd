@@ -21,7 +21,7 @@ namespace NoPasaranTD.Model.Towers
         long time;
         long timeLastShot;
         Utilities.Vector2D lastBalloonPos;
-        Tuple<int, int> lastBaloonIndex;
+        (int segment, int index) lastBaloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
         int centerX, centerY, sizeX, sizeY;
         uint delay;
         uint strength;
@@ -49,7 +49,7 @@ namespace NoPasaranTD.Model.Towers
             font = new Font(FontFamily.GenericSerif, 7);
             time = 0;
             timeLastShot = 0;
-            lastBaloonIndex = Tuple.Create<int, int>(-1, -1);
+            lastBaloonIndex = (-1, -1);
 
             delay = Delay;
             strength = Strength;
@@ -130,8 +130,7 @@ namespace NoPasaranTD.Model.Towers
 
             if (time > timeLastShot + delay)
             {
-
-                Tuple<int, int> targetIndex = game.FindTargetForTower(this, CheckForBalloonsInSegments(game.Balloons));
+                (int segment, int index) targetIndex = game.FindTargetForTower(this);
                 if (targetIndex.Item1 != -1)
                 {
                     timeLastShot = time;
@@ -147,15 +146,6 @@ namespace NoPasaranTD.Model.Towers
                 currentAngle += 4.5F;
             else if (currentAngle > aimAngle && ticks % 9 == 0 && currentAngle - aimAngle > 5)
                 currentAngle -= 4.5F;
-        }
-
-        public List<int> CheckForBalloonsInSegments(List<Balloon>[] balloons)
-        {
-            List<int> segmentsWithBalloons = new List<int>();
-            for (int i = 0; i < balloons.Length; i++)
-                if (balloons[i].Count > 0 && SegmentsInRange.Contains(i))
-                    segmentsWithBalloons.Add(i);
-            return segmentsWithBalloons;
         }
 
         // Weißt dem Tower einen neuen Ziel-Rotationswinkel zu

@@ -147,37 +147,37 @@ namespace NoPasaranTD.Engine
 		}
 
 		/// <summary>
-		/// Gibt einen Ballon in Reichweite des Turms zurück, der das gesuchte Kriterium am besten erfüllt
+		/// Gibt einen Ballon in Reichweite des Turms zurück, der das gesuchte Kriterium, des Turmes, am besten erfüllt
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns>Tuple mit item1 = Pfadabschnitt, item2 = Index im Pfadabschnitt</br>
 		/// Ohne Ballon in Reichweite -1</returns>
-		public Tuple<int, int> FindTargetForTower(Tower tower, List<int> segments)
+		public (int segment, int index) FindTargetForTower(Tower tower)
 		{
-			Tuple<int, int> currentSelectedBalloon = Tuple.Create<int, int>(0, 0); // Abspeichern der derzeit weitesten bekannten Position eines Ballons 
+			(int segment, int index) currentSelectedBalloon = (0, 0); // Abspeichern der derzeit weitesten bekannten Position eines Ballons 
 			bool foundBalloon = false; // Variable zum festhalten, ob es einen Ballon in der Reichweite gibt
-									   // Alle Ballons in der Reichweite des Turms bestimmen
-			foreach (var item in segments)
+			Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
+
+			foreach (var item in tower.SegmentsInRange) // Alle Segmente in Reichweite des Turmes durchgehen
 			{
 				for (int i = Balloons[item].Count - 1; i >= 0; i--)
 				{
 					Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[item][i].PathPosition); // Position des Ballons
-					Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
 					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
 					{
 						if (!foundBalloon) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
 						{
-							currentSelectedBalloon = Tuple.Create<int, int>(item, i);
+							currentSelectedBalloon = (item, i);
 							foundBalloon = true;
 						}
 						// Checken ob der neue Ballon weiter ist als der bisher weiteste
 						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.Item1][currentSelectedBalloon.Item2]))
-							currentSelectedBalloon = Tuple.Create<int, int>(item, i);
+							currentSelectedBalloon = (item, i);
 					}
 				}
 			}
 			if (!foundBalloon) // Sollte kein Ballon in der Reichweite gefunden worden sein
-				return Tuple.Create<int, int>(-1, -1);
+				return (-1, -1);
 
 			return currentSelectedBalloon;
 		}
