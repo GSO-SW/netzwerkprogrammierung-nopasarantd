@@ -2,6 +2,8 @@
 using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
+using NoPasaranTD.Visuals.Ingame.GameOver;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +25,7 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
+		public bool Paused { get; set; }
 
 		public Game(Map map)
 		{
@@ -33,10 +36,18 @@ namespace NoPasaranTD.Engine
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
 		}
+		
+		public void GameOver() 
+		{
+			Paused = true;
+			Program.LoadScreen(new GuiGameOver());
+		}
 
         #region Game logic region
+		
         public void Update()
 		{
+			if (Paused) return;
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
@@ -48,6 +59,8 @@ namespace NoPasaranTD.Engine
 				{
 					HealthPoints -= (int)Balloons[i].Strength;
 					Balloons.RemoveAt(i);
+                    if (HealthPoints <= 0)
+						GameOver();
 				}
 			}
             UILayout.Update();
@@ -96,13 +109,40 @@ namespace NoPasaranTD.Engine
             UILayout.Render(g);
 		}
 
-		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
-		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
+		public void KeyUp(KeyEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.KeyUp(e);
+		}
+		public void KeyDown(KeyEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.KeyDown(e);
+		}
 
-		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
-		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
-		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
-		public void MouseWheel(MouseEventArgs e) => UILayout.MouseWheel(e);
+		public void MouseUp(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseUp(e);
+		}
+
+		public void MouseDown(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseDown(e);
+		}
+
+		public void MouseMove(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseMove(e);
+		}
+
+		public void MouseWheel(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseWheel(e);
+		}
 		#endregion
 
 		private void ManageBalloonSpawn()
