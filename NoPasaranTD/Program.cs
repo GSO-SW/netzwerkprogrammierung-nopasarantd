@@ -16,15 +16,22 @@ namespace NoPasaranTD
         [STAThread]
         static void Main()
         {
-            // Testcode
-            //using(DiscoveryClient client = new DiscoveryClient("127.0.0.1", 31415))
-            //{
-            //    client.LoginAsync(new NetworkClient("Paolo V."));
-            //    while (!client.LoggedIn) ;
+            using (DiscoveryClient client = new DiscoveryClient("127.0.0.1", 31415))
+            {
+                NetworkClient localPlayer = new NetworkClient("Paolo V.");
 
-            //    foreach(NetworkLobby lobby in client.Lobbies)
-            //        Console.WriteLine(NetworkLobby.Deserialize(lobby));
-            //}
+                client.LoginAsync(localPlayer);
+                while (!client.LoggedIn) ;
+
+                NetworkLobby localLobby = new NetworkLobby(localPlayer, "Test Lobby");
+                client.CreateLobby(localLobby);
+                client.StartGame();
+
+                while (!client.GameStarted) ;
+
+                foreach(NetworkClient networkClient in client.Clients)
+                    Console.WriteLine(networkClient.Name + ", " + networkClient.EndPoint);
+            }
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

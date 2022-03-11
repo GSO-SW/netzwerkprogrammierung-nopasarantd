@@ -63,7 +63,7 @@ namespace NoPasaranTD.Networking
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
                 string message = $"{command}({JsonConvert.SerializeObject(param, Formatting.None)})";
-                byte[] encodedMessage = Encoding.UTF8.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
+                byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 for (int i = 0; i < Clients.Count; i++)
                     await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint);
@@ -97,7 +97,7 @@ namespace NoPasaranTD.Networking
                 {                
                     // Es wird nach einer Nachricht abgehört
                     byte[] encodedMessage = Socket.Receive(ref endPoint);
-                    string message = Encoding.UTF8.GetString(encodedMessage);
+                    string message = Encoding.ASCII.GetString(encodedMessage);
 
                     // Index bei welchem der Parameter im JSON-Format beginnt
                     int firstIndex = message.IndexOf('(');

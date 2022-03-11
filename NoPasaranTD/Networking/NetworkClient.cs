@@ -6,7 +6,7 @@ namespace NoPasaranTD.Networking
     {
         public IPEndPoint EndPoint { get; internal set; }
 
-        public string Name { get; }
+        public string Name { get; set; }
         public NetworkClient(string name) => Name = name;
 
         public static string Deserialize(NetworkClient client) => client.Name;
