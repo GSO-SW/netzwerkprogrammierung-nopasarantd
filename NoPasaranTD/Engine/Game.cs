@@ -17,7 +17,7 @@ namespace NoPasaranTD.Engine
 		public uint CurrentTick { get; private set; }
 
 		public Map CurrentMap { get; }
-		public List<Balloon> Balloons { get; }
+		public List<Balloon>[] Balloons { get; private set; }
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
 
@@ -27,30 +27,40 @@ namespace NoPasaranTD.Engine
 		public Game(Map map)
 		{
 			CurrentMap = map;
+			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
+			InitBalloon();
 			Towers = new List<Tower>();
-			Balloons = new List<Balloon>();
 			UILayout = new UILayout(this);
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
 		}
 
-        #region Game logic region
-        public void Update()
+		#region Game logic region
+		public void Update()
 		{
+			for (int i = 0; i < Balloons.Length; i++)
+			{
+				for (int j = Balloons[i].Count - 1; j >= 0; j--)
+				{ // Aktualisiere Ballons
+					Balloons[i][j].PathPosition += 0.075f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
+					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
+					{
+						HealthPoints -= (int)Balloons[i][j].Strength;
+						Balloons[i].RemoveAt(j);
+					}
+					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
+					{
+						Balloons[i + 1].Add(Balloons[i][j]); // Einfügen des Ballons in das nächste Pfadsegment
+						Balloons[i].RemoveAt(j); // Entfernen des Ballons aus dem letzten Pfadsegment
+					}
+				}
+			}
+
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
 
-            for (int i = Balloons.Count - 1; i >= 0; i--)
-			{ // Aktualisiere Ballons
-				Balloons[i].PathPosition += 0.075f * StaticInfo.GetBalloonVelocity(Balloons[i].Type);
-				if (Balloons[i].PathPosition >= CurrentMap.PathLength)
-				{
-					HealthPoints -= (int)Balloons[i].Strength;
-					Balloons.RemoveAt(i);
-				}
-			}
-            UILayout.Update();
+			UILayout.Update();
 
             ManageBalloonSpawn(); // Spawne Ballons
 			CurrentTick++;
@@ -68,19 +78,26 @@ namespace NoPasaranTD.Engine
 				g.Transform = m;
             }
 
-            for (int i = Balloons.Count - 1; i >= 0; i--)
-			{ // Zeichne Ballons
-				Brush brush;
-				switch (Balloons[i].Type)
-				{ // TODO: Ändern durch Texturen
-					case BalloonType.Red: brush = Brushes.Red; break;
-					case BalloonType.Blue: brush = Brushes.Blue; break;
-					case BalloonType.Green: brush = Brushes.Green; break;
-					case BalloonType.Purple: brush = Brushes.Purple; break;
-					case BalloonType.Black: brush = Brushes.Black; break;
-					case BalloonType.Gold: brush = Brushes.Gold; break;
-					default: continue; // Ignoriere jeden unbekannten Ballon
-				}
+			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
+			{
+				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
+			}
+
+			foreach (var item in Balloons)
+			{
+				for (int i = 0; i < item.Count; i++)
+				{
+					Brush brush;
+					switch (item[i].Type)
+					{ // TODO: Ändern durch Texturen
+						case BalloonType.Red: brush = Brushes.Red; break;
+						case BalloonType.Blue: brush = Brushes.Blue; break;
+						case BalloonType.Green: brush = Brushes.Green; break;
+						case BalloonType.Purple: brush = Brushes.Purple; break;
+						case BalloonType.Black: brush = Brushes.Black; break;
+						case BalloonType.Gold: brush = Brushes.Gold; break;
+						default: continue; // Ignoriere jeden unbekannten Ballon
+					}
 
 				Vector2D pos = CurrentMap.GetPathPosition(
 					StaticEngine.RenderWidth, 
@@ -105,6 +122,12 @@ namespace NoPasaranTD.Engine
 		public void MouseWheel(MouseEventArgs e) => UILayout.MouseWheel(e);
 		#endregion
 
+		private void InitBalloon()
+		{
+			for (int i = 0; i < Balloons.Length; i++)
+				Balloons[i] = new List<Balloon>();
+		}
+
 		private void ManageBalloonSpawn()
 		{
 			if (CurrentTick % 1200 == 0)
@@ -115,48 +138,53 @@ namespace NoPasaranTD.Engine
 				};
 
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(1, values.Length)];
-				Balloons.Add(balloon);
+				balloon.Type = values[random.Next(1, values.Length - 1)];
+				Balloons[0].Add(balloon);
 			}
 		}
 
-        /// <summary>
-        /// Gibt einen Ballon in Reichweite des Turms zurück der am weitesten ist
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns>Index des Ziels in der Liste Balloons.</br>
-        /// Ohne Ballon in Reichweite -1</returns>
-        public int FindTargetForTower(Tower tower)
-        {
-            List<int> balloonsInRange = new List<int>();
-			// Alle Ballons in der Reichweite des Turms bestimmen
-			for (int i = Balloons.Count - 1; i >= 0; i--)
-            {
-                Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[i].PathPosition); // Position des Ballons
-                Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
-                if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-                {
-                    balloonsInRange.Add(i); // Sammeln aller Ballons in der Reichweite, nur notwendig sollte eine Kontrolle für Obstacle Collison eingefügt werden
-                    // Checken ob der neue Ballon weiter ist als der bisher weiteste
-                    if (tower.GetBalloonFunc(Balloons[balloonsInRange.Count - 1], Balloons[balloonsInRange[0]]))
-                    {
-						balloonsInRange.Insert(0, i); // Bisherige Wahl an Stelle 0 schreiben
-						balloonsInRange.RemoveAt(balloonsInRange.Count - 1);
-                    }
-				}                   
-            }
-            if (balloonsInRange.Count == 0) // Sollte kein Ballon in der Reichweite sein
-                return -1;
+		/// <summary>
+		/// Gibt einen Ballon in Reichweite des Turms zurück, der das gesuchte Kriterium, des Turmes, am besten erfüllt
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns>Tuple mit item1 = Pfadabschnitt, item2 = Index im Pfadabschnitt</br>
+		/// Ohne Ballon in Reichweite -1</returns>
+		public (int segment, int index) FindTargetForTower(Tower tower)
+		{
+			(int segment, int index) currentSelectedBalloon = (0, 0); // Abspeichern der derzeit weitesten bekannten Position eines Ballons 
+			bool foundBalloon = false; // Variable zum festhalten, ob es einen Ballon in der Reichweite gibt
+			Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
 
-            return balloonsInRange[0];
-        }
+			foreach (var item in tower.SegmentsInRange) // Alle Segmente in Reichweite des Turmes durchgehen
+			{
+				for (int i = Balloons[item].Count - 1; i >= 0; i--)
+				{
+					Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[item][i].PathPosition); // Position des Ballons
+					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+					{
+						if (!foundBalloon) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
+						{
+							currentSelectedBalloon = (item, i);
+							foundBalloon = true;
+						}
+						// Checken ob der neue Ballon weiter ist als der bisher weiteste
+						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.Item1][currentSelectedBalloon.Item2]))
+							currentSelectedBalloon = (item, i);
+					}
+				}
+			}
+			if (!foundBalloon) // Sollte kein Ballon in der Reichweite gefunden worden sein
+				return (-1, -1);
 
-        /// <summary>
-        /// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
-        /// </summary>
-        /// <param name="rect">Zu kontrollierendes Rechteck</param>
-        /// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
-        public bool IsTowerValidPosition(Rectangle rect)
+			return currentSelectedBalloon;
+		}
+
+		/// <summary>
+		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
+		/// </summary>
+		/// <param name="rect">Zu kontrollierendes Rechteck</param>
+		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
+		public bool IsTowerValidPosition(Rectangle rect)
 		{
 			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
 				if (Towers[i].Hitbox.IntersectsWith(rect))
@@ -177,21 +205,20 @@ namespace NoPasaranTD.Engine
 		/// Fügt einen Ballon eine bestimmte Menge an Schaden hinzu.<br/>
 		/// Sollte der Ballon danach keinen gültigen Typ mehr haben, wird er von der Liste entfernt.
 		/// </summary>
-		/// <param name="index">Der index des Ballons</param>
+		/// <param name="index">Der Index des Ballons</param>
 		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
-		public void DamageBalloon(int index, int damage, Tower tower)
+		public void DamageBalloon(int segment, int index, int damage, Tower tower)
 		{
-			if (Balloons[index].Type - damage > BalloonType.None)
+			if (Balloons[segment][index].Type - damage > BalloonType.None)
 			{
-				Balloons[index].Type -= damage; // Aufaddieren des Geldes
-				tower.NumberKills += (ulong)damage;
+				Balloons[segment][index].Type -= damage; // Aufaddieren des Geldes
 				Money += damage;
 			}
 			else
 			{
-				Money += (int)Balloons[index].Strength; // Nut für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
-				tower.NumberKills += (ulong)Balloons[index].Strength;
-				Balloons.RemoveAt(index);
+				Money += (int)Balloons[segment][index].Strength; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
+				Balloons[segment].RemoveAt(index);
 			}
 		}
 
@@ -200,6 +227,7 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			t.IsSelected = false;
 			Towers.Add(t);
+			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
 		}
 
 		public void RemoveTower(Tower t)

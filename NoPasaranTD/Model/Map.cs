@@ -188,6 +188,17 @@ namespace NoPasaranTD.Model
             return true;
         }
 
+        /// <summary>
+        /// Gibt an ob ein Ballon das nächste Segment des Pfades erreicht hat
+        /// </summary>
+        /// <returns>Gibt true zurück wenn der nächste Pfadabschnitt erreicht wurde</returns>
+        public bool CheckBalloonPosFragment(float pos, uint segmentID)
+        {
+            if (pos > pathFragments[segmentID].EndLength)
+                return true;
+            return false;
+        }
+
         // Berechnen des Betrags zwischen Punkt 'index' und 'index + 1'
         private double GetFragmentMagnitudeOf(int index)
             => (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
