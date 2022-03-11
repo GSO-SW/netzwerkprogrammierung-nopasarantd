@@ -36,6 +36,7 @@ namespace NoPasaranMS
 		}
 		private void Receive(Socket clientSocket)
 		{
+			clientSocket.SendTimeout = 100;
 			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] new connection from {clientSocket.RemoteEndPoint}");
 			Player p = null;
 			try
