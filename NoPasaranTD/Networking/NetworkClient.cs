@@ -1,26 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace NoPasaranTD.Networking
 {
     public class NetworkClient
     {
-        public string Name { get; private set; }    
-        public IPEndPoint EndPoint { get; }
+        public IPEndPoint EndPoint { get; internal set; }
 
-        public NetworkClient(string info, IPEndPoint endPoint)
-        {
-            EndPoint = endPoint;
-            Parse(info);
-        }
+        public string Name { get; }
+        public NetworkClient(string name) => Name = name;
 
-        private void Parse(string infoString)
-        {
-            Name = infoString;  
-        }
+        public static string Deserialize(NetworkClient client) => client.Name;
+        public static NetworkClient Serialize(string info) => new NetworkClient(info);
     }
 }

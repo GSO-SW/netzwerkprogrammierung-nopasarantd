@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Networking;
 using NoPasaranTD.Visuals;
 
 namespace NoPasaranTD
@@ -15,6 +16,15 @@ namespace NoPasaranTD
         [STAThread]
         static void Main()
         {
+            using(DiscoveryClient client = new DiscoveryClient("127.0.0.1", 31415))
+            {
+                client.LoginAsync(new NetworkClient("Paolo V."));
+                while (!client.LoggedIn) ;
+
+                foreach(NetworkLobby lobby in client.Lobbies)
+                    Console.WriteLine(NetworkLobby.Deserialize(lobby));
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             {
