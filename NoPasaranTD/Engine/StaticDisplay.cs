@@ -18,7 +18,18 @@ namespace NoPasaranTD.Engine
         public StaticDisplay()
             => InitializeComponent();
 
-        public void LoadGame(string mapFile, NetworkHandler handler = null)
+        /// <summary>
+        /// Lade Spielinstanz im Offlinemodus
+        /// </summary>
+        /// <param name="mapFile">Dateiname der Map</param>
+        public void LoadGame(string mapFile) => LoadGame(mapFile, new NetworkHandler());
+
+        /// <summary>
+        /// Lade Spielinstanz im Onlinemodus
+        /// </summary>
+        /// <param name="mapFile">Dateiname der Map</param>
+        /// <param name="handler">Dementsprechender Netzwerkmanager</param>
+        public void LoadGame(string mapFile, NetworkHandler handler)
         {
             if (mapFile == null)
             {

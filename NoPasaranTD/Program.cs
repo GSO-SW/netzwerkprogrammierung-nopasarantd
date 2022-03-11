@@ -16,14 +16,15 @@ namespace NoPasaranTD
         [STAThread]
         static void Main()
         {
-            using(DiscoveryClient client = new DiscoveryClient("127.0.0.1", 31415))
-            {
-                client.LoginAsync(new NetworkClient("Paolo V."));
-                while (!client.LoggedIn) ;
+            // Testcode
+            //using(DiscoveryClient client = new DiscoveryClient("127.0.0.1", 31415))
+            //{
+            //    client.LoginAsync(new NetworkClient("Paolo V."));
+            //    while (!client.LoggedIn) ;
 
-                foreach(NetworkLobby lobby in client.Lobbies)
-                    Console.WriteLine(NetworkLobby.Deserialize(lobby));
-            }
+            //    foreach(NetworkLobby lobby in client.Lobbies)
+            //        Console.WriteLine(NetworkLobby.Deserialize(lobby));
+            //}
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

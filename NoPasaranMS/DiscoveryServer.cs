@@ -12,10 +12,10 @@ namespace NoPasaranMS
 	public class DiscoveryServer
 	{
 		private readonly int Port;
-		private readonly Action<List<Socket>> GroupFoundCallback;
+		private readonly Action<List<Player>> GroupFoundCallback;
 		private readonly List<Lobby> Lobbies = new List<Lobby>();
 
-		public DiscoveryServer(int port, Action<List<Socket>> groupFoundCallback)
+		public DiscoveryServer(int port, Action<List<Player>> groupFoundCallback)
 		{
 			Port = port;
 			GroupFoundCallback = groupFoundCallback;
@@ -34,9 +34,9 @@ namespace NoPasaranMS
 				new Thread(() => Receive(clientSocket)).Start();
 			}
 		}
+
 		private void Receive(Socket clientSocket)
 		{
-			clientSocket.SendTimeout = 100;
 			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] new connection from {clientSocket.RemoteEndPoint}");
 			Player p = null;
 			try
@@ -49,9 +49,8 @@ namespace NoPasaranMS
 				p = new Player(playerInfo, clientSocket, writer);
 				Lobbies[0].Players.Add(p);
 				SendUpdates();
-				while (!p.StopReceiving.WaitOne(100))
-					if (clientSocket.Available > 0)
-						HandleMessage(p, reader.ReadLine());
+
+				while (true) HandleMessage(p, reader.ReadLine());
 			}
 			catch (Exception)
 			{
@@ -64,6 +63,7 @@ namespace NoPasaranMS
 					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {clientSocket.RemoteEndPoint}");
 			}
 		}
+
 		private void HandleMessage(Player sender, string message)
 		{
 			try
@@ -85,9 +85,7 @@ namespace NoPasaranMS
 					case "StartGame":
 						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} started game for lobby {lobby.Info}");
 						Lobbies.Remove(lobby);
-						foreach (var p in lobby.Players)
-							p.StopReceiving.Set();
-						GroupFoundCallback(lobby.Players.Select(p => p.Socket).ToList());
+						GroupFoundCallback(lobby.Players.ToList());
 						break;
 					case "Join":
 						Lobbies.Find(l => l.Info == content).Players.Add(sender);
@@ -114,6 +112,7 @@ namespace NoPasaranMS
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] weird message from {sender.Info}");
 			}
 		}
+
 		private void SendUpdates()
 		{
 			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending updates -> {FullInfo()}");
@@ -132,11 +131,11 @@ namespace NoPasaranMS
 					catch (Exception)
 					{
 						RemovePlayerFromLobby(p);
-						p.StopReceiving.Set();
 					}
 				}
 			}
 		}
+
 		private void RemovePlayerFromLobby(Player p)
 		{
 			var i = Lobbies.FindIndex(l => l.Players.Contains(p));
@@ -149,32 +148,5 @@ namespace NoPasaranMS
 		}
 
 		private string FullInfo() => new StringBuilder().AppendJoin('\t', Lobbies.Select(l => l.FullInfo)).ToString();
-
-		private class Lobby
-		{
-			public string Info;
-			public List<Player> Players = new List<Player>();
-			public Lobby(string info) => Info = info;
-			public Lobby(string info, Player host)
-			{
-				Info = info;
-				Players.Add(host);
-			}
-			public string FullInfo => new StringBuilder(Info + '|').AppendJoin('|', Players.Select(p => p.Info)).ToString();
-
-		}
-		private class Player
-		{			
-			public string Info;
-			public Socket Socket;
-			public StreamWriter Writer;
-			public ManualResetEvent StopReceiving = new ManualResetEvent(false);
-			public Player(string info, Socket socket, StreamWriter writer)
-			{
-				Info = info;
-				Socket = socket;
-				Writer = writer;
-			}
-		}
 	}
 }

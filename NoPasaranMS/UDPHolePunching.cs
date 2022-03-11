@@ -10,21 +10,21 @@ namespace NoPasaranMS
 {
 	static class UDPHolePunching
 	{
-		public static void Connect(List<Socket> clientTcpSockets, int port)
+		public static void Connect(List<Player> players, int port)
 		{
 			try
 			{
-				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending 'StartP2P' to {new StringBuilder().AppendJoin(", ", clientTcpSockets.Select(x => x.RemoteEndPoint))}");
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending 'StartP2P' to {new StringBuilder().AppendJoin(", ", players.Select(x => x.Socket.RemoteEndPoint))}");
 				// setup local udp
 				var localEndpoint = new IPEndPoint(IPAddress.Any, port);
 				using var serverUdpSocket = new UdpClient(port);
 				// each client gets send an id over tcp and sends it back over udp
 				// send each client the above port and their id
-				for (int i = 0; i < clientTcpSockets.Count; i++)
-					clientTcpSockets[i].Send(Encoding.ASCII.GetBytes("StartP2P#" + port + '|' + i));
+				for (int i = 0; i < players.Count; i++)
+					players[i].Writer.WriteLine("StartP2P#" + port + '|' + i);
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] receiving endpoints");
 				// receive hello messages from clients and save their endpoints by id
-				var clientUdpEndpoints = new IPEndPoint[clientTcpSockets.Count];
+				var clientUdpEndpoints = new IPEndPoint[players.Count];
 				while (clientUdpEndpoints.Any(ep => ep == null))
 				{
 					var ep = new IPEndPoint(0, 0);
@@ -34,7 +34,7 @@ namespace NoPasaranMS
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] received: {new StringBuilder().AppendJoin<IPEndPoint>(", ", clientUdpEndpoints)}");
 				Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] sending out endpoints");
 
-				for (int i = 0; i < clientTcpSockets.Count; i++)
+				for (int i = 0; i < players.Count; i++)
 				{
 					// pack endpoints into string "ep1|ep2|ep3"
 					var sb = new StringBuilder();
@@ -43,7 +43,7 @@ namespace NoPasaranMS
 							sb.Append(clientUdpEndpoints[j]).Append('|');
 					sb.Remove(sb.Length - 1, 1); // remove trailing '|'
 					// send out the string
-					clientTcpSockets[i].Send(Encoding.ASCII.GetBytes(sb.ToString()));
+					players[i].Writer.WriteLine(sb);
 					Console.Write('.');
 				}
 				// and we're done
@@ -57,8 +57,8 @@ namespace NoPasaranMS
 			}
 			finally
 			{
-				foreach (var socket in clientTcpSockets)
-					socket.Close();
+				foreach (var player in players)
+					player.Socket.Close();
 			}
 		}
 	}

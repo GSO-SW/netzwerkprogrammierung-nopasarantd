@@ -26,7 +26,7 @@ namespace NoPasaranTD.Engine
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
 
-		public Game(Map map, NetworkHandler networkHandler = null)
+		public Game(Map map, NetworkHandler networkHandler)
 		{
 			NetworkHandler = networkHandler;
 			CurrentMap = map;
@@ -37,8 +37,15 @@ namespace NoPasaranTD.Engine
 			HealthPoints = StaticInfo.StartHP;
 			InitNetworkHandler();
 		}
-        #region Game logic region
-        public void Update()
+
+		private void InitNetworkHandler()
+		{
+			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
+			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
+		}
+
+		#region Game logic region
+		public void Update()
 		{
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
@@ -198,23 +205,17 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		public void AddTower(object t)
+		private void AddTower(object t)
 		{
 			// TODO network communication
 			(t as Tower).IsSelected = false;
 			Towers.Add((Tower)t);
 		}
 
-		public void RemoveTower(object t)
+		private void RemoveTower(object t)
 		{
 			// TODO network communication
 			Towers.Remove((Tower)t);
 		}
-
-		private void InitNetworkHandler()
-        {
-			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
-			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
-        }
 	}
 }

@@ -27,9 +27,18 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public Dictionary<string, Action<object>> EventHandlers { get; }
 
+        /// <summary>
+        /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
+        /// </summary>
+        public bool OfflineMode { get => Socket == null || Clients == null; }
+
         #endregion
         #region Konstruktor
 
+        // Offlinemodus des Networkhandlers
+        public NetworkHandler() => EventHandlers = new Dictionary<string, Action<object>>();
+
+        // Onlinemodus des Networkhandlers
         public NetworkHandler(UdpClient socket, List<NetworkClient> clients)
         {
             Socket = socket;
@@ -37,7 +46,7 @@ namespace NoPasaranTD.Networking
             EventHandlers = new Dictionary<string, Action<object>>();
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
-            new Thread(ReceiveBroadcast).Start();                                
+            new Thread(ReceiveBroadcast).Start();
         }
 
         #endregion
@@ -49,21 +58,36 @@ namespace NoPasaranTD.Networking
         /// <param name="message">Die Nachricht als String</param>
         public async void InvokeEvent(string command, object param)
         {
-            // Eine Nachricht wird erstellt mit folgendem Format:
-            // "COMMAND"("PARAMETER")
-            string message = $"{command}({JsonConvert.SerializeObject(param, Formatting.None)})"; 
-            byte[] encodedMessage = Encoding.UTF8.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
+            if(!OfflineMode)
+            {
+                // Eine Nachricht wird erstellt mit folgendem Format:
+                // "COMMAND"("PARAMETER")
+                string message = $"{command}({JsonConvert.SerializeObject(param, Formatting.None)})";
+                byte[] encodedMessage = Encoding.UTF8.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
-            for (int i = 0; i < Clients.Count; i++)
-                await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint);          
-            // Die Nachricht wird an alle Teilnehmer versendet
+                for (int i = 0; i < Clients.Count; i++)
+                    await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint);
+                // Die Nachricht wird an alle Teilnehmer versendet
+            }
+
+            // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+            if (!EventHandlers.TryGetValue(command, out Action<object> handler))
+            {
+                Console.WriteLine("Cannot find such a command: " + command);
+                return;
+            }
+
+            // Führe event im client aus
+            handler(param);
         }
 
         /// <summary>
         /// Methode für das Zuhören von Nachrichten in einer Session
         /// </summary>
-        public void ReceiveBroadcast()
+        private void ReceiveBroadcast()
         {
+            if (OfflineMode) throw new Exception("Can't receive input in OfflineMode");
+
             // Der IP-Endpunkt von dem Abgehört werden soll
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -104,8 +128,7 @@ namespace NoPasaranTD.Networking
             catch { }
         }
 
-        public void Dispose() =>
-            Socket.Dispose();
+        public void Dispose() => Socket?.Dispose();
 
         #endregion
     }
