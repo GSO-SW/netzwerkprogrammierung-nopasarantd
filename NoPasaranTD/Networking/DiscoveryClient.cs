@@ -63,7 +63,7 @@ namespace NoPasaranTD.Networking
         /// <param name="player">Der spieler als den man sich authentifiziert</param>
         public async void LoginAsync(NetworkClient player)
         {
-            string playerInfo = NetworkClient.Deserialize(player);
+            string playerInfo = NetworkClient.Serialize(player);
             await TcpWriter.WriteLineAsync(playerInfo);
             await TcpWriter.FlushAsync();
         }
@@ -74,7 +74,7 @@ namespace NoPasaranTD.Networking
         /// <param name="player">Spezifizierter Spieler</param>
         public async void UpdatePlayer(NetworkClient player)
         {
-            string playerInfo = NetworkClient.Deserialize(player);
+            string playerInfo = NetworkClient.Serialize(player);
             await TcpWriter.WriteLineAsync("SetUserInfo#" + playerInfo);
             await TcpWriter.FlushAsync();
         }
@@ -152,7 +152,7 @@ namespace NoPasaranTD.Networking
             Clients = new List<NetworkClient>();
             for (int i = 0; i < connectionArgs.Length / 2; i++)
             { // Serialisiere die Antwort vom Server
-                NetworkClient client = NetworkClient.Serialize(connectionArgs[i]);
+                NetworkClient client = NetworkClient.Deserialize(connectionArgs[i]);
                 string[] endpointArgs = connectionArgs[i + 1].Split(':');
                 client.EndPoint = new IPEndPoint(
                     IPAddress.Parse(endpointArgs[0]), int.Parse(endpointArgs[1])
@@ -168,7 +168,7 @@ namespace NoPasaranTD.Networking
             Lobbies.Clear();
             string[] lobbyInfos = infoStr.Split('\t');
             for (int i = 0; i < lobbyInfos.Length; i++)
-                Lobbies.Add(NetworkLobby.Serialize(lobbyInfos[i]));
+                Lobbies.Add(NetworkLobby.Deserialize(lobbyInfos[i]));
             LoggedIn = true;
         }
 
