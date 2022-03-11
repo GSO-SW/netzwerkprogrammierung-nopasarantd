@@ -152,7 +152,7 @@ namespace NoPasaranTD.Model
             cornersV[2] = cornersV[3];
             cornersV[3] = save;
 
-            for (int i = 0; i < cornersV.Length; i++) // Alle Ecken durchgehen
+            for (int i = 0; i < cornersV.Length; i++) // Alle Seiten durchgehen
             {
                 Vector2D connectionRecV;
                 if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
@@ -177,10 +177,19 @@ namespace NoPasaranTD.Model
                 // Alle Hitboxen des Pfades durchgehen und auf Kollisionen kontrollieren
                 for (int j = 0; j < BalloonPath.Length - 1; j++)
                 {
-                    for (int k = 0; k < 2; k++) // Hitbox ober- und unterhalb kontrollieren
+                    for (int k = 0; k < 3; k++) // Hitbox ober- und unterhalb kontrollieren
                     {
-                        Vector2D pathLocationV = pathHitbox[k, j * 2];
-                        Vector2D pathDirectionV = pathHitbox[k, j * 2 + 1] - pathLocationV;
+                        Vector2D pathLocationV, pathDirectionV;
+                        if (k == 2) // Kontrolle des eigentlichen Pfades auf Kollisionen
+                        {
+                            pathLocationV = BalloonPath[j];
+                            pathDirectionV = BalloonPath[j + 1] - pathLocationV;
+                        }
+                        else // Kontrolle der Hitboxen auf Kollisionen
+                        {
+                            pathLocationV = pathHitbox[k, j * 2]; // j * 2, wird mal 2 gerechnet, um nur jede 2. Stelle zu nehmen, da für jeden Pfadpunkt 2 Punkte auf jeder Seite erstellt werden 
+                            pathDirectionV = pathHitbox[k, j * 2 + 1] - pathLocationV;
+                        }
                         // Wert der Variable für die Geradengleichung an der Schnittstelle
                         float collisionVariablePathF = ((pathLocationV.Y - cornersV[i].Y) * connectionRecV.X + (cornersV[i].X - pathLocationV.X) * connectionRecV.Y) / (pathDirectionV.X * connectionRecV.Y - pathDirectionV.Y * connectionRecV.X);
                         float collisionVariableRecF = ((cornersV[i].Y - pathLocationV.Y) * pathDirectionV.X + (pathLocationV.X - cornersV[i].X) * pathDirectionV.Y) / (connectionRecV.X * pathDirectionV.Y - connectionRecV.Y * pathDirectionV.X);
