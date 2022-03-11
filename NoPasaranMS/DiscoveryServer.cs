@@ -37,7 +37,9 @@ namespace NoPasaranMS
 
 		private void Receive(Socket clientSocket)
 		{
-			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] new connection from {clientSocket.RemoteEndPoint}");
+			EndPoint endpoint = clientSocket.RemoteEndPoint;
+			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] new connection from {endpoint}");
+
 			Player p = null;
 			try
 			{
@@ -56,11 +58,11 @@ namespace NoPasaranMS
 			{
 				if (p != null)
 				{
-					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {clientSocket.RemoteEndPoint} '{p.Info}'");
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint} '{p.Info}'");
 					RemovePlayerFromLobby(p);
 				}
 				else
-					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {clientSocket.RemoteEndPoint}");
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint}");
 			}
 		}
 
@@ -95,8 +97,6 @@ namespace NoPasaranMS
 					case "Leave":
 						RemovePlayerFromLobby(sender);
 						Lobbies[0].Players.Add(sender);
-						if (lobby.Players.Count == 0)
-							Lobbies.Remove(lobby);
 						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} left {content}");
 						break;
 					case "NewLobby":
@@ -139,6 +139,8 @@ namespace NoPasaranMS
 		private void RemovePlayerFromLobby(Player p)
 		{
 			var i = Lobbies.FindIndex(l => l.Players.Contains(p));
+			if (i == -1) return;
+
 			Lobbies[i].Players.Remove(p);
 			if (i > 0 && Lobbies[i].Players.Count == 0)
 			{

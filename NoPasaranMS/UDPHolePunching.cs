@@ -21,7 +21,11 @@ namespace NoPasaranMS
 				// each client gets send an id over tcp and sends it back over udp
 				// send each client the above port and their id
 				for (int i = 0; i < players.Count; i++)
+				{
 					players[i].Writer.WriteLine("StartP2P#" + port + '|' + i);
+					players[i].Writer.Flush();
+				}
+
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] receiving endpoints");
 				// receive hello messages from clients and save their endpoints by id
 				var clientUdpEndpoints = new IPEndPoint[players.Count];
@@ -36,14 +40,23 @@ namespace NoPasaranMS
 
 				for (int i = 0; i < players.Count; i++)
 				{
-					// pack endpoints into string "ep1|ep2|ep3"
+					// pack endpoints into string "info1|ep1|info2|ep2|info3|ep3"
 					var sb = new StringBuilder();
 					for (int j = 0; j < clientUdpEndpoints.Length; j++)
+					{
 						if (i != j)
-							sb.Append(clientUdpEndpoints[j]).Append('|');
-					sb.Remove(sb.Length - 1, 1); // remove trailing '|'
+						{
+							sb.Append(players[i].Info).Append('|')
+								.Append(clientUdpEndpoints[j]).Append('|');
+						}
+					}
+
+					if(sb.Length > 0) // sb.Length = 0, solange sich nur 1 Spieler in der Lobby befindet
+						sb.Remove(sb.Length - 1, 1); // remove trailing '|'
+
 					// send out the string
 					players[i].Writer.WriteLine(sb);
+					players[i].Writer.Flush();
 					Console.Write('.');
 				}
 				// and we're done
