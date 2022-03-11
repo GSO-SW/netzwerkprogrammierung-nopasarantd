@@ -180,6 +180,7 @@ namespace NoPasaranTD.Networking
                 {
                     // Warte auf Kommando vom Server
                     string message = TcpReader.ReadLine();
+                    if (message == null) throw new IOException("Stream was closed");
 
                     int index = message.IndexOf('#');
                     if (index == -1)

@@ -52,7 +52,12 @@ namespace NoPasaranMS
 				Lobbies[0].Players.Add(p);
 				SendUpdates();
 
-				while (true) HandleMessage(p, reader.ReadLine());
+				while (true)
+				{
+					string message = reader.ReadLine();
+					if (message == null) throw new IOException("Stream was closed");
+					HandleMessage(p, message);
+				}
 			}
 			catch (Exception)
 			{
