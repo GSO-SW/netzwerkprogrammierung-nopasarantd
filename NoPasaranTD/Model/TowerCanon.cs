@@ -2,7 +2,6 @@
 using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -50,10 +49,9 @@ namespace NoPasaranTD.Model.Towers
             time = 0;
             timeLastShot = 0;
             lastBalloonIndex = (-1, -1);
-
+            range = Range;
             delay = Delay;
             strength = Strength;
-            range = Range;
             sw = new Stopwatch();
             sw.Start();
         }

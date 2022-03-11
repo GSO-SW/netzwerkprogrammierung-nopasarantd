@@ -42,7 +42,7 @@ namespace NoPasaranTD.Engine
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
 				{ // Aktualisiere Ballons
-					Balloons[i][j].PathPosition += 0.075f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
+					Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
 					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
 					{
 						HealthPoints -= (int)Balloons[i][j].Strength;
@@ -76,11 +76,6 @@ namespace NoPasaranTD.Engine
 				g.ScaleTransform(scaledWidth, scaledHeight);
 				g.DrawImageUnscaled(CurrentMap.BackgroundImage, 0, 0);
 				g.Transform = m;
-			}
-
-			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
-			{
-				g.DrawLine(new Pen(Color.Green), CurrentMap.BalloonPath[i].X, CurrentMap.BalloonPath[i].Y, CurrentMap.BalloonPath[i + 1].X, CurrentMap.BalloonPath[i + 1].Y);
 			}
 
 			foreach (var item in Balloons)

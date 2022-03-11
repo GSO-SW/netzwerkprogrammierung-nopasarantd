@@ -19,7 +19,6 @@ namespace NoPasaranTD.Model
         public bool IsSelected { get; set; } = true;
         public List<int> SegmentsInRange { get; private set; }
 
-
         public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
 
 
@@ -66,11 +65,12 @@ namespace NoPasaranTD.Model
         public void FindSegmentsInRange(Map map)
         {
             List<int> segments = new List<int>();
+            Rectangle rectangle = map.GetScalledRec(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox);
+            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
             for (int i = 0; i < map.BalloonPath.Length - 1; i++)
             {
                 Vector2D locationP = new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y);
                 Vector2D directionP = new Vector2D(map.BalloonPath[i + 1].X - locationP.X, map.BalloonPath[i + 1].Y - locationP.Y);
-                Vector2D centreP = new Vector2D(Hitbox.X + Hitbox.Width / 2, Hitbox.Y + Hitbox.Height / 2);
                 float factor = -1 * (directionP.X * (locationP.X - centreP.X) + directionP.Y * (locationP.Y - centreP.Y)) / (directionP.X * directionP.X + directionP.Y * directionP.Y);
                 if (factor > 1)
                     factor = 1;

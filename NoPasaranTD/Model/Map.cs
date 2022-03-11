@@ -98,12 +98,17 @@ namespace NoPasaranTD.Model
 
         public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
         {
-            return IsCollidingWithPath(new Rectangle(
+            return IsCollidingWithPath(GetScalledRec(scaledWidth,scaledHeight,rect));
+        }
+
+        public Rectangle GetScalledRec(int scaledWidth, int scaledHeight, Rectangle rect)
+        {
+            return new Rectangle(
                 (int)((float)rect.X / scaledWidth * Dimension.Width),
                 (int)((float)rect.Y / scaledHeight * Dimension.Height),
                 (int)((float)rect.Width / scaledWidth * Dimension.Width),
                 (int)((float)rect.Height / scaledHeight * Dimension.Height)
-            ));
+            );
         }
 
         /// <summary>
