@@ -21,7 +21,7 @@ namespace NoPasaranTD.Model.Towers
         long time;
         long timeLastShot;
         Utilities.Vector2D lastBalloonPos;
-        (int segment, int index) lastBaloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
+        (int segment, int index) lastBalloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
         int centerX, centerY, sizeX, sizeY;
         uint delay;
         uint strength;
@@ -49,7 +49,7 @@ namespace NoPasaranTD.Model.Towers
             font = new Font(FontFamily.GenericSerif, 7);
             time = 0;
             timeLastShot = 0;
-            lastBaloonIndex = (-1, -1);
+            lastBalloonIndex = (-1, -1);
 
             delay = Delay;
             strength = Strength;
@@ -134,13 +134,13 @@ namespace NoPasaranTD.Model.Towers
                 if (targetIndex.Item1 != -1)
                 {
                     timeLastShot = time;
-                    lastBaloonIndex = targetIndex;
+                    lastBalloonIndex = targetIndex;
                     justShotSomeUglyAss = true;
-                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex].PathPosition);
-                    game.DamageBalloon(targetIndex, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex.segment][targetIndex.index].PathPosition);
+                    game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
-            if (lastBaloonIndex != -1 && game.Balloons.Count > lastBaloonIndex) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBaloonIndex].PathPosition);
+            if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);
 
             if (currentAngle < aimAngle && ticks % 9 == 0 && aimAngle - currentAngle > 5)
                 currentAngle += 4.5F;

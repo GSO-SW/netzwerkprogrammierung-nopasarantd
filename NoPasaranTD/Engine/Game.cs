@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
 {
-    public class Game
+	public class Game
 	{
 		private readonly Random random = new Random();
 
@@ -62,7 +62,7 @@ namespace NoPasaranTD.Engine
 
 			UILayout.Update();
 
-            ManageBalloonSpawn(); // Spawne Ballons
+			ManageBalloonSpawn(); // Spawne Ballons
 			CurrentTick++;
 		}
 
@@ -76,7 +76,7 @@ namespace NoPasaranTD.Engine
 				g.ScaleTransform(scaledWidth, scaledHeight);
 				g.DrawImageUnscaled(CurrentMap.BackgroundImage, 0, 0);
 				g.Transform = m;
-            }
+			}
 
 			for (int i = 0; i < CurrentMap.BalloonPath.Length - 1; i++)
 			{
@@ -99,18 +99,19 @@ namespace NoPasaranTD.Engine
 						default: continue; // Ignoriere jeden unbekannten Ballon
 					}
 
-				Vector2D pos = CurrentMap.GetPathPosition(
-					StaticEngine.RenderWidth, 
-					StaticEngine.RenderHeight,
-					Balloons[i].PathPosition
-				);
+					Vector2D pos = CurrentMap.GetPathPosition(
+						StaticEngine.RenderWidth,
+						StaticEngine.RenderHeight,
+						item[i].PathPosition
+					);
 
-				g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
-            }
+					g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
+				}
 
-			for (int i = Towers.Count - 1; i >= 0; i--)
-				Towers[i].Render(g);
-            UILayout.Render(g);
+				for (int i = Towers.Count - 1; i >= 0; i--)
+					Towers[i].Render(g);
+				UILayout.Render(g);
+			}
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
@@ -159,7 +160,7 @@ namespace NoPasaranTD.Engine
 			{
 				for (int i = Balloons[item].Count - 1; i >= 0; i--)
 				{
-					Vector2D currentPosition = CurrentMap.GetPathPosition(Balloons[item][i].PathPosition); // Position des Ballons
+					Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[item][i].PathPosition); // Position des Ballons
 					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
 					{
 						if (!foundBalloon) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
@@ -195,8 +196,8 @@ namespace NoPasaranTD.Engine
 					return false;
 
 			return CurrentMap.IsCollidingWithPath(
-				StaticEngine.RenderWidth, 
-				StaticEngine.RenderHeight, 
+				StaticEngine.RenderWidth,
+				StaticEngine.RenderHeight,
 				rect
 			); //Überprüft, ob es eine Kollision mit dem Pfad gibt
 		}
@@ -236,4 +237,5 @@ namespace NoPasaranTD.Engine
 			Towers.Remove(t);
 		}
 	}
-}
+	}
+
