@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Threading;
 using System.Net.Sockets;
@@ -12,9 +10,25 @@ namespace NoPasaranTD.Networking
 {
     public class NetworkHandler : IDisposable
     {
+        #region Eigenschaften
+
+        /// <summary>
+        /// Socket für die UDP-Protokoll Verbindung
+        /// </summary>
         public UdpClient Socket { get; }
+
+        /// <summary>
+        /// Teilnehmer der derzeitigen Session
+        /// </summary>
         public List<NetworkClient> Clients { get; }
+
+        /// <summary>
+        /// Alle möglichen Commands werden mit einer Methode hier abgelegt
+        /// </summary>
         public Dictionary<string, Action<object>> EventHandlers { get; }
+
+        #endregion
+        #region Konstruktor
 
         public NetworkHandler(UdpClient socket, List<NetworkClient> clients)
         {
@@ -22,8 +36,12 @@ namespace NoPasaranTD.Networking
             Clients = clients;
             EventHandlers = new Dictionary<string, Action<object>>();
 
+            // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();                                
         }
+
+        #endregion
+        #region Methoden
 
         /// <summary>
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
@@ -31,44 +49,55 @@ namespace NoPasaranTD.Networking
         /// <param name="message">Die Nachricht als String</param>
         public async void InvokeEvent(string command, object param)
         {
+            // Eine Nachricht wird erstellt mit folgendem Format:
+            // "COMMAND"("PARAMETER")
             string message = $"{command}({JsonConvert.SerializeObject(param, Formatting.None)})"; 
-            byte[] encodedMessage = Encoding.UTF8.GetBytes(message);
+            byte[] encodedMessage = Encoding.UTF8.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
             for (int i = 0; i < Clients.Count; i++)
                 await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint);          
+            // Die Nachricht wird an alle Teilnehmer versendet
         }
 
+        /// <summary>
+        /// Methode für das Zuhören von Nachrichten in einer Session
+        /// </summary>
         public void ReceiveBroadcast()
         {
+            // Der IP-Endpunkt von dem Abgehört werden soll
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
+
             try
             {
                 while (true)
-                {
-                    
+                {                
+                    // Es wird nach einer Nachricht abgehört
                     byte[] encodedMessage = Socket.Receive(ref endPoint);
                     string message = Encoding.UTF8.GetString(encodedMessage);
 
+                    // Index bei welchem der Parameter im JSON-Format beginnt
                     int firstIndex = message.IndexOf('(');
+                    // Index bei welchem der Parameter im JSON-Format endet
                     int lastIndex = message.LastIndexOf(')');
 
-                    if (firstIndex == -1 || lastIndex == -1)
+                    if (firstIndex == -1 || lastIndex == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
                     {
                         Console.WriteLine("Failed to parse message: " + message);                        
                         continue;
                     }
 
                     // COMMAND(PARAMETER)
-                    string command = message.Substring(0, firstIndex);
-                    string jsonString = message.Substring(firstIndex + 1, lastIndex - firstIndex - 1);
+                    string command = message.Substring(0, firstIndex); // Der Command der Nachricht
+                    string jsonString = message.Substring(firstIndex + 1, lastIndex - firstIndex - 1); // Die Weiteren Daten die übertragen wurden
 
+                    // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
                     if(!EventHandlers.TryGetValue(command, out Action<object> handler))
                     {
                         Console.WriteLine("Cannot find such a command: " + command);
                         continue;
                     }
 
-                    try { handler(JsonConvert.DeserializeObject(jsonString)); }                       
+                    try { handler(JsonConvert.DeserializeObject(jsonString)); } // Deserialisiert die Daten von JSON in ein Objekt                   
                     catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
                 }
             }
@@ -77,5 +106,7 @@ namespace NoPasaranTD.Networking
 
         public void Dispose() =>
             Socket.Dispose();
-    }         
+
+        #endregion
+    }
 }

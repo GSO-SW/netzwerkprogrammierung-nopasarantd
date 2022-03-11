@@ -17,7 +17,6 @@ namespace NoPasaranTD.Engine
 
 		public uint CurrentTick { get; private set; }
 
-
 		public NetworkHandler NetworkHandler { get; }
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
@@ -28,7 +27,7 @@ namespace NoPasaranTD.Engine
 		public int HealthPoints { get; set; }
 
 		public Game(Map map, NetworkHandler networkHandler = null)
-		{			
+		{
 			NetworkHandler = networkHandler;
 			CurrentMap = map;
 			Towers = new List<Tower>();
@@ -36,8 +35,8 @@ namespace NoPasaranTD.Engine
 			UILayout = new UILayout(this);
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
+			InitNetworkHandler();
 		}
-
         #region Game logic region
         public void Update()
 		{
@@ -199,17 +198,23 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		public void AddTower(Tower t)
+		public void AddTower(object t)
 		{
 			// TODO network communication
-			t.IsSelected = false;
-			Towers.Add(t);
+			(t as Tower).IsSelected = false;
+			Towers.Add((Tower)t);
 		}
 
-		public void RemoveTower(Tower t)
+		public void RemoveTower(object t)
 		{
 			// TODO network communication
-			Towers.Remove(t);
+			Towers.Remove((Tower)t);
 		}
+
+		private void InitNetworkHandler()
+        {
+			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
+			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
+        }
 	}
 }
