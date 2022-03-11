@@ -60,6 +60,7 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\ListContainer.cs" />
     <Compile Include="Visuals\ButtonContainer.cs" />
     <Compile Include="Visuals\DragDropService.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Utilities\Vector2D.cs" />
     <Compile Include="Visuals\Main\GuiLobby.cs" />
     <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
+    <Compile Include="Visuals\TextBoxContainer.cs" />
     <EmbeddedResource Include="Engine\StaticDisplay.resx">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>

@@ -39,12 +39,18 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,400),        
+            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,450),        
             Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
             ButtonFont = GuiComponent.StandartText1Font,
             Visible = false,
             Foreground = Brushes.Black,
             TextFont = GuiComponent.StandartText1Font,
+        };
+
+        public TextBoxContainer TextBoxContainer { get; set; } = new TextBoxContainer()
+        {
+            Margin = 1,
+            Bounds = new Rectangle(50,50,300,50),
         };
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
@@ -127,6 +133,7 @@ namespace NoPasaranTD.Visuals.Ingame
                     ((Tower)placingTowerDragDrop.Context).Render(g);
                 }
             }
+            TextBoxContainer.Render(g);
         }
 
         public override void KeyUp(KeyEventArgs e)
@@ -138,6 +145,7 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             if(Active)
                 TowerBuildMenu.KeyDown(args);
+            TextBoxContainer.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -167,6 +175,7 @@ namespace NoPasaranTD.Visuals.Ingame
                     SelectedTower.IsSelected = true;
                 }
             }
+            TextBoxContainer.MouseDown(e);
         }
 
         public override void MouseMove(MouseEventArgs e)

@@ -93,7 +93,20 @@ namespace NoPasaranTD.Visuals
         /// <summary>
         /// Das dezeitige Ausgewählte Model Objekt
         /// </summary>
-        public T SelectedItem { get => selectedItem.DataContext; }
+        public T SelectedItem 
+        { 
+            get => selectedItem.DataContext; 
+            set 
+            {
+                selectedItem = items.Find(x => x.DataContext.Equals(value));
+                if (selectedItem != null)
+                {                   
+                    for (int i = 0; i < items.Count; i++)
+                        items[i].IsSelected = false;
+                    selectedItem.IsSelected = true;
+                }                
+            } 
+        }
         
         #endregion      
         #region Public Methods
@@ -166,15 +179,20 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseDown(MouseEventArgs e)
         {
-            for (int i = items.Count - 1; i >= 0; i--)
+            if (IsMouseOver)
             {
-                items[i].MouseDown(e);
-                if (items[i].IsMouseOver)
+                for (int i = items.Count - 1; i >= 0; i--)
                 {
-                    selectedItem = items[i];
-                    SelectionChanged?.Invoke();
+                    items[i].MouseDown(e);
+                    items[i].IsSelected = false;
+                    if (items[i].IsMouseOver)
+                    {
+                        selectedItem = items[i];
+                        selectedItem.IsSelected = true;
+                        SelectionChanged?.Invoke();
+                    }
                 }
-            }
+            }            
         }
 
         public override void MouseMove(MouseEventArgs e)
