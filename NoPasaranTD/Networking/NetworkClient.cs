@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace NoPasaranTD.Networking
 {
-    public class Player
+    public class NetworkClient
     {
-        public string Name { get; set; }    
-        public IPEndPoint EndPoint { get; set; }
+        public string Name { get; private set; }    
+        public IPEndPoint EndPoint { get; }
 
-        public Player(string info, IPEndPoint endPoint)
+        public NetworkClient(string info, IPEndPoint endPoint)
         {
             EndPoint = endPoint;
             Parse(info);

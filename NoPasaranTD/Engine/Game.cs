@@ -18,7 +18,7 @@ namespace NoPasaranTD.Engine
 		public uint CurrentTick { get; private set; }
 
 
-		public NetworkHandler NetworkHandler { get; set; }
+		public NetworkHandler NetworkHandler { get; }
 		public Map CurrentMap { get; }
 		public List<Balloon> Balloons { get; }
 		public List<Tower> Towers { get; }
