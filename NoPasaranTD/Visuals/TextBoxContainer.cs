@@ -20,28 +20,30 @@ namespace NoPasaranTD.Visuals
         public int CaretIndex { get; set; }
         public bool IsFocused { get; set; }
         private Rectangle innerBound => new Rectangle(Bounds.X + Margin, Bounds.Y + Margin, Bounds.Width - Margin * 2, Bounds.Height - Margin * 2);
-        private int offsetX = 0;
+        private float offsetX = 0;
 
         public override void KeyPress(KeyPressEventArgs e)
         {
             if (IsFocused)
             {
-                if (e.KeyChar == '\b' && Text.Length > 0)
+                if (e.KeyChar == '\b' && CaretIndex > 0 && Text.Length >= 0)
                 {
-                    Text = Text.Substring(0, Text.Length - 1);
+                    string left = Text.Substring(0, CaretIndex-1);
+                    string right = Text.Substring(CaretIndex, Text.Length - CaretIndex);
+                    Text = left + right;
                     CaretIndex--;
-                }
-                    
+                }                    
                 else 
                 {
+                    if (e.KeyChar == '\b')
+                        return;
+
                     if (CaretIndex == Text.Length)
-                    {
                         Text += e.KeyChar;
-                    }
                     else if (Text.Length > 0)
                     {
                         string left = Text.Substring(0, CaretIndex);
-                        string right = Text.Substring(CaretIndex, Text.Length - CaretIndex - 1);
+                        string right = Text.Substring(CaretIndex, Text.Length - CaretIndex);
                         left += e.KeyChar;
                         Text = left + right;
                     }
@@ -52,9 +54,9 @@ namespace NoPasaranTD.Visuals
 
         public override void KeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Left)
+            if (e.KeyCode == Keys.Left && CaretIndex > 0)
                 CaretIndex--;
-            else if (e.KeyCode == Keys.Right && CaretIndex < Text.Length - 1)
+            else if (e.KeyCode == Keys.Right && CaretIndex <= Text.Length - 1)
                 CaretIndex++;
         }
 
@@ -72,30 +74,26 @@ namespace NoPasaranTD.Visuals
             g.FillRectangle(Background, innerBound);
 
             Matrix current = g.Transform;
+            Region currentClip = g.Clip;
 
             g.SetClip(innerBound);
             g.TranslateTransform(offsetX, 0);                      
-            g.DrawString(Text, TextFont,Foreground,innerBound,new StringFormat(StringFormatFlags.NoWrap));
+            g.DrawString(Text, TextFont,Foreground,innerBound.X, innerBound.Y,new StringFormat(StringFormatFlags.NoWrap));
+            g.Clip = currentClip;
 
             g.Transform = current;
 
             if (Text != "" && IsFocused)
             {
-                Size leftTextSize = TextRenderer.MeasureText(Text.Substring(0,CaretIndex),TextFont);
+                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), TextFont);
                 g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width, Bounds.Y + 1, Bounds.X + leftTextSize.Width, Bounds.Y + leftTextSize.Height - 2);
+
                 if (leftTextSize.Width >= innerBound.Width)
-                {
                     offsetX = innerBound.Width - leftTextSize.Width;
-                }
             }
             else if (IsFocused)
-            {
                 g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 10);
-            }
-            
-
-            
-            
+                                    
         }
     }
 }
