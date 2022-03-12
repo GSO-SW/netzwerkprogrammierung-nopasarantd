@@ -116,17 +116,7 @@ namespace NoPasaranTD.Engine
 			}
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
-            {
 				Towers[i].Render(g);
-                foreach (var item in Towers[i].NotVisibleSpots)
-                {
-					Brush brush = new SolidBrush(Color.Red);
-					g.FillEllipse(brush, (float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight,item.X).X,
-						(float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.X).Y, 10, 10);
-					g.FillEllipse(brush, (float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.Y).X,
-						(float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.Y).Y, 10, 10);
-				}
-			}
 			foreach (var item in CurrentMap.Obstacles)
             {
 				Brush brush = new SolidBrush(Color.Red);
@@ -214,7 +204,7 @@ namespace NoPasaranTD.Engine
 		private bool CheckBalloonIfHiddenPos(float balloonPos, Tower tower)
 		{
 			foreach (var item in tower.NotVisibleSpots) // Alle nicht sichtbaren Stellen kontrollieren
-				if ((item.X < balloonPos && item.Y > balloonPos)) // Sollte der Ballon innerhalb einer der nicht sichtbaren Stellen sein wird abgebrochen
+				if (item.X < balloonPos && item.Y > balloonPos) // Sollte der Ballon innerhalb einer der nicht sichtbaren Stellen sein wird abgebrochen
 					return false;
 			return true;
 		}
@@ -269,7 +259,7 @@ namespace NoPasaranTD.Engine
 			(t as Tower).IsPlaced = true;			
 
 			Towers.Add((Tower)t);
-			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
+			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
 		}
 
 		private void RemoveTower(object t)
