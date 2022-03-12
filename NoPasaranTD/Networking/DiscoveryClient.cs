@@ -171,7 +171,7 @@ namespace NoPasaranTD.Networking
             string[] connectionArgs = connectionStr.Split('|');
 
             Clients = new List<NetworkClient>();
-            for (int i = 0; i < connectionArgs.Length / 2; i++)
+            for (int i = 0; i < connectionArgs.Length; i += 2)
             { // Serialisiere die Antwort vom Server
                 NetworkClient client = NetworkClient.Deserialize(connectionArgs[i]);
                 string[] endpointArgs = connectionArgs[i + 1].Split(':');
