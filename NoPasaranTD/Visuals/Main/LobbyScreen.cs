@@ -8,6 +8,9 @@ namespace NoPasaranTD.Visuals.Main
     public class LobbyScreen : GuiComponent
     {
 
+        /// <summary>
+        /// Die Lobby die gerendert werden soll
+        /// </summary>
         public NetworkLobby Lobby { get; set; }
 
         private readonly StringFormat textFormat;
@@ -39,13 +42,13 @@ namespace NoPasaranTD.Visuals.Main
 
         #region Event region
         private void LeaveLobby()
-        {
+        { // Befehl zum Verlassen der Lobby
             if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
             parent.DiscoveryClient.LeaveCurrentLobbyAsync();
         }
 
         private void StartGame()
-        {
+        { // Befehl zum Starten des Spiels
             if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
             parent.DiscoveryClient.StartGameAsync();
         }

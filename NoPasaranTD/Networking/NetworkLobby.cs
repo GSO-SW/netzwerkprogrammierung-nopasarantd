@@ -39,6 +39,7 @@ namespace NoPasaranTD.Networking
         /// <returns>Ob der gegebene Spieler gefunden wurde</returns>
         public bool PlayerExists(NetworkClient client)
         {
+            if (client == null) return false;
             string serializedClient = NetworkClient.Serialize(client);
             foreach(NetworkClient player in Players)
             {

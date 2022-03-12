@@ -69,48 +69,46 @@ namespace NoPasaranTD.Visuals.Main
 
         #region Screen events
         private void UpdatePlayer(NetworkClient client)
-        {
-            if (parent.DiscoveryClient == null) return;
+        { // Befehl zum aktualisieren der Spielerinformation
+            if (client == null || parent.DiscoveryClient == null) return;
 
             parent.LocalPlayer = client;
             if (parent.DiscoveryClient.LoggedIn)
                 parent.DiscoveryClient.UpdatePlayerAsync(client);
             else
                 parent.DiscoveryClient.LoginAsync(client);
+
+            // Ursprünglich ist Content auf Login, da diese methode noch nicht ausgeführt wurde
+            // Sobald der sich jedoch eingeloggt hat, soll ein anderer Content angezeigt werden
             btnUpdatePlayer.Content = "Update Info";
         }
 
         private void CreateLobby(NetworkClient host)
-        {
-            // TODO: Change lobby name by textbox
-            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
+        { // Befehl zum erstellen einer neuen lobby
+            // TODO: Ändern vom Lobbynamen via Textbox
+            if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
             parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(host, "Lobby Name (By textbox)" + Environment.TickCount));
         }
 
         private void JoinLobby()
-        {
+        { // Befehl zum Beitreten von Lobbies
             if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
             parent.DiscoveryClient.JoinLobbyAsync(lobbyList.SelectedItem);
         }
         #endregion
 
         #region Implementation region
-        public override void Update()
-        {
-            if (!lobbyList.Active) return;
-            lobbyList.Update();
-        }
+        public override void Update() => lobbyList.Update();
 
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
             btnUpdatePlayer.Render(g);
             btnPlayLocalGame.Render(g);
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
 
             if(parent.LocalPlayer != null)
-            {
+            { // Render Login Zeichenkette
                 string text = "Logged in as: " + parent.LocalPlayer.Name;
                 Size size = TextRenderer.MeasureText(text, StandartText1Font);
                 g.DrawString(text, StandartText1Font, Brushes.Black, 
@@ -120,44 +118,21 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void KeyUp(KeyEventArgs e)
-        {
-            if (!Active) return;
-            lobbyList.KeyUp(e);
-        }
+        public override void KeyUp(KeyEventArgs e) => lobbyList.KeyUp(e);
+        public override void KeyDown(KeyEventArgs e) => lobbyList.KeyUp(e);
 
-        public override void KeyDown(KeyEventArgs e)
-        {
-            if (!Active) return;
-            lobbyList.KeyUp(e);
-        }
-
-        public override void MouseUp(MouseEventArgs e)
-        {
-            if (!Active) return;
-            lobbyList.MouseUp(e);
-        }
+        public override void MouseUp(MouseEventArgs e) => lobbyList.MouseUp(e);
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (!Active) return;
             btnUpdatePlayer.MouseDown(e);
             btnPlayLocalGame.MouseDown(e);
             btnCreateLobby.MouseDown(e);
             lobbyList.MouseDown(e);
         }
 
-        public override void MouseMove(MouseEventArgs e)
-        {
-            if (!Active) return;
-            lobbyList.MouseMove(e);
-        }
-
-        public override void MouseWheel(MouseEventArgs e)
-        {
-            if (!Active) return;
-            lobbyList.MouseWheel(e);
-        }
+        public override void MouseMove(MouseEventArgs e) => lobbyList.MouseMove(e);
+        public override void MouseWheel(MouseEventArgs e) => lobbyList.MouseWheel(e);
         #endregion
 
     }

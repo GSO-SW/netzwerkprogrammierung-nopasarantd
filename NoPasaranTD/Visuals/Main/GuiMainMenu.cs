@@ -15,13 +15,41 @@ namespace NoPasaranTD.Visuals.Main
 
         private static readonly SolidBrush BACKGROUND_COLOR = new SolidBrush(Color.FromArgb(75, Color.Black));
 
+        /// <summary>
+        /// Der aktuelle Status zum Server.<br/>
+        /// Ist eine null-Referenz wenn es keine Probleme gibt
+        /// </summary>
         public string DiscoveryStatus { get; private set; }
+
+        /// <summary>
+        /// Instanz zum Kommunizieren mit dem Vermittlungsserver
+        /// </summary>
         public DiscoveryClient DiscoveryClient { get; private set; }
+
+        /// <summary>
+        /// Die jetzig beigetretene Lobby
+        /// </summary>
         public NetworkLobby CurrentLobby { get; private set; }
 
+        /// <summary>
+        /// Der Spieler als der man eingeloggt ist.<br/>
+        /// Ist eine null-Referenz, wenn der Spieler nicht eingeloggt ist
+        /// </summary>
         public NetworkClient LocalPlayer { get; set; }
+
+        /// <summary>
+        /// Der vom Menu angezeigte Screen
+        /// </summary>
         public GuiComponent ForegroundScreen { get; set; }
+
+        /// <summary>
+        /// Screen zum Managen der Liste von Lobbies
+        /// </summary>
         public LobbyListScreen LobbyListScreen { get; }
+
+        /// <summary>
+        /// Screen zum Managen einer einzelnen Lobby
+        /// </summary>
         public LobbyScreen LobbyScreen { get; }
 
         private readonly Game backgroundGame;
@@ -49,13 +77,11 @@ namespace NoPasaranTD.Visuals.Main
             LobbyScreen = new LobbyScreen(this);
             LobbyListScreen = new LobbyListScreen(this);
             ForegroundScreen = LobbyListScreen;
-
-            // Initialisiere Verbindung mit Vermittlungsserver
             Task.Run(OpenDiscovery);
         }
 
         private void OpenDiscovery()
-        {
+        { // Verbinde mit Vermittlungsserver
             try
             {
                 DiscoveryStatus = "Connecting to server...";
@@ -74,7 +100,7 @@ namespace NoPasaranTD.Visuals.Main
 
         #region Discovery event region
         private void StartGame()
-        {
+        { // Befehl zum Starten des Spiels
             if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
             Program.LoadGame("spentagon", new NetworkHandler(
                 DiscoveryClient.UdpClient, DiscoveryClient.Clients
@@ -82,7 +108,7 @@ namespace NoPasaranTD.Visuals.Main
         }
 
         private void UpdateInfo()
-        {
+        { // Befehl zum aktualisieren der Lobbyinformationen
             if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
 
             CurrentLobby = null;
@@ -119,7 +145,7 @@ namespace NoPasaranTD.Visuals.Main
             ForegroundScreen.Render(g);
 
             if (DiscoveryStatus != null)
-            {
+            { // Zeichne den Status zum Vermittlungsserver
                 Size textSize = TextRenderer.MeasureText(DiscoveryStatus, StandartText1Font);
                 g.DrawString(DiscoveryStatus, StandartText1Font, Brushes.Red, 0, StaticEngine.RenderHeight - textSize.Height);
             }
