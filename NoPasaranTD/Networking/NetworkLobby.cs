@@ -84,14 +84,13 @@ namespace NoPasaranTD.Networking
             string playerInfo = info.Substring(index + 1);
 
             string[] playerInfos = playerInfo.Split('|');
-            // Probably receiving the fake lobby, which can indeed be empty?
             if (playerInfos.Length == 0 || string.IsNullOrEmpty(playerInfos[0]))
                 throw new Exception("Received an empty lobby");
 
             NetworkClient host = NetworkClient.Deserialize(playerInfos[0]);
             NetworkLobby lobby = new NetworkLobby(host, lobbyInfo);
 
-            // int i = 1, because we are ignoring the Host which is already defined
+            // int i = 1 aufgrund vom host, der schon definiert wird
             for (int i = 1; i < playerInfos.Length; i++)
                 lobby.Players.Add(NetworkClient.Deserialize(playerInfos[i]));
             return lobby;

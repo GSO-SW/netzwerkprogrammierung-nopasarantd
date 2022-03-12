@@ -5,7 +5,6 @@ using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
 using System;
 using System.Drawing;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,16 +15,15 @@ namespace NoPasaranTD.Visuals.Main
 
         private static readonly SolidBrush BACKGROUND_COLOR = new SolidBrush(Color.FromArgb(75, Color.Black));
 
-        private ListContainer<NetworkLobby, LobbyItemContainer> lobbyList;
-        private ButtonContainer btnPlayLocalGame;
-        private ButtonContainer btnCreateLobby;
-        private Game backgroundGame;
+        public string DiscoveryStatus { get; private set; }
+        public DiscoveryClient DiscoveryClient { get; private set; }
+        public NetworkLobby CurrentLobby { get; private set; }
 
-        private string discoveryStatus;
-        private DiscoveryClient discoveryClient;
-        private NetworkClient localPlayer;
-        private NetworkLobby currentLobby;
+        public NetworkClient LocalPlayer { get; set; }
+        public GuiComponent ForegroundScreen { get; set; }
+        public LobbyListScreen LobbyListScreen { get; }
 
+        private readonly Game backgroundGame;
         public GuiMainMenu()
         {
             // Lade Spielszene
@@ -46,121 +44,56 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
             }
-            
-            lobbyList = new ListContainer<NetworkLobby, LobbyItemContainer>()
-            {
-                Margin = 10,
-                ItemSize = new Size((int)(StaticEngine.RenderWidth / 1.5f) - 20, 100),
 
-                Position = new Point(StaticEngine.RenderWidth / 6, StaticEngine.RenderHeight / 6 - 20),
-                ContainerSize = new Size((int)(StaticEngine.RenderWidth / 1.5f), (int)(StaticEngine.RenderHeight / 1.5f)),
-                BackgroundColor = new SolidBrush(Color.FromArgb(225, Color.Gray)),
+            LobbyListScreen = new LobbyListScreen(this);
+            ForegroundScreen = LobbyListScreen;
 
-                Items = new NotifyCollection<NetworkLobby>()
-            };
-            lobbyList.SelectionChanged += JoinLobby;
-
-            // Erstelle neue Lobby
-            btnCreateLobby = CreateButton("Create Lobby", new Rectangle(
-                lobbyList.Position.X + lobbyList.ContainerSize.Width - 305,
-                lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
-                150, 30
-            ));
-            btnCreateLobby.ButtonClicked += CreateLobby;
-
-            // Lade privates Spiel
-            btnPlayLocalGame = CreateButton("Play Local Game", new Rectangle(
-                lobbyList.Position.X + lobbyList.ContainerSize.Width - 150,
-                lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
-                150, 30
-            ));
-            btnPlayLocalGame.ButtonClicked += () => Program.LoadGame("spentagon");
-
-            Task.Run(OpenDiscovery); // Initialisiere Verbindung mit Vermittlungsserver
+            // Initialisiere Verbindung mit Vermittlungsserver
+            Task.Run(OpenDiscovery);
         }
 
         private void OpenDiscovery()
         {
             try
             {
-                discoveryStatus = "Connecting to server...";
-                discoveryClient = new DiscoveryClient(Program.SERVER_ADDRESS, Program.SERVER_PORT)
+                DiscoveryStatus = "Connecting to server...";
+                DiscoveryClient = new DiscoveryClient(Program.SERVER_ADDRESS, Program.SERVER_PORT)
                 {
                     OnGameStart = StartGame,
                     OnInfoUpdate = UpdateInfo
                 };
-                discoveryStatus = "Login required!";
-
-                // TODO: Implement properly
-                UpdatePlayer(new NetworkClient("YEET"));
-                discoveryStatus = null;
+                DiscoveryStatus = "Login required!";
             }
             catch (Exception ex)
             {
-                discoveryStatus = "Connection failed: " + ex.Message;
+                DiscoveryStatus = "Connection failed: " + ex.Message;
             }
         }
 
-        private void UpdatePlayer(NetworkClient client)
-        {
-            if (discoveryClient == null) return;
-
-            localPlayer = client;
-            if (discoveryClient.LoggedIn)
-                discoveryClient.UpdatePlayerAsync(client);
-            else
-                discoveryClient.LoginAsync(client);
-
-            // Warte bis Spieler eingeloggt ist
-            while (!discoveryClient.LoggedIn)
-                Thread.Sleep(1);
-        }
-
         #region Discovery event region
-        private void CreateLobby()
-        {
-            if (discoveryClient == null || !discoveryClient.LoggedIn) return;
-
-            // TODO: Change lobby name by textbox
-            discoveryClient.CreateLobbyAsync(new NetworkLobby(localPlayer, "Lobby Name (By textbox)" + Environment.TickCount));
-        }
-
-        private void JoinLobby()
-        {
-            if (discoveryClient == null || !discoveryClient.LoggedIn) return;
-            discoveryClient.JoinLobbyAsync(lobbyList.SelectedItem);
-        }
-
         private void StartGame()
         {
-            if (discoveryClient == null || !discoveryClient.LoggedIn) return;
+            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
             Program.LoadGame("spentagon", new NetworkHandler(
-                discoveryClient.UdpClient, discoveryClient.Clients
+                DiscoveryClient.UdpClient, DiscoveryClient.Clients
             ));
         }
 
         private void UpdateInfo()
         {
-            if (discoveryClient == null || !discoveryClient.LoggedIn) return;
+            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
 
-            currentLobby = null;
-            lobbyList.Items.Clear();
-            foreach(NetworkLobby lobby in discoveryClient.Lobbies)
+            CurrentLobby = null;
+            foreach(NetworkLobby lobby in DiscoveryClient.Lobbies)
             {
-                lobbyList.Items.Add(lobby);
-                if (lobby.PlayerExists(localPlayer))
-                    currentLobby = lobby;
+                if (lobby.PlayerExists(LocalPlayer))
+                    CurrentLobby = lobby;
             }
-            lobbyList.DefineItems();
 
-            // Setze sichtbarkeit von allen Lobby elementen
-            // in abhängigkeit von der beigetretenen Lobby
-            lobbyList.Visible = currentLobby == null;
-            lobbyList.Active = currentLobby == null;
-            btnPlayLocalGame.Visible = currentLobby == null;
-            btnPlayLocalGame.Active = currentLobby == null;
-            btnCreateLobby.Visible = currentLobby == null;
-            btnCreateLobby.Active = currentLobby == null;
+            LobbyListScreen.UpdateLobbies(DiscoveryClient.Lobbies);
+            LobbyListScreen.Visible = CurrentLobby == null;
+            LobbyListScreen.Active = CurrentLobby == null;
+            DiscoveryStatus = null;
         }
         #endregion
 
@@ -168,7 +101,7 @@ namespace NoPasaranTD.Visuals.Main
         public override void Update()
         {
             backgroundGame.Update();
-            lobbyList.Update();
+            ForegroundScreen.Update();
         }
 
         public override void Render(Graphics g)
@@ -177,58 +110,53 @@ namespace NoPasaranTD.Visuals.Main
             backgroundGame.Render(g);
             g.FillRectangle(BACKGROUND_COLOR, 
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
+            ForegroundScreen.Render(g);
 
-            btnPlayLocalGame.Render(g);
-            btnCreateLobby.Render(g);
-            lobbyList.Render(g);
-
-            if(discoveryStatus != null)
+            if (DiscoveryStatus != null)
             {
-                Size textSize = TextRenderer.MeasureText(discoveryStatus, StandartText1Font);
-                g.DrawString(discoveryStatus, StandartText1Font, Brushes.Red, 0, StaticEngine.RenderHeight - textSize.Height);
+                Size textSize = TextRenderer.MeasureText(DiscoveryStatus, StandartText1Font);
+                g.DrawString(DiscoveryStatus, StandartText1Font, Brushes.Red, 0, StaticEngine.RenderHeight - textSize.Height);
             }
         }
 
         public override void KeyUp(KeyEventArgs e)
         {
             backgroundGame.KeyUp(e);
-            lobbyList.KeyUp(e);
+            ForegroundScreen.KeyUp(e);
         }
 
         public override void KeyDown(KeyEventArgs e)
         {
             backgroundGame.KeyDown(e);
-            lobbyList.KeyDown(e);
+            ForegroundScreen.KeyDown(e);
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
             backgroundGame.MouseUp(e);
-            lobbyList.MouseUp(e);
+            ForegroundScreen.MouseUp(e);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
             backgroundGame.MouseDown(e);
-            btnPlayLocalGame.MouseDown(e);
-            btnCreateLobby.MouseDown(e);
-            lobbyList.MouseDown(e);
+            ForegroundScreen.MouseDown(e);
         }
 
         public override void MouseMove(MouseEventArgs e)
         {
             backgroundGame.MouseMove(e);
-            lobbyList.MouseMove(e);
+            ForegroundScreen.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
             backgroundGame.MouseWheel(e);
-            lobbyList.MouseWheel(e);
+            ForegroundScreen.MouseWheel(e);
         }
         #endregion
 
-        private static ButtonContainer CreateButton(string text, Rectangle bounds)
+        internal static ButtonContainer CreateButton(string text, Rectangle bounds)
         {
             return new ButtonContainer
             {
