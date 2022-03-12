@@ -29,9 +29,10 @@ namespace NoPasaranTD.Visuals
 		public virtual void Render(Graphics g) { }
 
 		public virtual void KeyUp(KeyEventArgs e) { }
-		public virtual void KeyDown(KeyEventArgs e) { }
+        public virtual void KeyPress(KeyPressEventArgs e) { }
+        public virtual void KeyDown(KeyEventArgs e) { }
 
-		public virtual void MouseUp(MouseEventArgs e) { }
+        public virtual void MouseUp(MouseEventArgs e) { }
 		public virtual void MouseDown(MouseEventArgs e) { }
         public virtual void MouseMove(MouseEventArgs e) { }
         public virtual void MouseWheel(MouseEventArgs e) { }

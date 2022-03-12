@@ -148,6 +148,11 @@ namespace NoPasaranTD.Visuals.Ingame
             if(Active) TowerBuildMenu.KeyUp(e);
         }
 
+        public override void KeyPress(KeyPressEventArgs e)
+        {
+            if (Active) TowerBuildMenu.KeyPress(e);
+        }
+
         public override void KeyDown(KeyEventArgs args)
         {
             if(Active)

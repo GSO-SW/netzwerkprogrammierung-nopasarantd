@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NoPasaranTD.Networking
 {
@@ -142,9 +143,16 @@ namespace NoPasaranTD.Networking
             );
             UdpClient = new UdpClient();
 
-            // Sende auf Serverendpunkt die gegebene ID
-            byte[] data = Encoding.ASCII.GetBytes(id.ToString());
-            UdpClient.Send(data, data.Length, remoteEndpoint);
+            Task.Run(() =>
+            { // Stelle sicher, dass der Vermittlungsserver die Nachricht erreicht
+                while(!GameStarted)
+                { // TODO: Auf Reliable UDP umsteigen
+                    // Sende auf Serverendpunkt die gegebene ID
+                    byte[] data = Encoding.ASCII.GetBytes(id.ToString());
+                    UdpClient.Send(data, data.Length, remoteEndpoint);
+                    Task.Delay(1000);
+                }
+            });
 
             string connectionStr = TcpReader.ReadLine();
             string[] connectionArgs = connectionStr.Split('|');
