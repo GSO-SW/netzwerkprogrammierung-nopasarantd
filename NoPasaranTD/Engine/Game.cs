@@ -231,12 +231,11 @@ namespace NoPasaranTD.Engine
 		private void AddTower(object t)
 		{
 			// TODO network communication
-			t.IsSelected = false;
-			t.IsPlaced = true;
-			Towers.Add(t);
-			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
 			(t as Tower).IsSelected = false;
+			(t as Tower).IsPlaced = true;			
+
 			Towers.Add((Tower)t);
+			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
 		}
 
 		private void RemoveTower(object t)
