@@ -1,9 +1,9 @@
-﻿using System.Drawing;
+﻿using NoPasaranTD.Networking;
+using System.Drawing;
 
 namespace NoPasaranTD.Visuals.Main
 {
-    // TODO: Objekt zu Lobby ändern
-    public class LobbyItemContainer : ItemContainer<object>
+    public class LobbyItemContainer : ItemContainer<NetworkLobby>
     {
         #region Property region
         private float borderWidth;
@@ -55,7 +55,7 @@ namespace NoPasaranTD.Visuals.Main
         /// <summary>
         /// Model Item
         /// </summary>
-        public override object DataContext { get; set; }
+        public override NetworkLobby DataContext { get; set; }
 
         /// <summary>
         /// Position des Item-Containers auf dem Screen
@@ -88,8 +88,21 @@ namespace NoPasaranTD.Visuals.Main
             => Visible = Position.Y + ItemSize.Height >= ParentBounds.Y && Position.Y <= ParentBounds.Y + ParentBounds.Height;
         #endregion
 
+        private StringFormat titleFormat;
+        private StringFormat subtitleFormat;
         public LobbyItemContainer()
         {
+            titleFormat = new StringFormat()
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Far
+            };
+            subtitleFormat = new StringFormat()
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Near
+            };
+
             BackgroundBrush = Brushes.LightGray;
             ForegroundBrush = Brushes.Black;
             BorderColor = Color.Blue;
@@ -103,8 +116,18 @@ namespace NoPasaranTD.Visuals.Main
             g.FillRectangle(BackgroundBrush, Bounds);
             g.DrawRectangle(IsMouseOver ? hoverPen : borderPen, Bounds);
 
-            // TODO: Rendern der Lobby informationen
-            g.DrawString(DataContext.ToString(), StandartHeader1Font, ForegroundBrush, Bounds);
+            g.DrawString(DataContext.Name, StandartHeader2Font, ForegroundBrush, new Rectangle(
+                Bounds.X, Bounds.Y,
+                Bounds.Width, Bounds.Height / 2
+            ), titleFormat);
+
+            { // Online string
+                string text = DataContext.Players.Count + " Online";
+                g.DrawString(text, StandartText1Font, ForegroundBrush, new Rectangle(
+                    Bounds.X, Bounds.Y + Bounds.Height / 2,
+                    Bounds.Width, Bounds.Height / 2
+                ), subtitleFormat);
+            }
         }
     }
 }

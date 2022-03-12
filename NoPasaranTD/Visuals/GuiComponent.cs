@@ -29,16 +29,19 @@ namespace NoPasaranTD.Visuals
 		public virtual void Render(Graphics g) { }
 
 		public virtual void KeyUp(KeyEventArgs e) { }
-		public virtual void KeyDown(KeyEventArgs e) { }
+        public virtual void KeyPress(KeyPressEventArgs e) { }
+        public virtual void KeyDown(KeyEventArgs e) { }
 
-		public virtual void MouseUp(MouseEventArgs e) { }
+        public virtual void MouseUp(MouseEventArgs e) { }
 		public virtual void MouseDown(MouseEventArgs e) { }
         public virtual void MouseMove(MouseEventArgs e) { }
         public virtual void MouseWheel(MouseEventArgs e) { }
 
+        public static Font StandartIconFont = new Font("Arial", 40);
         public static Font StandartHeader1Font = new Font("Arial",24);
         public static Font StandartHeader2Font = new Font("Arial", 16,FontStyle.Bold,GraphicsUnit.Point);
         public static Font StandartText1Font = new Font("Arial", 11, FontStyle.Regular, GraphicsUnit.Point);
+        public static Font StandartText2Font = new Font("Arial", 9, FontStyle.Regular, GraphicsUnit.Point);
 
     }
 }

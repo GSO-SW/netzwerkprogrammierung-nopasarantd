@@ -22,6 +22,39 @@ namespace NoPasaranTD.Model
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
 
+        public TowerTargetMode TowerTargetMode
+        {
+            get
+            {
+                if (GetBalloonFunc == FarthestBallonCheck)
+                    return TowerTargetMode.Farthest;
+                else if (GetBalloonFunc == FarthestBackBallonCheck)
+                    return TowerTargetMode.FarthestBack;
+                else if (GetBalloonFunc == StrongestBallonCheck)
+                    return TowerTargetMode.Strongest;
+                else
+                    return TowerTargetMode.Weakest;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case TowerTargetMode.Farthest:
+                        GetBalloonFunc = FarthestBallonCheck; break;
+                    case TowerTargetMode.FarthestBack:
+                        GetBalloonFunc = FarthestBackBallonCheck; break;
+                    case TowerTargetMode.Strongest:
+                        GetBalloonFunc = StrongestBallonCheck; break;
+                    case TowerTargetMode.Weakest:
+                        GetBalloonFunc = WeakestBallonCheck; break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public bool IsPositionValid { get; set; }
+        public bool IsPlaced { get; set; }
 
         public abstract void Render(Graphics g);
         public abstract void Update(Game game);
@@ -172,5 +205,13 @@ namespace NoPasaranTD.Model
             }
             return false;
         }
+    }
+
+    public enum TowerTargetMode
+    {
+        Farthest,
+        FarthestBack,
+        Strongest,
+        Weakest,
     }
 }
