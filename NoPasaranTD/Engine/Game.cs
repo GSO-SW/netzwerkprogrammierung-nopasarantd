@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using System;
@@ -16,6 +17,7 @@ namespace NoPasaranTD.Engine
 
 		public uint CurrentTick { get; private set; }
 
+		public NetworkHandler NetworkHandler { get; }
 		public Map CurrentMap { get; }
 		public List<Balloon>[] Balloons { get; private set; }
 		public List<Tower> Towers { get; }
@@ -24,8 +26,9 @@ namespace NoPasaranTD.Engine
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
 
-		public Game(Map map)
+		public Game(Map map, NetworkHandler networkHandler)
 		{
+			NetworkHandler = networkHandler;
 			CurrentMap = map;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			InitBalloon();
@@ -33,6 +36,13 @@ namespace NoPasaranTD.Engine
 			UILayout = new UILayout(this);
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
+			InitNetworkHandler();
+		}
+
+		private void InitNetworkHandler()
+		{
+			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
+			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 		}
 
 		#region Game logic region
@@ -218,18 +228,18 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		public void AddTower(Tower t)
+		private void AddTower(object t)
 		{
 			// TODO network communication
-			t.IsSelected = false;
-			Towers.Add(t);
+			((Tower)t).IsSelected = false;
+			Towers.Add((Tower)t);
 			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
 		}
 
-		public void RemoveTower(Tower t)
+		private void RemoveTower(object t)
 		{
 			// TODO network communication
-			Towers.Remove(t);
+			Towers.Remove((Tower)t);
 		}
 	}
 	}
