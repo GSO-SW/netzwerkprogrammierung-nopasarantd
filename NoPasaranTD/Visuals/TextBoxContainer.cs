@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals
@@ -19,6 +14,7 @@ namespace NoPasaranTD.Visuals
         public Font TextFont { get; set; } = StandartText2Font;
         public int CaretIndex { get; set; }
         public bool IsFocused { get; set; }
+
         private Rectangle innerBound => new Rectangle(Bounds.X + Margin, Bounds.Y + Margin, Bounds.Width - Margin * 2, Bounds.Height - Margin * 2);
         private float offsetX = 0;
 

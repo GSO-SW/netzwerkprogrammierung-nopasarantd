@@ -147,6 +147,9 @@ namespace NoPasaranTD.Visuals
 
         public override void Render(Graphics g)
         {
+            if (!Visible)
+                return;
+
             g.FillRectangle(BackgroundColor, Bounds);
 
             Region clip = g.Clip; // Speichere ursprüngliche Region
