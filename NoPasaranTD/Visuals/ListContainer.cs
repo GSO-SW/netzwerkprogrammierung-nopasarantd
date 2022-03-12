@@ -141,15 +141,14 @@ namespace NoPasaranTD.Visuals
 
         public override void Update()
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].Update();
         }
 
         public override void Render(Graphics g)
         {
-            if (!Visible)
-                return;
-
+            if (!Visible) return;
             g.FillRectangle(BackgroundColor, Bounds);
 
             Region clip = g.Clip; // Speichere ursprüngliche Region
@@ -164,6 +163,7 @@ namespace NoPasaranTD.Visuals
 
         public override void KeyUp(KeyEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyUp(e);
         }
@@ -176,12 +176,14 @@ namespace NoPasaranTD.Visuals
 
         public override void KeyDown(KeyEventArgs args)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseUp(e);
         }
@@ -206,12 +208,14 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseMove(MouseEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
+            if (!Active) return;
             if (items.Count == 0) return;
 
             bool firstOutOfBounds, lastOutOfBounds;
