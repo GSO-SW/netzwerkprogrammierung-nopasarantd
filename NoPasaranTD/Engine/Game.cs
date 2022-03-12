@@ -107,6 +107,7 @@ namespace NoPasaranTD.Engine
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
+		public void KeyPress(KeyPressEventArgs e) => UILayout.KeyPress(e);
 		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
 
 		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);

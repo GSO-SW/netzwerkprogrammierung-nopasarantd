@@ -141,6 +141,12 @@ namespace NoPasaranTD.Engine
             currentScreen?.KeyUp(e);
         }
 
+        private void Display_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            currentGame?.KeyPress(e);
+            currentScreen?.KeyPress(e);
+        }
+
         private void Display_KeyDown(object sender, KeyEventArgs e)
         {
             currentGame?.KeyDown(e);
