@@ -65,6 +65,7 @@ namespace NoPasaranMS
 				{
 					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint} '{p.Info}'");
 					RemovePlayerFromLobby(p);
+					SendUpdates();
 				}
 				else
 					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint}");
