@@ -22,6 +22,7 @@ namespace NoPasaranTD.Visuals.Main
         public NetworkClient LocalPlayer { get; set; }
         public GuiComponent ForegroundScreen { get; set; }
         public LobbyListScreen LobbyListScreen { get; }
+        public LobbyScreen LobbyScreen { get; }
 
         private readonly Game backgroundGame;
         public GuiMainMenu()
@@ -45,6 +46,7 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
             }
 
+            LobbyScreen = new LobbyScreen(this);
             LobbyListScreen = new LobbyListScreen(this);
             ForegroundScreen = LobbyListScreen;
 
@@ -90,10 +92,14 @@ namespace NoPasaranTD.Visuals.Main
                     CurrentLobby = lobby;
             }
 
-            LobbyListScreen.UpdateLobbies(DiscoveryClient.Lobbies);
-            LobbyListScreen.Visible = CurrentLobby == null;
-            LobbyListScreen.Active = CurrentLobby == null;
             DiscoveryStatus = null;
+            LobbyListScreen.UpdateLobbies(DiscoveryClient.Lobbies);
+            LobbyScreen.Lobby = CurrentLobby;
+
+            // Wenn in keiner lobby, zeige die lobby liste
+            // andernfalls, zeige die lobby informationen
+            ForegroundScreen = CurrentLobby == null ? 
+                (GuiComponent)LobbyListScreen : LobbyScreen;
         }
         #endregion
 

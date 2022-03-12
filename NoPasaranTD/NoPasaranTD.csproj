@@ -86,6 +86,7 @@
     <Compile Include="Visuals\Main\GuiMainMenu.cs" />
     <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
     <Compile Include="Visuals\Main\LobbyListScreen.cs" />
+    <Compile Include="Visuals\Main\LobbyScreen.cs" />
     <EmbeddedResource Include="Engine\StaticDisplay.resx">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>
