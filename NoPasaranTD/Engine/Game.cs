@@ -176,14 +176,15 @@ namespace NoPasaranTD.Engine
 					Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[item][i].PathPosition); // Position des Ballons
 					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
 					{
-						if (!foundBalloon) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
+						if (!foundBalloon && CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower)) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
 						{
 							currentSelectedBalloon = (item, i);
 							foundBalloon = true;
 						}
-						// Checken ob der neue Ballon weiter ist als der bisher weiteste
+						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
 						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.Item1][currentSelectedBalloon.Item2]))
-							currentSelectedBalloon = (item, i);
+							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
+								currentSelectedBalloon = (item, i);
 					}
 				}
 			}
@@ -191,6 +192,20 @@ namespace NoPasaranTD.Engine
 				return (-1, -1);
 
 			return currentSelectedBalloon;
+		}
+
+		/// <summary>
+		/// Kontrolliert, ob der Angegebene Punkt innerhalb eines nicht sichtbaren Bereiches ist
+		/// </summary>
+		/// <param name="balloonPos"></param>
+		/// <param name="tower"></param>
+		/// <returns>Gibt true zurück wenn der Ballon gesehen werden kann</returns>
+		private bool CheckBalloonIfHiddenPos(float balloonPos, Tower tower)
+		{
+			foreach (var item in tower.NotVisibleSpots) // Alle nicht sichtbaren Stellen kontrollieren
+				if ((item.X < balloonPos && item.Y > balloonPos)) // Sollte der Ballon innerhalb einer der nicht sichtbaren Stellen sein wird abgebrochen
+					return false;
+			return true;
 		}
 
 		/// <summary>
