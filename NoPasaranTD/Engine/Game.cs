@@ -25,18 +25,19 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
+		public bool Paused { get; set; }
 
 		public Game(Map map, NetworkHandler networkHandler)
 		{
 			NetworkHandler = networkHandler;
 			CurrentMap = map;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
-			InitBalloon();
 			Towers = new List<Tower>();
 			UILayout = new UILayout(this);
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
 			InitNetworkHandler();
+			InitBalloons();
 		}
 
 		private void InitNetworkHandler()
@@ -45,9 +46,16 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 		}
 
+		private void InitBalloons()
+		{
+			for (int i = 0; i < Balloons.Length; i++)
+				Balloons[i] = new List<Balloon>();
+		}
+
 		#region Game logic region
 		public void Update()
 		{
+			if (Paused && NetworkHandler.OfflineMode) return;
 			for (int i = 0; i < Balloons.Length; i++)
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
@@ -119,20 +127,48 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
-		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
-
-		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
-		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
-		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
-		public void MouseWheel(MouseEventArgs e) => UILayout.MouseWheel(e);
-		#endregion
-
-		private void InitBalloon()
+		public void KeyUp(KeyEventArgs e)
 		{
-			for (int i = 0; i < Balloons.Length; i++)
-				Balloons[i] = new List<Balloon>();
+			if (Paused) return;
+			UILayout.KeyUp(e);
 		}
+
+		public void KeyDown(KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Escape)
+			{
+				Program.LoadScreen((Paused = !Paused) ?
+					new GuiPauseMenu() : null);
+			}
+
+			if (Paused) return;
+			UILayout.KeyDown(e);
+		}
+
+		public void MouseUp(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseUp(e);
+		}
+
+		public void MouseDown(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseDown(e);
+		}
+
+		public void MouseMove(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseMove(e);
+		}
+
+		public void MouseWheel(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseWheel(e);
+		}
+		#endregion
 
 		private void ManageBalloonSpawn()
 		{
@@ -242,5 +278,5 @@ namespace NoPasaranTD.Engine
 			Towers.Remove((Tower)t);
 		}
 	}
-	}
+}
 
