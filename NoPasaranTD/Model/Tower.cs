@@ -107,24 +107,24 @@ namespace NoPasaranTD.Model
                         {
                             Vector2D locationPathV = map.BalloonPath[j]; // Ortsvektor der Gerade für den Pfad
                             Vector2D connectionPathV = map.BalloonPath[j + 1] - locationPathV; // Richtungsvektor der Gerade für den Pfad
-                            float factorPath = Vector2D.Intersection(locationPathV, connectionPathV, cornersV[i], connectionRecV);
-                            float factorRec = Vector2D.Intersection(cornersV[i], connectionRecV, locationPathV, connectionPathV);
-                            if (factorPath > 0 && factorPath < 1 && factorRec > 1 && (centreP + connectionRecV * factorRec - centreP).MagnitudeSquared < Range * Range) // Der Schnittpunkt ist innerhalb des Intervals des Pfades und hinter dem Hindernis
-                                pathValues.Add((float)(map.GetFragmentMagnitudeTo(j) + (connectionPathV * factorPath).Magnitude));
+                            float factorPath = Vector2D.Intersection(locationPathV, connectionPathV, centreP, connectionRecV);
+                            float factorRec = Vector2D.Intersection(centreP, connectionRecV, locationPathV, connectionPathV);
+                            if (factorPath > 0 && factorPath < 1 && factorRec > 1 && (connectionRecV * factorRec).MagnitudeSquared < Range * Range) // Der Schnittpunkt ist innerhalb des Intervals des Pfades und hinter dem Hindernis
+                                pathValues.Add((float)(map.GetFragmentMagnitudeTo(j - 1) + (connectionPathV * factorPath).Magnitude));
                         }
                     }
 
                     if (pathValues.Count == 0)
                     {
                         if (CheckPathPointBlock(map.BalloonPath[j], centreP, cornersV) || CheckPathPointBlock(map.BalloonPath[j + 1], centreP, cornersV))
-                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j), map.GetFragmentMagnitudeTo(j + 1)));
+                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j - 1), map.GetFragmentMagnitudeTo(j))); // j muss um 1 nach hinten verschoben werden, da immer die länge bis zum nächsten Stück berechnet wird
                     }
                     else if (pathValues.Count == 1) // Nur ein Schnittpunkt
                     {   // Einer der Eckpunkte muss der nächste Endpunkt sein für dieses Pfadstück
                         if (CheckPathPointBlock(map.BalloonPath[j], centreP, cornersV)) // Der Eckpunkt davor ist im Schatten des Hindernisses
-                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j), pathValues[0]));
+                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j - 1), pathValues[0]));
                         else // Der Eckpunkt danach ist im Schatten des Hindernisses
-                            blindSpots.Add(new Vector2D(pathValues[0], map.GetFragmentMagnitudeTo(j)));
+                            blindSpots.Add(new Vector2D(pathValues[0], map.GetFragmentMagnitudeTo(j - 1)));
                     }
                     else // Mehr als 1 Schnittpunkt wurde gefunden
                     {
@@ -132,11 +132,15 @@ namespace NoPasaranTD.Model
                         float upperBound = pathValues[0];
                         foreach (var pValue in pathValues)
                         {
-                            if (lowerBound > pValue)
+                            if (lowerBound > pValue) // Sortieren der Werte
                                 lowerBound = pValue;
                             else if (upperBound < pValue)
                                 upperBound = pValue;
                         }
+                        if (CheckPathPointBlock(map.BalloonPath[j], centreP, cornersV)) // Kontrollieren, dass die Enden des Pfades nicht verdeckt sind
+                            lowerBound = (float)map.GetFragmentMagnitudeTo(j - 1);
+                        if (CheckPathPointBlock(map.BalloonPath[j + 1], centreP, cornersV))
+                            upperBound = (float)map.GetFragmentMagnitudeTo(j);
                         blindSpots.Add(new Vector2D(lowerBound,upperBound));
                     }
                 }

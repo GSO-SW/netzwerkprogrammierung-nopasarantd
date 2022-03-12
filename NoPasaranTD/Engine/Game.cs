@@ -102,13 +102,22 @@ namespace NoPasaranTD.Engine
 
 					g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
 				}
-
-				for (int i = Towers.Count - 1; i >= 0; i--)
-					Towers[i].Render(g);
 				UILayout.Render(g);
 			}
 
-            foreach (var item in CurrentMap.Obstacles)
+			for (int i = Towers.Count - 1; i >= 0; i--)
+            {
+				Towers[i].Render(g);
+                foreach (var item in Towers[i].NotVisibleSpots)
+                {
+					Brush brush = new SolidBrush(Color.Red);
+					g.FillEllipse(brush, (float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight,item.X).X,
+						(float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.X).Y, 10, 10);
+					g.FillEllipse(brush, (float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.Y).X,
+						(float)CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.Y).Y, 10, 10);
+				}
+			}
+			foreach (var item in CurrentMap.Obstacles)
             {
 				Brush brush = new SolidBrush(Color.Red);
 				g.FillRectangle(brush, (float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
