@@ -32,6 +32,24 @@ namespace NoPasaranTD.Networking
         public string GetInfo() => Name;
 
         /// <summary>
+        /// Sucht nach einem Spieler in dieser Lobby,
+        /// dessen serialisierten Version, dem vom gegebenen entspricht
+        /// </summary>
+        /// <param name="client">Der zu suchende Spieler</param>
+        /// <returns>Ob der gegebene Spieler gefunden wurde</returns>
+        public bool PlayerExists(NetworkClient client)
+        {
+            string serializedClient = NetworkClient.Serialize(client);
+            foreach(NetworkClient player in Players)
+            {
+                string serializedPlayer = NetworkClient.Serialize(player);
+                if (serializedPlayer.Equals(serializedClient))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Serialisiert eine NetworkLobby zu einer Zeichenkette,
         /// die vom Vermittlungsserver ausgewertet werden kann.
         /// </summary>
@@ -67,7 +85,8 @@ namespace NoPasaranTD.Networking
 
             string[] playerInfos = playerInfo.Split('|');
             // Probably receiving the fake lobby, which can indeed be empty?
-            if (playerInfos.Length == 0) throw new Exception("Received an empty lobby");
+            if (playerInfos.Length == 0 || string.IsNullOrEmpty(playerInfos[0]))
+                throw new Exception("Received an empty lobby");
 
             NetworkClient host = NetworkClient.Deserialize(playerInfos[0]);
             NetworkLobby lobby = new NetworkLobby(host, lobbyInfo);

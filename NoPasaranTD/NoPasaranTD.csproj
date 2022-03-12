@@ -83,8 +83,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\QuickDiagnostics.cs" />
     <Compile Include="Utilities\Vector2D.cs" />
-    <Compile Include="Visuals\Main\GuiLobby.cs" />
+    <Compile Include="Visuals\Main\GuiMainMenu.cs" />
     <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
+    <Compile Include="Visuals\Main\LobbyListScreen.cs" />
     <EmbeddedResource Include="Engine\StaticDisplay.resx">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>

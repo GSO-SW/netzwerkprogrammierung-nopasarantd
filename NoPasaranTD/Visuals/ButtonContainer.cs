@@ -57,13 +57,15 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseDown(MouseEventArgs e)
         {
+            if (!Active) return;
             // Löst das Button Clicked Event aus wenn innerhalb der Bounds gecklickt wird
             if (Bounds.Contains(e.Location))
                 ButtonClicked?.Invoke();
         }
         
         public override void Render(Graphics g)
-        {            
+        {
+            if (!Visible) return;
             innerBackground = new Rectangle(Bounds.X + Margin, Bounds.Y + Margin, Bounds.Width - Margin * 2, Bounds.Height - Margin * 2);
             
             // Highlightet den Rand des Buttons wenn die Maus drüber erscheint

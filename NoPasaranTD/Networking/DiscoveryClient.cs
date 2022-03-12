@@ -12,6 +12,16 @@ namespace NoPasaranTD.Networking
     {
         #region Property region
         /// <summary>
+        /// Wird aufgerufen, sobald das Spiel gestartet wird
+        /// </summary>
+        public Action OnGameStart { get; set; }
+
+        /// <summary>
+        /// Wird aufgerufen, sobald eine Information aktualisiert wurde
+        /// </summary>
+        public Action OnInfoUpdate { get; set; }
+
+        /// <summary>
         /// Gibt an ob die derzeit besuchte Lobby gestartet wurde
         /// </summary>
         public bool GameStarted { get; private set; } = false;
@@ -63,6 +73,7 @@ namespace NoPasaranTD.Networking
         /// <param name="player">Der spieler als den man sich authentifiziert</param>
         public async void LoginAsync(NetworkClient player)
         {
+            LoggedIn = false;
             string playerInfo = NetworkClient.Serialize(player);
             await TcpWriter.WriteLineAsync(playerInfo);
             await TcpWriter.FlushAsync();
@@ -72,8 +83,9 @@ namespace NoPasaranTD.Networking
         /// Aktualisiert die Informationen des einzelnen Spielers
         /// </summary>
         /// <param name="player">Spezifizierter Spieler</param>
-        public async void UpdatePlayer(NetworkClient player)
+        public async void UpdatePlayerAsync(NetworkClient player)
         {
+            LoggedIn = false;
             string playerInfo = NetworkClient.Serialize(player);
             await TcpWriter.WriteLineAsync("SetUserInfo#" + playerInfo);
             await TcpWriter.FlushAsync();
@@ -83,7 +95,7 @@ namespace NoPasaranTD.Networking
         /// Erstellt eine neue Lobby indem man auch direkt hinzugefügt wird
         /// </summary>
         /// <param name="lobby">Spezifizierte Lobby</param>
-        public async void CreateLobby(NetworkLobby lobby)
+        public async void CreateLobbyAsync(NetworkLobby lobby)
         {
             await TcpWriter.WriteLineAsync("NewLobby#" + lobby.GetInfo());
             await TcpWriter.FlushAsync();
@@ -93,7 +105,7 @@ namespace NoPasaranTD.Networking
         /// Aktualisiert die gegebene Lobbyinformationen
         /// </summary>
         /// <param name="lobby">Spezifizierte Lobby</param>
-        public async void UpdateLobby(NetworkLobby lobby)
+        public async void UpdateLobbyAsync(NetworkLobby lobby)
         {
             await TcpWriter.WriteLineAsync("SetLobbyInfo#" + lobby.GetInfo());
             await TcpWriter.FlushAsync();
@@ -103,7 +115,7 @@ namespace NoPasaranTD.Networking
         /// Tritt einer Lobby bei
         /// </summary>
         /// <param name="lobby">Spezifizierte Lobby</param>
-        public async void JoinLobby(NetworkLobby lobby)
+        public async void JoinLobbyAsync(NetworkLobby lobby)
         {
             await TcpWriter.WriteLineAsync("Join#" + lobby.GetInfo());
             await TcpWriter.FlushAsync();
@@ -112,7 +124,7 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Verlässt die gerade beigetretene Lobby
         /// </summary>
-        public async void LeaveCurrentLobby()
+        public async void LeaveCurrentLobbyAsync()
         {
             await TcpWriter.WriteLineAsync("Leave#");
             await TcpWriter.FlushAsync();
@@ -122,8 +134,9 @@ namespace NoPasaranTD.Networking
         /// Gibt den Befehl frei, das Spiel zu starten.<br/>
         /// Ab hier fängt GameStarted an sich auf "true" zu setzen
         /// </summary>
-        public async void StartGame()
+        public async void StartGameAsync()
         {
+            GameStarted = false;
             await TcpWriter.WriteLineAsync("StartGame#");
             await TcpWriter.FlushAsync();
         }
@@ -159,17 +172,23 @@ namespace NoPasaranTD.Networking
                 );
                 Clients.Add(client);
             }
-
             GameStarted = true;
+
+            // Rufe handler auf
+            OnGameStart?.Invoke();
         }
 
         private void HandleInfo(string infoStr)
         { // Aktualisiere die Lobbies
             Lobbies.Clear();
             string[] lobbyInfos = infoStr.Split('\t');
-            for (int i = 0; i < lobbyInfos.Length; i++)
+            // int i = 1, aufgrund der Fake-Lobby
+            for (int i = 1; i < lobbyInfos.Length; i++)
                 Lobbies.Add(NetworkLobby.Deserialize(lobbyInfos[i]));
             LoggedIn = true;
+
+            // Rufe handler auf
+            OnInfoUpdate?.Invoke();
         }
 
         private void ListenCommands()
