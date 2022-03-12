@@ -151,6 +151,7 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void KeyPress(KeyPressEventArgs e)
         {
             if (Active) TowerBuildMenu.KeyPress(e);
+            TextBoxContainer.KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
@@ -204,6 +205,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         void DrawGameStats(Graphics g)
         {
+            // DAS BLEIBT ALLES SO WIE ES HIER IST!!!
+
             // Die Kontostandanzeige des derzeitigen Spieles
             g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
             // Die Lebensanzeige des derzeitigen Spieles

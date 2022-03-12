@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace NoPasaranTD.Visuals
 {
     public class TextBoxContainer : GuiComponent
     {
-        public string Text { get; set; } = "\0";
+        public string Text { get; set; } = "";
         public int Margin { get; set; }
         public SolidBrush BorderBrush { get; set; } = new SolidBrush(Color.Gray);
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.Black);
@@ -18,23 +19,43 @@ namespace NoPasaranTD.Visuals
         public Font TextFont { get; set; } = StandartText2Font;
         public int CaretIndex { get; set; }
         public bool IsFocused { get; set; }
-
-        private KeysConverter keyConverter = new KeysConverter();
         private Rectangle innerBound => new Rectangle(Bounds.X + Margin, Bounds.Y + Margin, Bounds.Width - Margin * 2, Bounds.Height - Margin * 2);
+        private int offsetX = 0;
 
-        public override void KeyDown(KeyEventArgs e)
+        public override void KeyPress(KeyPressEventArgs e)
         {
             if (IsFocused)
             {
-                if ((char)e.KeyCode == '\b')
+                if (e.KeyChar == '\b' && Text.Length > 0)
+                {
                     Text = Text.Substring(0, Text.Length - 1);
-                else
-                    Text += (char)e.KeyValue;
+                    CaretIndex--;
+                }
+                    
+                else 
+                {
+                    if (CaretIndex == Text.Length)
+                    {
+                        Text += e.KeyChar;
+                    }
+                    else if (Text.Length > 0)
+                    {
+                        string left = Text.Substring(0, CaretIndex);
+                        string right = Text.Substring(CaretIndex, Text.Length - CaretIndex - 1);
+                        left += e.KeyChar;
+                        Text = left + right;
+                    }
+                    CaretIndex++;
+                }                
+            }
+        }
 
-                CaretIndex = Text.Length - 1;
-                if (CaretIndex == 0)
-                    CaretIndex = 1;
-            }            
+        public override void KeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Left)
+                CaretIndex--;
+            else if (e.KeyCode == Keys.Right && CaretIndex < Text.Length - 1)
+                CaretIndex++;
         }
 
         public override void MouseDown(MouseEventArgs e)
@@ -49,12 +70,31 @@ namespace NoPasaranTD.Visuals
         {
             g.FillRectangle(BorderBrush,Bounds);
             g.FillRectangle(Background, innerBound);
-            g.DrawString(Text, TextFont,Foreground,innerBound);
-          
-            Size leftTextSize = TextRenderer.MeasureText(Text.Substring(0,CaretIndex),TextFont);
 
-            if (!(leftTextSize == Size.Empty))
-                g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 3, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 3, Bounds.Y + leftTextSize.Height - 2);
+            Matrix current = g.Transform;
+
+            g.SetClip(innerBound);
+            g.TranslateTransform(offsetX, 0);                      
+            g.DrawString(Text, TextFont,Foreground,innerBound,new StringFormat(StringFormatFlags.NoWrap));
+
+            g.Transform = current;
+
+            if (Text != "" && IsFocused)
+            {
+                Size leftTextSize = TextRenderer.MeasureText(Text.Substring(0,CaretIndex),TextFont);
+                g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width, Bounds.Y + 1, Bounds.X + leftTextSize.Width, Bounds.Y + leftTextSize.Height - 2);
+                if (leftTextSize.Width >= innerBound.Width)
+                {
+                    offsetX = innerBound.Width - leftTextSize.Width;
+                }
+            }
+            else if (IsFocused)
+            {
+                g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 10);
+            }
+            
+
+            
             
         }
     }
