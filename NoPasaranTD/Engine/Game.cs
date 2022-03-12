@@ -107,6 +107,15 @@ namespace NoPasaranTD.Engine
 					Towers[i].Render(g);
 				UILayout.Render(g);
 			}
+
+            foreach (var item in CurrentMap.Obstacles)
+            {
+				Brush brush = new SolidBrush(Color.Red);
+				g.FillRectangle(brush, (float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
+					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
+					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
+					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight);
+            }
 		}
 
 		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
@@ -187,7 +196,7 @@ namespace NoPasaranTD.Engine
 					return false;
 
 			for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
-				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(rect))
+				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
 					return false;
 
 			return CurrentMap.IsCollidingWithPath(
@@ -223,7 +232,7 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			t.IsSelected = false;
 			Towers.Add(t);
-			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
+			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
 		}
 
 		public void RemoveTower(Tower t)

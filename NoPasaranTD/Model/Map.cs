@@ -98,10 +98,10 @@ namespace NoPasaranTD.Model
 
         public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
         {
-            return IsCollidingWithPath(GetScalledRec(scaledWidth,scaledHeight,rect));
+            return IsCollidingWithPath(GetScaledRect(scaledWidth,scaledHeight,rect));
         }
 
-        public Rectangle GetScalledRec(int scaledWidth, int scaledHeight, Rectangle rect)
+        public Rectangle GetScaledRect(int scaledWidth, int scaledHeight, Rectangle rect)
         {
             return new Rectangle(
                 (int)((float)rect.X / scaledWidth * Dimension.Width),
@@ -137,12 +137,7 @@ namespace NoPasaranTD.Model
                 * (length - fragment.StartLength); // & mithilfe von differenz zwischen 'StartLength' & 'length' faktorisieren
         }
 
-        /// <summary>
-        /// Kontrolliert, ob das angegebene Recheck einen Abstand von X Einheiten zum nächsten Pfadpunkt hat und ob keine Hitbox des Pfades getroffen wurde
-        /// </summary>
-        /// <param name="rect">Zu überprüfendes Rechteck</param>
-        /// <returns>False wenn es eine Überschneidung gibt</returns>
-        private bool IsCollidingWithPath(Rectangle rect)
+        public Vector2D[] GetRectangleCorners(Rectangle rect)
         {
             Vector2D[] cornersV = new Vector2D[4]; // Speichern der Ecken des Rechtecks
             for (int i = 0; i < 2; i++) // Alle Ecken durchgehen
@@ -151,6 +146,17 @@ namespace NoPasaranTD.Model
             Vector2D save = cornersV[2]; // Ecke 2 mit 3 tauschen um eine durchgehende Reihenfolge zu haben
             cornersV[2] = cornersV[3];
             cornersV[3] = save;
+            return cornersV;
+        }
+
+        /// <summary>
+        /// Kontrolliert, ob das angegebene Recheck einen Abstand von X Einheiten zum nächsten Pfadpunkt hat und ob keine Hitbox des Pfades getroffen wurde
+        /// </summary>
+        /// <param name="rect">Zu überprüfendes Rechteck</param>
+        /// <returns>False wenn es eine Überschneidung gibt</returns>
+        private bool IsCollidingWithPath(Rectangle rect)
+        {
+            Vector2D[] cornersV = GetRectangleCorners(rect);
 
             for (int i = 0; i < cornersV.Length; i++) // Alle Seiten durchgehen
             {
@@ -191,8 +197,8 @@ namespace NoPasaranTD.Model
                             pathDirectionV = pathHitbox[k, j * 2 + 1] - pathLocationV;
                         }
                         // Wert der Variable für die Geradengleichung an der Schnittstelle
-                        float collisionVariablePathF = ((pathLocationV.Y - cornersV[i].Y) * connectionRecV.X + (cornersV[i].X - pathLocationV.X) * connectionRecV.Y) / (pathDirectionV.X * connectionRecV.Y - pathDirectionV.Y * connectionRecV.X);
-                        float collisionVariableRecF = ((cornersV[i].Y - pathLocationV.Y) * pathDirectionV.X + (pathLocationV.X - cornersV[i].X) * pathDirectionV.Y) / (connectionRecV.X * pathDirectionV.Y - connectionRecV.Y * pathDirectionV.X);
+                        float collisionVariablePathF = Vector2D.Intersection(pathLocationV, pathDirectionV, cornersV[i], connectionRecV);
+                        float collisionVariableRecF = Vector2D.Intersection(cornersV[i], connectionRecV, pathLocationV, pathDirectionV);
                         // Kontrolle, ob die Schnittstelle zwischen Gerade und Seite des Rechtecks innerhalb der Intervalle von [0,1] liegt
                         if (collisionVariablePathF >= 0 && collisionVariablePathF <= 1 && collisionVariableRecF >= 0 && collisionVariableRecF <= 1)
                             return false;
@@ -218,7 +224,7 @@ namespace NoPasaranTD.Model
             => (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
 
         // Berechnen des Betrags zwischen Punkt '(0, 0)' und 'index'
-        private double GetFragmentMagnitudeTo(int index)
+        public double GetFragmentMagnitudeTo(int index)
         {
             double sum = 0;
             for (int i = 0; i <= index; i++)

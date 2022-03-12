@@ -18,6 +18,7 @@ namespace NoPasaranTD.Model
         public ulong NumberKills { get; set; }
         public bool IsSelected { get; set; } = true;
         public List<int> SegmentsInRange { get; private set; }
+        public List<Vector2D> NotVisibleSpots { get; private set; }
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
 
@@ -58,15 +59,21 @@ namespace NoPasaranTD.Model
         }
         #endregion
 
+        public void SearchSegments(Map map)
+        {
+            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox);
+            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
+            FindSegmentsInRange(map, centreP);
+            FindObstaclesInTheWay(map, centreP);
+        }
+
         /// <summary>
         /// Bestimmt alle Pfadsegmente die in der Reichweite des Turmes sind
         /// </summary>
         /// <param name="map"></param>
-        public void FindSegmentsInRange(Map map)
+        private void FindSegmentsInRange(Map map, Vector2D centreP)
         {
             List<int> segments = new List<int>();
-            Rectangle rectangle = map.GetScalledRec(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox);
-            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
             for (int i = 0; i < map.BalloonPath.Length - 1; i++)
             {
                 Vector2D locationP = new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y);
@@ -82,6 +89,84 @@ namespace NoPasaranTD.Model
                     segments.Add(i);
             }
             SegmentsInRange = segments;
+        }
+
+        private void FindObstaclesInTheWay(Map map, Vector2D centreP)
+        {
+            List<Vector2D> blindSpots = new List<Vector2D>();
+            for (int j = 0; j < map.BalloonPath.Length - 1; j++)// Alle Pfadstücke des Ballonpfades durchgehen
+            {
+                foreach (var item in map.Obstacles) // Alle Hindernisse durchgehen
+                {
+                    Vector2D[] cornersV = map.GetRectangleCorners(item.Hitbox); // Alle Eckpunkte des Hindernisses bestimmen
+                    List<float> pathValues = new List<float>();
+                    for (int i = 0; i < cornersV.Length; i++) // Alle Eckpunkte durchgehen
+                    {
+                        Vector2D connectionRecV = cornersV[i] - centreP; // Richtungsvektor zwischen Turm und der Ecke
+                        if ((centreP + connectionRecV).MagnitudeSquared < Range * Range) // Länge des Vektors quadrieren, um die Wurzeloperation zu sparen
+                        {
+                            Vector2D locationPathV = map.BalloonPath[j]; // Ortsvektor der Gerade für den Pfad
+                            Vector2D connectionPathV = map.BalloonPath[j + 1] - locationPathV; // Richtungsvektor der Gerade für den Pfad
+                            float factorPath = Vector2D.Intersection(locationPathV, connectionPathV, cornersV[i], connectionRecV);
+                            float factorRec = Vector2D.Intersection(cornersV[i], connectionRecV, locationPathV, connectionPathV);
+                            if (factorPath > 0 && factorPath < 1 && factorRec > 1 && (centreP + connectionRecV * factorRec - centreP).MagnitudeSquared < Range * Range) // Der Schnittpunkt ist innerhalb des Intervals des Pfades und hinter dem Hindernis
+                                pathValues.Add((float)(map.GetFragmentMagnitudeTo(j) + (connectionPathV * factorPath).Magnitude));
+                        }
+                    }
+
+                    if (pathValues.Count == 0)
+                    {
+                        if (CheckPathPointBlock(map.BalloonPath[j], centreP, cornersV) || CheckPathPointBlock(map.BalloonPath[j + 1], centreP, cornersV))
+                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j), map.GetFragmentMagnitudeTo(j + 1)));
+                    }
+                    else if (pathValues.Count == 1) // Nur ein Schnittpunkt
+                    {   // Einer der Eckpunkte muss der nächste Endpunkt sein für dieses Pfadstück
+                        if (CheckPathPointBlock(map.BalloonPath[j], centreP, cornersV)) // Der Eckpunkt davor ist im Schatten des Hindernisses
+                            blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(j), pathValues[0]));
+                        else // Der Eckpunkt danach ist im Schatten des Hindernisses
+                            blindSpots.Add(new Vector2D(pathValues[0], map.GetFragmentMagnitudeTo(j)));
+                    }
+                    else // Mehr als 1 Schnittpunkt wurde gefunden
+                    {
+                        float lowerBound = pathValues[0];
+                        float upperBound = pathValues[0];
+                        foreach (var pValue in pathValues)
+                        {
+                            if (lowerBound > pValue)
+                                lowerBound = pValue;
+                            else if (upperBound < pValue)
+                                upperBound = pValue;
+                        }
+                        blindSpots.Add(new Vector2D(lowerBound,upperBound));
+                    }
+                }
+            }
+            NotVisibleSpots = blindSpots;
+        }
+
+        /// <summary>
+        /// Kontrolliert, ob ein "Rechteck"
+        /// </summary>
+        /// <param name="pathLocV">Punkt der kontrolliert werden soll</param>
+        /// <param name="towerCentre">Mittelpunkt der Turmhitbox</param>
+        /// <param name="cornersV">Ecken des Hindernisses</param>
+        /// <returns>Gibt true zurück wenn der Pfadpunkt im Schatten des Rechtecks liegt</returns>
+        private bool CheckPathPointBlock(Vector2D pathLocV, Vector2D towerCentre, Vector2D[] cornersV)
+        {
+            Vector2D towerPathV = pathLocV - towerCentre;
+            for (int i = 0; i < cornersV.Length; i++)
+            {
+                Vector2D connectionRecV;
+                if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
+                    connectionRecV = cornersV[i + 1] - cornersV[i];
+                else // Bei dem letzten punkt wieder auf den ersten springen
+                    connectionRecV = cornersV[0] - cornersV[i];
+                float factorPathTower = Vector2D.Intersection(pathLocV, towerPathV, cornersV[i], connectionRecV);
+                float factorObstacle = Vector2D.Intersection(cornersV[i], connectionRecV, pathLocV, towerPathV);
+                if (factorPathTower <= 1 && factorPathTower >= 0 && factorObstacle <= 1 && factorObstacle >= 0)
+                    return true;
+            }
+            return false;
         }
     }
 }
