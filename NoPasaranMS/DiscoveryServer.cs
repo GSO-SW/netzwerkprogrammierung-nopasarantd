@@ -12,10 +12,10 @@ namespace NoPasaranMS
 	public class DiscoveryServer
 	{
 		private readonly int Port;
-		private readonly Action<List<Socket>> GroupFoundCallback;
+		private readonly Action<List<Player>> GroupFoundCallback;
 		private readonly List<Lobby> Lobbies = new List<Lobby>();
 
-		public DiscoveryServer(int port, Action<List<Socket>> groupFoundCallback)
+		public DiscoveryServer(int port, Action<List<Player>> groupFoundCallback)
 		{
 			Port = port;
 			GroupFoundCallback = groupFoundCallback;
@@ -34,8 +34,12 @@ namespace NoPasaranMS
 				new Thread(() => Receive(clientSocket)).Start();
 			}
 		}
+
 		private void Receive(Socket clientSocket)
 		{
+			EndPoint endpoint = clientSocket.RemoteEndPoint;
+			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] new connection from {endpoint}");
+
 			Player p = null;
 			try
 			{
@@ -43,62 +47,87 @@ namespace NoPasaranMS
 				using var writer = new StreamWriter(networkStream);
 				using var reader = new StreamReader(networkStream);
 				string playerInfo = reader.ReadLine();
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] added player {playerInfo}");
 				p = new Player(playerInfo, clientSocket, writer);
 				Lobbies[0].Players.Add(p);
 				SendUpdates();
-				while (!p.StopReceiving.WaitOne(100))
-					if (clientSocket.Available > 0)
-						HandleMessage(p, reader.ReadLine());
+
+				while (true)
+				{
+					string message = reader.ReadLine();
+					if (message == null) throw new IOException("Stream was closed");
+					HandleMessage(p, message);
+				}
 			}
 			catch (Exception)
 			{
 				if (p != null)
+				{
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint} '{p.Info}'");
 					RemovePlayerFromLobby(p);
+				}
+				else
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] dropping {endpoint}");
 			}
 		}
+
 		private void HandleMessage(Player sender, string message)
 		{
 			try
 			{
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] handling message '{message}' from {sender.Info}");
 				string type = message[..message.IndexOf('#')];
 				string content = message[(message.IndexOf('#') + 1)..];
 				Lobby lobby = Lobbies.Where(l => l.Players.Contains(sender)).FirstOrDefault();
 				switch (type)
 				{
-					case "SetUserInfo": sender.Info = content; break;
-					case "SetLobbyInfo": lobby.Info = content; break;
-					case "StartGame":
-						StartGame(lobby);
+					case "SetUserInfo": 
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} send new user info '{content}'");
+						sender.Info = content;
 						break;
-					case "Join": 
+					case "SetLobbyInfo": 
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} send new lobby info for {lobby.Info} -> '{content}'");
+						lobby.Info = content;
+						break;
+					case "StartGame":
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} started game for lobby {lobby.Info}");
+						Lobbies.Remove(lobby);
+						GroupFoundCallback(lobby.Players.ToList());
+						break;
+					case "Join":
 						Lobbies.Find(l => l.Info == content).Players.Add(sender);
 						RemovePlayerFromLobby(sender);
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} joined {content}");
 						break;
 					case "Leave":
 						RemovePlayerFromLobby(sender);
 						Lobbies[0].Players.Add(sender);
-						if (lobby.Players.Count == 0)
-							Lobbies.Remove(lobby);
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} left {content}");
 						break;
 					case "NewLobby":
 						Lobbies.Add(new Lobby(content, sender));
 						RemovePlayerFromLobby(sender);
+						Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} created lobby {content}");
 						break;
 				}
 				SendUpdates();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				Console.WriteLine("error on " + sender.Socket.RemoteEndPoint + " -> " + message);
-				Console.WriteLine(e.ToString());
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] weird message from {sender.Info}");
 			}
 		}
+
 		private void SendUpdates()
 		{
-			string info = FullInfo();			
-			foreach (Lobby l in Lobbies)
-				foreach (Player p in l.Players)
+			Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending updates -> {FullInfo()}");
+			string info = FullInfo();
+			for (int i = 0; i < Lobbies.Count; i++)
+			{
+				Lobby l = Lobbies[i];
+				for (int j = 0; j < l.Players.Count; j++)
 				{
+					Player p = l.Players[j];
 					try
 					{
 						p.Writer.WriteLine("Info#" + info);
@@ -107,52 +136,24 @@ namespace NoPasaranMS
 					catch (Exception)
 					{
 						RemovePlayerFromLobby(p);
-						p.StopReceiving.Set();
 					}
 				}
+			}
 		}
+
 		private void RemovePlayerFromLobby(Player p)
 		{
 			var i = Lobbies.FindIndex(l => l.Players.Contains(p));
+			if (i == -1) return;
+
 			Lobbies[i].Players.Remove(p);
 			if (i > 0 && Lobbies[i].Players.Count == 0)
+			{
+				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] removed lobby {Lobbies[i].Info}");
 				Lobbies.RemoveAt(i);
-		}
-		private void StartGame(Lobby lobby)
-		{
-			Lobbies.Remove(lobby);
-			foreach (var p in lobby.Players)
-				p.StopReceiving.Set();
-			GroupFoundCallback(lobby.Players.Select(p => p.Socket).ToList());
+			}
 		}
 
 		private string FullInfo() => new StringBuilder().AppendJoin('\t', Lobbies.Select(l => l.FullInfo)).ToString();
-
-		private class Lobby
-		{
-			public string Info;
-			public List<Player> Players = new List<Player>();
-			public Lobby(string info) => Info = info;
-			public Lobby(string info, Player host)
-			{
-				Info = info;
-				Players.Add(host);
-			}
-			public string FullInfo => new StringBuilder(Info + '|').AppendJoin('|', Players.Select(p => p.Info)).ToString();
-
-		}
-		private class Player
-		{			
-			public string Info;
-			public Socket Socket;
-			public StreamWriter Writer;
-			public ManualResetEvent StopReceiving = new ManualResetEvent(false);
-			public Player(string info, Socket socket, StreamWriter writer)
-			{
-				Info = info;
-				Socket = socket;
-				Writer = writer;
-			}
-		}
 	}
 }

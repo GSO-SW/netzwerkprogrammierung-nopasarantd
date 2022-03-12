@@ -2,6 +2,7 @@
 using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
+using NoPasaranTD.Networking;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -20,7 +21,7 @@ namespace NoPasaranTD.Visuals.Main
         {
             // Lade Spielszene
             Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
-            backgroundGame = new Game(map);
+            backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Active = false;
@@ -28,13 +29,13 @@ namespace NoPasaranTD.Visuals.Main
 
                 // Spawne Türme in Spielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
-                backgroundGame.AddTower(new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
             }
 
             lobbyList = new ListContainer<object, LobbyItemContainer>()
