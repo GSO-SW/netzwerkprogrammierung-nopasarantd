@@ -128,8 +128,15 @@ namespace NoPasaranTD.Visuals.Ingame
             if (placingTowerDragDrop.Context != null)
             {
                 if (placingTowerDragDrop.IsMoving)
-                {
+                {                   
                     ((Tower)placingTowerDragDrop.Context).Hitbox = placingTowerDragDrop.MovedObject;
+
+                    // Überprüft ob die derzeitige Position valide für eine Platzierung wäre
+                    if (!game.IsTowerValidPosition(placingTowerDragDrop.MovedObject))
+                        ((Tower)placingTowerDragDrop.Context).IsPositionValid = false;
+                    else
+                        ((Tower)placingTowerDragDrop.Context).IsPositionValid = true;
+
                     ((Tower)placingTowerDragDrop.Context).Render(g);
                 }
             }

@@ -78,7 +78,12 @@ namespace NoPasaranTD.Model.Towers
             };
 
             // Zeichnet die Hitbox des Towers
-            g.FillPolygon(brushSlateGray, hitboxPolygonCorners);
+            if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
+                g.FillPolygon(brushSlateGray, hitboxPolygonCorners);
+            else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
+                g.FillPolygon(Brushes.Red, hitboxPolygonCorners);
+
+
             if (IsSelected)
                 g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
 

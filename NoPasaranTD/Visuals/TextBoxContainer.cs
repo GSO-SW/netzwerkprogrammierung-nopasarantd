@@ -10,7 +10,7 @@ namespace NoPasaranTD.Visuals
 {
     public class TextBoxContainer : GuiComponent
     {
-        public string Text { get; set; }
+        public string Text { get; set; } = "\0";
         public int Margin { get; set; }
         public SolidBrush BorderBrush { get; set; } = new SolidBrush(Color.Gray);
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.Black);
@@ -26,12 +26,14 @@ namespace NoPasaranTD.Visuals
         {
             if (IsFocused)
             {
-                if (e.KeyCode == Keys.Return)
+                if ((char)e.KeyCode == '\b')
                     Text = Text.Substring(0, Text.Length - 1);
                 else
-                    Text += (char)e.KeyCode;
+                    Text += (char)e.KeyValue;
 
                 CaretIndex = Text.Length - 1;
+                if (CaretIndex == 0)
+                    CaretIndex = 1;
             }            
         }
 
@@ -48,6 +50,12 @@ namespace NoPasaranTD.Visuals
             g.FillRectangle(BorderBrush,Bounds);
             g.FillRectangle(Background, innerBound);
             g.DrawString(Text, TextFont,Foreground,innerBound);
+          
+            Size leftTextSize = TextRenderer.MeasureText(Text.Substring(0,CaretIndex),TextFont);
+
+            if (!(leftTextSize == Size.Empty))
+                g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 3, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 3, Bounds.Y + leftTextSize.Height - 2);
+            
         }
     }
 }

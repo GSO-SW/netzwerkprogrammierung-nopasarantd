@@ -52,6 +52,9 @@ namespace NoPasaranTD.Model
             }
         }
 
+        public bool IsPositionValid { get; set; }
+        public bool IsPlaced { get; set; }
+
         public abstract void Render(Graphics g);
         public abstract void Update(Game game);
 

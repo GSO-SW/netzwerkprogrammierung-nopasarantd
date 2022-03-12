@@ -222,6 +222,7 @@ namespace NoPasaranTD.Engine
 		{
 			// TODO network communication
 			t.IsSelected = false;
+			t.IsPlaced = true;
 			Towers.Add(t);
 			Towers[Towers.Count - 1].FindSegmentsInRange(CurrentMap);
 		}
