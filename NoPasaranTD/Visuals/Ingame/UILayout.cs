@@ -249,7 +249,7 @@ namespace NoPasaranTD.Visuals.Ingame
             // Die Lebensanzeige des derzeitigen Spieles
             g.DrawString(game.HealthPoints + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
             // Die Zahl der derzeitigen Runde
-            g.DrawString("x" + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
+            g.DrawString(game.Round + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
         }        
     }
 }

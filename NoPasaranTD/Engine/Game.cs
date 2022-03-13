@@ -25,6 +25,10 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
+		public int Round { get; set; }
+
+		private List<Balloon> currentWave;
+		private int currentBallon = 0;
 
 		public Game(Map map, NetworkHandler networkHandler)
 		{
@@ -145,16 +149,33 @@ namespace NoPasaranTD.Engine
 
 		private void ManageBalloonSpawn()
 		{
-			if (CurrentTick % 1200 == 0)
-			{ // Spawne jede Sekunde einen Ballon
-				Balloon balloon = new Balloon
-				{
-					PathPosition = 0
-				};
+            if (currentWave == null)
+            {
+				Round++;
+				currentWave = GetNextBallonWave(100);
+            }
 
-				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(1, values.Length - 1)];
-				Balloons[0].Add(balloon);
+			if (CurrentTick % 100 == 0)
+			{ // Spawne jede Sekunde einen Ballon
+
+
+
+				//Balloon balloon = new Balloon
+				//{
+				//	PathPosition = 0
+				//};
+
+				//BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
+				//balloon.Type = values[random.Next(1, values.Length - 1)];
+				Balloons[0].Add(currentWave[currentBallon]);
+				currentBallon++;
+			}
+
+            if (currentWave.Count-1 == currentBallon)
+            {
+				Round++;
+				currentWave = GetNextBallonWave(100);
+				currentBallon = 0;
 			}
 		}
 
@@ -267,6 +288,48 @@ namespace NoPasaranTD.Engine
 			// TODO network communication
 			Towers.Remove((Tower)t);
 		}
+
+		private List<Balloon> GetNextBallonWave(int numberBallons)
+        {
+			int currentBallons = 0;
+			Balloon[] ballons = new Balloon[numberBallons];
+
+			(BalloonType, double)[] properbilitys = new (BalloonType, double)[Enum.GetNames(typeof(BalloonType)).Length];
+
+			BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
+			double sumProbability = 0;
+
+			for (int i = 1; i < Enum.GetNames(typeof(BalloonType)).Length; i++)
+            {
+				double probability = CalcProberbility(values[i]);
+				properbilitys[i-1] = (values[i], CalcProberbility(values[i]));
+				sumProbability += probability;
+            }
+
+            for (int i = 1; i < Enum.GetNames(typeof(BalloonType)).Length; i++)
+				properbilitys[i-1] = (properbilitys[i-1].Item1, properbilitys[i-1].Item2 * (1 / sumProbability));
+
+            for (int i = 0; i < properbilitys.Length; i++)
+            {
+                for (int j = 0; j < (int)(properbilitys[i].Item2 * numberBallons); j++)
+                {
+					ballons[currentBallons] = new Balloon(properbilitys[i].Item1);
+					currentBallons++;
+                }
+            }
+
+			List<Balloon> ballonsList = new List<Balloon>(ballons);
+			ballonsList.RemoveAll(x => x == null);
+
+			return ballonsList;
+        }
+
+		double CalcProberbility(BalloonType type)
+        {
+			// Funktion: e^-0.05(x-a-5)*(x-a+5)-1.25
+			uint peek = StaticInfo.GetBallonPeek(type);
+			return Math.Exp(-0.05*(Round-peek-5)*(Round-peek+5)-1.25);
+        }
 	}
-	}
+}
 

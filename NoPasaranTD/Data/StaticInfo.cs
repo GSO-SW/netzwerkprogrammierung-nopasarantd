@@ -183,5 +183,25 @@ namespace NoPasaranTD.Data
             {typeof(TowerCanon),     2500},
         };
         #endregion // Dictionary für die Türme
+
+        #region Wellenwerte
+
+        private static Dictionary<BalloonType, uint> PeekRoundBallon = new Dictionary<BalloonType, uint>()
+        {
+            {BalloonType.Red,0},
+            {BalloonType.Green,10},
+            {BalloonType.Blue,20},
+            {BalloonType.Purple,30},
+            {BalloonType.Black,40 },
+            {BalloonType.Gold,50 },
+        };
+
+        public static uint GetBallonPeek(BalloonType type)
+        {
+            PeekRoundBallon.TryGetValue(type, out uint result);
+            return result;
+        }
+
+        #endregion
     }
 }
