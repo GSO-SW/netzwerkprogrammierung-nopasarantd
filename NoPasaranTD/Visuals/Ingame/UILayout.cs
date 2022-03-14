@@ -3,6 +3,7 @@ using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame
@@ -24,7 +25,7 @@ namespace NoPasaranTD.Visuals.Ingame
             Margin = 10,
             Orientation = Orientation.Horizontal,
             ItemSize = new System.Drawing.Size(100, 110),
-            Position = new System.Drawing.Point(20, StaticEngine.RenderHeight - 150),
+            Position = new System.Drawing.Point(120, StaticEngine.RenderHeight - 150),
             ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 40, 130),
             BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
             // Spezifizierung der Verschiedenen Towers
@@ -39,12 +40,23 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,400),        
+            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,450),        
             Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
             ButtonFont = GuiComponent.StandartText1Font,
             Visible = false,
             Foreground = Brushes.Black,
             TextFont = GuiComponent.StandartText1Font,
+        };
+
+        private ButtonContainer hideBuildMenüButton = new ButtonContainer()
+        {
+            Bounds = new Rectangle(20, StaticEngine.RenderHeight - 150, 80, 130),
+            StringFont = GuiComponent.StandartIconFont,
+            Foreground = Brushes.Black,
+            Content = "←",
+            BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+            Background = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+            Margin = 1         
         };
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
@@ -63,8 +75,38 @@ namespace NoPasaranTD.Visuals.Ingame
 
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
+            hideBuildMenüButton.ButtonClicked += HideBuildMenüButton_ButtonClicked;
 
             game = gameObj;
+        }
+
+        private async void HideBuildMenüButton_ButtonClicked()
+        {
+            // Animation zum einklappen des Buildmenüs
+            if (TowerBuildMenu.Visible)
+            {
+                hideBuildMenüButton.Content = "→";
+                while (TowerBuildMenu.Bounds.Width > 0)
+                {
+                    TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, TowerBuildMenu.Bounds.Width - 130, TowerBuildMenu.Bounds.Height);
+                    await Task.Delay(1);
+                }
+                TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, 0, TowerBuildMenu.Bounds.Height);
+                TowerBuildMenu.Visible = false;               
+            }
+            else // Animation zum ausklappen des Buildmenüs
+            {
+                hideBuildMenüButton.Content = "←";
+                TowerBuildMenu.Visible = true;
+                while (TowerBuildMenu.Bounds.Width < StaticEngine.RenderWidth - 40)
+                {
+                    TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, TowerBuildMenu.Bounds.Width + 130, TowerBuildMenu.Bounds.Height);
+                    await Task.Delay(1);
+                }
+                
+                TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, StaticEngine.RenderWidth - 140, TowerBuildMenu.Bounds.Height);
+                
+            }
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
@@ -78,7 +120,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             if (args.Context is TowerCanon && StaticInfo.GetTowerPrice(typeof(TowerCanon)) <= game.Money)
             {
-                game.AddTower(new TowerCanon() { Hitbox = args.MovedObject });
+                game.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = args.MovedObject });
                 game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerCanon));
             }
             // TODO: Towers Spezifizeiren
@@ -112,6 +154,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (!Visible) return;
             TowerDetailsContainer.Render(g);   
             TowerBuildMenu.Render(g);
+            hideBuildMenüButton.Render(g);
 
             DrawGameStats(g);
 
@@ -122,11 +165,19 @@ namespace NoPasaranTD.Visuals.Ingame
             if (placingTowerDragDrop.Context != null)
             {
                 if (placingTowerDragDrop.IsMoving)
-                {
+                {                   
                     ((Tower)placingTowerDragDrop.Context).Hitbox = placingTowerDragDrop.MovedObject;
+
+                    // Überprüft ob die derzeitige Position valide für eine Platzierung wäre
+                    if (!game.IsTowerValidPosition(placingTowerDragDrop.MovedObject))
+                        ((Tower)placingTowerDragDrop.Context).IsPositionValid = false;
+                    else
+                        ((Tower)placingTowerDragDrop.Context).IsPositionValid = true;
+
                     ((Tower)placingTowerDragDrop.Context).Render(g);
                 }
             }
+
         }
 
         public override void KeyUp(KeyEventArgs e)
@@ -134,10 +185,17 @@ namespace NoPasaranTD.Visuals.Ingame
             if(Active) TowerBuildMenu.KeyUp(e);
         }
 
+        public override void KeyPress(KeyPressEventArgs e)
+        {
+            if (Active) TowerBuildMenu.KeyPress(e);
+            hideBuildMenüButton.KeyPress(e);
+        }
+
         public override void KeyDown(KeyEventArgs args)
         {
             if(Active)
                 TowerBuildMenu.KeyDown(args);
+            hideBuildMenüButton.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -167,6 +225,7 @@ namespace NoPasaranTD.Visuals.Ingame
                     SelectedTower.IsSelected = true;
                 }
             }
+            hideBuildMenüButton.MouseDown(e);
         }
 
         public override void MouseMove(MouseEventArgs e)
@@ -183,6 +242,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         void DrawGameStats(Graphics g)
         {
+            // DAS BLEIBT ALLES SO WIE ES HIER IST!!!
+
             // Die Kontostandanzeige des derzeitigen Spieles
             g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
             // Die Lebensanzeige des derzeitigen Spieles
