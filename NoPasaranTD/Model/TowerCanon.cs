@@ -22,9 +22,6 @@ namespace NoPasaranTD.Model.Towers
         Utilities.Vector2D lastBalloonPos;
         (int segment, int index) lastBalloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
         int centerX, centerY, sizeX, sizeY;
-        uint delay;
-        uint strength;
-        double range;
 
         // Das Geschütz der Kanone
         RectangleF barrel;
@@ -49,9 +46,6 @@ namespace NoPasaranTD.Model.Towers
             time = 0;
             timeLastShot = 0;
             lastBalloonIndex = (-1, -1);
-            range = Range;
-            delay = Delay;
-            strength = Strength;
             sw = new Stopwatch();
             sw.Start();
         }
@@ -85,7 +79,7 @@ namespace NoPasaranTD.Model.Towers
 
 
             if (IsSelected)
-                g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
+                g.DrawEllipse(penPurple, (float)(centerX - Range), (float)(centerY - Range), (float)Range * 2, (float)Range * 2);
 
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - time + timeLastShot).ToString(), font, bruhLightGray, Hitbox.Location); 
@@ -111,15 +105,15 @@ namespace NoPasaranTD.Model.Towers
 
             if (justShotSomeUglyAss)
             {
-                float factor = System.Math.Max((time - timeLastShot) / (delay * (float)shotAnimationLength), 0);
+                float factor = System.Math.Max((time - timeLastShot) / (Delay * (float)shotAnimationLength), 0);
                 if (Math.Pow(
                     (centerX - lastBalloonPos.X) * (centerX - lastBalloonPos.X)
                     + (centerY - lastBalloonPos.Y) * (centerY - lastBalloonPos.Y),
-                    0.5) < range)
+                    0.5) < Range)
                     //g.DrawLine(penRed, barrel.X + barrel.Width/2,barrel.Y+barrel.Height,lastBalloonPos.X - centerX ,lastBalloonPos.Y - centerY);
                     g.FillEllipse(bruhFireColor, -barrel.Width + barrel.Width / 4, barrel.Height - 5, 15 * ticks % 30, 15 * ticks % 30); // Feueranimation als Ellipse
 
-                if (timeLastShot + delay * shotAnimationLength < time) justShotSomeUglyAss = false;
+                if (timeLastShot + Delay * shotAnimationLength < time) justShotSomeUglyAss = false;
             }
 
             // Die Originalmatrix wird wieder angewandt
@@ -131,7 +125,7 @@ namespace NoPasaranTD.Model.Towers
             ticks++;
             time = sw.ElapsedMilliseconds;
 
-            if (time > timeLastShot + delay)
+            if (time > timeLastShot + Delay)
             {
                 (int segment, int index) targetIndex = game.FindTargetForTower(this);
                 if (targetIndex.Item1 != -1)
@@ -140,7 +134,7 @@ namespace NoPasaranTD.Model.Towers
                     lastBalloonIndex = targetIndex;
                     justShotSomeUglyAss = true;
                     lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex.segment][targetIndex.index].PathPosition);
-                    game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)Strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
             if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);

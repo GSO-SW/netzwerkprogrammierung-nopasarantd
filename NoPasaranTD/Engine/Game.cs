@@ -271,8 +271,9 @@ namespace NoPasaranTD.Engine
 		public void UpgradeTower(Tower t)
         {
 			t.Level++;
+			t.SearchSegments(CurrentMap);
           
         }
 	}
-	}
+}
 
