@@ -135,10 +135,10 @@ namespace NoPasaranTD.Engine
 
 		public void KeyDown(KeyEventArgs e)
 		{
-			if (e.KeyCode == Keys.Escape)
+			if (HealthPoints > 0 && e.KeyCode == Keys.Escape)
 			{
 				Program.LoadScreen((Paused = !Paused) ?
-					new GuiPauseMenu() : null);
+					new GuiPauseMenu(this) : null);
 			}
 
 			if (Paused) return;
