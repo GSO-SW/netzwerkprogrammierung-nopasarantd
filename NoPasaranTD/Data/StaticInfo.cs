@@ -32,12 +32,6 @@ namespace NoPasaranTD.Data
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der TowerDaten/Werte 
         /// </summary>
-        public static Bitmap GetTowerImage(Type type)
-        {
-            TowerImage.TryGetValue(type, out Bitmap towerimg);
-            return towerimg;
-        }
-
         public static string GetTowerName(Type type) 
         {
             TowerName.TryGetValue(type, out string name);
