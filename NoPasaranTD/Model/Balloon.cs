@@ -12,8 +12,6 @@ namespace NoPasaranTD.Model
             Type = type;
         }
 
-        public Balloon() { }
-
         /// <summary>
         /// Der Ballon Type mithilfe dessen weitere Memberwerte bestimmt werden
         /// </summary>
