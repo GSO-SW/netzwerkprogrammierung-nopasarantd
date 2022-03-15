@@ -43,20 +43,22 @@ namespace NoPasaranMS
 			Player p = null;
 			try
 			{
-				using var networkStream = new NetworkStream(clientSocket);
-				using var writer = new StreamWriter(networkStream);
-				using var reader = new StreamReader(networkStream);
-				string playerInfo = reader.ReadLine();
-				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] added player {playerInfo}");
-				p = new Player(playerInfo, clientSocket, writer);
-				Lobbies[0].Players.Add(p);
-				SendUpdates();
-
-				while (true)
+				using (var networkStream = new NetworkStream(clientSocket))
+				using (var writer = new StreamWriter(networkStream))
+				using (var reader = new StreamReader(networkStream))
 				{
-					string message = reader.ReadLine();
-					if (message == null) throw new IOException("Stream was closed");
-					HandleMessage(p, message);
+					string playerInfo = reader.ReadLine();
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] added player {playerInfo}");
+					p = new Player(playerInfo, clientSocket, writer);
+					Lobbies[0].Players.Add(p);
+					SendUpdates();
+
+					while (true)
+					{
+						string message = reader.ReadLine();
+						if (message == null) throw new IOException("Stream was closed");
+						HandleMessage(p, message);
+					}
 				}
 			}
 			catch (Exception)
@@ -77,8 +79,8 @@ namespace NoPasaranMS
 			try
 			{
 				Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] handling message '{message}' from {sender.Info}");
-				string type = message[..message.IndexOf('#')];
-				string content = message[(message.IndexOf('#') + 1)..];
+				string type = message.Substring(0, message.IndexOf('#'));
+				string content = message.Substring(message.IndexOf('#') + 1);
 				Lobby lobby = Lobbies.Where(l => l.Players.Contains(sender)).FirstOrDefault();
 				switch (type)
 				{
