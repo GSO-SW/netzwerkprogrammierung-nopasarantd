@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Utilities
 {
     public static class Serializer
     {
-        public static byte[] EncodeObject(object obj)
+        /// <summary>
+        /// Serialisiert ein Objekt zu einem byte[]
+        /// </summary>
+        /// <param name="obj">Objekt was zu serialisieren gilt</param>
+        /// <returns>Daten als byte[] des objektes</returns>
+        public static byte[] SerializeObject(object obj)
         {
             BinaryFormatter formatter = new BinaryFormatter();
             using (var memorys = new MemoryStream()) 
@@ -19,7 +19,13 @@ namespace NoPasaranTD.Utilities
                 return memorys.ToArray();   
             }
         }
-        public static object DecodeObject(byte[] obj)
+
+        /// <summary>
+        /// Deserialisiert ein byte[] zu einem Objekt
+        /// </summary>
+        /// <param name="obj">Die Daten des Objektes als byte[]</param>
+        /// <returns>Ein deserialisiertes Objekt aus byte[]</returns>
+        public static object DeserializeObject(byte[] obj)
         {
             MemoryStream ms = new MemoryStream();   
             BinaryFormatter formatter = new BinaryFormatter();

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace NoPasaranTD.Utilities
 {
+	[Serializable]
 	[JsonObject(MemberSerialization.OptOut)]
 	public struct Vector2D
 	{

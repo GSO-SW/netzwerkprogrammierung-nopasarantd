@@ -7,6 +7,7 @@ using System.Drawing;
 
 namespace NoPasaranTD.Model
 {
+    [Serializable]
     public abstract class Tower
     {
         public TowerTargetMode TowerTargetMode { get; set; } = TowerTargetMode.Farthest;
@@ -171,6 +172,7 @@ namespace NoPasaranTD.Model
         }
     }
 
+    [Serializable]
     public enum TowerTargetMode
     {
         Farthest,

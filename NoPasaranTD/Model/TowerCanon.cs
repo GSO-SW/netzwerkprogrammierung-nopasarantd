@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 
 namespace NoPasaranTD.Model.Towers
 {
+    [Serializable]
     public class TowerCanon : Tower
     {
         private const float HITBOX_CORNER_MARGIN = 10; // Größe der Polygoneckenabstände zur tatäschlichen Hitbox Ecke
