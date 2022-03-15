@@ -19,7 +19,7 @@ namespace NoPasaranTD.Engine
 
 		public NetworkHandler NetworkHandler { get; }
 		public Map CurrentMap { get; }
-		public List<Balloon>[] Balloons { get; private set; }
+		public List<Balloon>[] Balloons { get; }
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
 

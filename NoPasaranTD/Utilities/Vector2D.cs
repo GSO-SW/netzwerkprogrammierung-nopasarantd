@@ -14,10 +14,11 @@ namespace NoPasaranTD.Utilities
 		public override bool Equals(object obj) => obj is Vector2D d && X == d.X && Y == d.Y;
 		public override int GetHashCode() => (X, Y).GetHashCode();
 		public override string ToString() => "(" + X + '|' + Y + ')';
-		public static float Intersection(Vector2D locationVA, Vector2D directionVA, Vector2D locationVB, Vector2D directionVB) => (directionVB.X * (locationVA.Y - locationVB.Y) + directionVB.Y * (locationVB.X - locationVA.X)) / (directionVA.X * directionVB.Y - directionVA.Y * directionVB.X);
-
+		
 		[JsonIgnore]
 		public float Magnitude => (float)Math.Sqrt(X * X + Y * Y);
+
+		[JsonIgnore]
 		public float MagnitudeSquared => (float)(X * X + Y * Y);
 
 		[JsonIgnore]
@@ -32,8 +33,9 @@ namespace NoPasaranTD.Utilities
 		public Vector2D WithAngle(double angle) => Rotated(angle - Angle);
 		public Vector2D WithMagnitude(double magnitude) => (magnitude / Magnitude) * this;
 
+		public static float Intersection(Vector2D locationVA, Vector2D directionVA, Vector2D locationVB, Vector2D directionVB) => (directionVB.X * (locationVA.Y - locationVB.Y) + directionVB.Y * (locationVB.X - locationVA.X)) / (directionVA.X * directionVB.Y - directionVA.Y * directionVB.X);
 		public static Vector2D FromPolar(double magnitude, double angle) => new Vector2D(magnitude * Math.Cos(angle), magnitude * Math.Sin(angle));
-
+		
 		public static Vector2D operator *(double i, Vector2D v) => new Vector2D(v.X * i, v.Y * i);
 		public static Vector2D operator *(Vector2D v, double i) => new Vector2D(v.X * i, v.Y * i);
 		public static Vector2D operator *(Vector2D a, Vector2D b) => new Vector2D(a.X * b.X, a.Y * b.Y);

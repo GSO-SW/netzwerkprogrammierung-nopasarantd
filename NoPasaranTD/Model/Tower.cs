@@ -9,52 +9,36 @@ namespace NoPasaranTD.Model
 {
     public abstract class Tower
     {
+        public TowerTargetMode TowerTargetMode { get; set; } = TowerTargetMode.Farthest;
         public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
         public uint Level { get; set; } = 1;
 
-        public uint Strength { get => StaticInfo.GetTowerDamage(GetType())*Level; }
-        public uint Delay { get => StaticInfo.GetTowerDelay(GetType()) / (Level * 2); }
-        public double Range { get => StaticInfo.GetTowerRange(GetType()) * Level * 0.3; }
         public ulong NumberKills { get; set; }
         public bool IsSelected { get; set; } = true;
+        public bool IsPositionValid { get; set; }
+        public bool IsPlaced { get; set; }
+
         public List<int> SegmentsInRange { get; private set; }
         public List<Vector2D> NotVisibleSpots { get; private set; }
 
-        public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
+        public uint Strength { get => StaticInfo.GetTowerDamage(GetType()) * Level; }
+        public uint Delay { get => StaticInfo.GetTowerDelay(GetType()) / (Level * 2); }
+        public double Range { get => StaticInfo.GetTowerRange(GetType()) * Level * 0.3; }
 
-        public TowerTargetMode TowerTargetMode
-        {
+        public Func<Balloon, Balloon, bool> GetBalloonFunc 
+        { 
             get
             {
-                if (GetBalloonFunc == FarthestBallonCheck)
-                    return TowerTargetMode.Farthest;
-                else if (GetBalloonFunc == FarthestBackBallonCheck)
-                    return TowerTargetMode.FarthestBack;
-                else if (GetBalloonFunc == StrongestBallonCheck)
-                    return TowerTargetMode.Strongest;
-                else
-                    return TowerTargetMode.Weakest;
-            }
-            set
-            {
-                switch (value)
+                switch(TowerTargetMode)
                 {
-                    case TowerTargetMode.Farthest:
-                        GetBalloonFunc = FarthestBallonCheck; break;
-                    case TowerTargetMode.FarthestBack:
-                        GetBalloonFunc = FarthestBackBallonCheck; break;
-                    case TowerTargetMode.Strongest:
-                        GetBalloonFunc = StrongestBallonCheck; break;
-                    case TowerTargetMode.Weakest:
-                        GetBalloonFunc = WeakestBallonCheck; break;
-                    default:
-                        break;
+                    case TowerTargetMode.Farthest: return FarthestBallonCheck;
+                    case TowerTargetMode.FarthestBack: return FarthestBackBallonCheck;
+                    case TowerTargetMode.Strongest: return StrongestBallonCheck;
+                    case TowerTargetMode.Weakest: return WeakestBallonCheck;
+                    default: throw new Exception("TowerTargetMode not found");
                 }
             }
         }
-
-        public bool IsPositionValid { get; set; }
-        public bool IsPlaced { get; set; }
 
         public abstract void Render(Graphics g);
         public abstract void Update(Game game);
@@ -66,30 +50,10 @@ namespace NoPasaranTD.Model
         /// <param name="bCheck">Zu kontrollierender Ballon</param>
         /// <param name="bCurrent">Derzeitiger Ballon</param>
         /// <returns>True wenn der Ballon Check weiter ist als der Ballon bCurrent</returns>
-        public bool FarthestBallonCheck(Balloon bCheck, Balloon bCurrent)
-        {
-            if (bCheck.PathPosition > bCurrent.PathPosition)
-                return true;
-            return false;
-        }
-        public bool FarthestBackBallonCheck(Balloon bCheck, Balloon bCurrent)
-        {
-            if (bCheck.PathPosition < bCurrent.PathPosition)
-                return true;
-            return false;
-        }
-        public bool StrongestBallonCheck(Balloon bCheck, Balloon bCurrent)
-        {
-            if (bCheck.Strength > bCurrent.Strength)
-                return true;
-            return false;
-        }
-        public bool WeakestBallonCheck(Balloon bCheck, Balloon bCurrent)
-        {
-            if (bCheck.Strength < bCurrent.Strength)
-                return true;
-            return false;
-        }
+        public bool FarthestBallonCheck(Balloon bCheck, Balloon bCurrent) => bCheck.PathPosition > bCurrent.PathPosition;
+        public bool FarthestBackBallonCheck(Balloon bCheck, Balloon bCurrent) => bCheck.PathPosition < bCurrent.PathPosition;
+        public bool StrongestBallonCheck(Balloon bCheck, Balloon bCurrent) => bCheck.Strength > bCurrent.Strength;
+        public bool WeakestBallonCheck(Balloon bCheck, Balloon bCurrent) => bCheck.Strength < bCurrent.Strength;
         #endregion
 
         public void SearchSegments(Map map)
