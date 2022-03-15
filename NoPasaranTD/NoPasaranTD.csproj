@@ -67,6 +67,7 @@
     <Compile Include="Utilities\Serializer.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
+    <Compile Include="Model\TowerArtillerie.cs" />
     <Compile Include="Visuals\ListContainer.cs" />
     <Compile Include="Visuals\ButtonContainer.cs" />
     <Compile Include="Visuals\DragDropService.cs" />
