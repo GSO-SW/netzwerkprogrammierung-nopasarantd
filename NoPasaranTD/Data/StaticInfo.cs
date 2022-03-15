@@ -173,7 +173,7 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
             {typeof(TowerCanon),     450},
-            {typeof(TowerArtillerie), 340},
+            {typeof(TowerArtillerie), 1000},
         };
 
         private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
@@ -185,7 +185,7 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     2500},
-            {typeof(TowerArtillerie), 15000},
+            {typeof(TowerArtillerie), 30000},
         };
         #endregion // Dictionary für die Türme
     }

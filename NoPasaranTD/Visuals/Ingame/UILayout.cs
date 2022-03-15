@@ -126,7 +126,7 @@ namespace NoPasaranTD.Visuals.Ingame
             }
             if (args.Context is TowerArtillerie && StaticInfo.GetTowerPrice(typeof(TowerArtillerie)) <= game.Money)
             {
-                game.AddTower(new TowerArtillerie() { Hitbox = args.MovedObject });
+                game.NetworkHandler.InvokeEvent("AddTower", new TowerArtillerie() { Hitbox = args.MovedObject });
                 game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerArtillerie));
             }
             // TODO: Towers Spezifizeiren
