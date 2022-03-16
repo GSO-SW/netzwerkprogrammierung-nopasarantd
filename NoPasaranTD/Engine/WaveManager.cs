@@ -2,26 +2,52 @@
 using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Engine
 {
+	/// <summary>
+	/// Der Wellen-Manager bestimmt wann ein Ballon zu welcher Runde und in welcher Häufigkeit spawnen soll
+	/// </summary>
     public class WaveManager
     {
+		/// <summary>
+		/// Das derzeitige Spiel
+		/// </summary>
 		public Game CurrentGame { get; set; }
-        public List<Balloon> CurrentWavePackage { get; set; }
-        public int CurrentBallonOfPackage = 0;
-
+	
         public WaveManager(Game game, int numberBallon)
         {
 			CurrentGame = game;
-			currentWave = GetNextBallonWave(numberBallon);
-        }
 
+			currentWave = GetNextBallonWave(numberBallon);
+			currentWavePackage = GetNewBallonPackage(currentWave);
+		}
+
+		/// <summary>
+		/// Erkärung des Spawnalgorithmus graphisch:
+		/// 
+		///							   -Welle-
+		///  Paket            Paket		     Paket		  Paket
+		/// . . . . .     . . . . . .      . . . . .    . . . . . .
+		/// 
+		/// </summary>
+
+		// Das derzeitige zu Spawnende Paket
+		private List<Balloon> currentWavePackage;
+
+		// Die Anzahl an genutzten Ballons eines Paketes
+		private int currentBallonOfPackage = 0;
+
+		// Die derzeitigen Ballons der Welle
 		private List<Balloon> currentWave;
+
+		// Die derzeitige Anzahl an genutzten Ballons der Welle
 		private int currentBallonOfWave = 0;
+		
+		// Wellen-Parameter
+		private double waveSensitivity = 0.0015; // Die Sensitivität der Wellen
+		private double ballonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
+		private uint waveSensitivityExponent = 2; // Der Exponent der den Spawn-Grad verändern kann
 		private List<Balloon> GetNextBallonWave(int numberBallons)
 		{
 			int currentBallons = 0;
@@ -72,49 +98,66 @@ namespace NoPasaranTD.Engine
 			return Math.Exp(-0.05 * (CurrentGame.Round - peek - 5) * (CurrentGame.Round - peek + 5) - 1.25);
 		}
 
+		// Erstellt ein neues Paket an Ballons innerhalb einer Welle
 		private List<Balloon> GetNewBallonPackage(List<Balloon> ballons)
 		{
-			double part = -0.25 * Math.Sin(-0.4 * Math.Log(CurrentGame.Round + currentBallonOfWave / currentWave.Count)) + 0.4;
+			List<Balloon> newWave = new List<Balloon>(); // Die neue Paket Welle
+
+			// Errechnet einen neuen Wert zwischen 0 und 1 welches dann der Anteil der gesamten Welle ist und erstellt diese Menge an Ballons dann
+			double part = -0.25 * Math.Sin(-0.4 * Math.Log(Math.Pow((CurrentGame.Round + currentBallonOfWave / currentWave.Count),Math.Cos(CurrentGame.Round + currentBallonOfWave / currentWave.Count)))) + 0.4;
             if (currentBallonOfWave + currentWave.Count * part < currentWave.Count)
             {
-				CurrentWavePackage = currentWave.GetRange(currentBallonOfWave + 1, (int)(currentWave.Count * part));
-				CurrentBallonOfPackage = 0;
+				newWave = currentWave.GetRange(currentBallonOfWave + 1, (int)(currentWave.Count * part));
+				currentBallonOfPackage = 0;
             }
 			else if (currentBallonOfWave + currentWave.Count * part > currentWave.Count)
             {
-				CurrentWavePackage = currentWave.GetRange(currentBallonOfWave + 1, currentWave.Count - currentBallonOfWave-1);
-				CurrentBallonOfPackage = 0;
+				newWave = currentWave.GetRange(currentBallonOfWave + 1, currentWave.Count - currentBallonOfWave-1);
+				currentBallonOfPackage = 0;
 			}
-			return ballons;
+			return newWave;
 		}
 
+		// Übergiebt die neue Anzahl an Ballons in einer Runde in Abhängigkeit der Runde, dem Startwert, der Intensitivität und dem Exponenten
+		private int GetBallonNumberInRound() => (int)(ballonStartValue * (waveSensitivity * Math.Pow(CurrentGame.Round, waveSensitivityExponent)+1));
+
+		/// <summary>
+		/// Update Methode des Ballon-Wave Managers
+		/// </summary>
 		public void Update()
         {
-			int currentWaitTime = 150;
+			int currentWaitTime;
 
-			if (CurrentWavePackage == null || CurrentBallonOfPackage == CurrentWavePackage.Count - 1)
-			{
-				CurrentWavePackage = GetNewBallonPackage(currentWave);
-			}
-
-			if (CurrentBallonOfPackage == 0)
+			if (currentBallonOfPackage == 0)
 				currentWaitTime = 1000;
 			else
 				currentWaitTime = 150;
+				
+			// Setzt eine neue Welle falls die derzeitige bereits vorüber ist
+			if (currentWave.Count - 1 == currentBallonOfWave)
+			{
+				CurrentGame.Round++;
+				currentWave = GetNextBallonWave(GetBallonNumberInRound());
+				currentBallonOfWave = 0;
+				currentBallonOfPackage = 0;
+				currentWavePackage = GetNewBallonPackage(currentWave);
+			}
+			
+			// Setzt ein neues Paket an Ballons falls das derzeitige bereits genutzt wurde
+			if (currentBallonOfPackage == currentWavePackage.Count - 1)
+			{
+				currentWavePackage = GetNewBallonPackage(currentWave);
+				currentBallonOfPackage = 0;
+			}
 
+			// Setzt einen Ballon an den Spawnpoint
 			if (CurrentGame.CurrentTick % currentWaitTime == 0)
 			{
-				CurrentGame.Balloons[0].Add(CurrentWavePackage[CurrentBallonOfPackage]);
-				CurrentBallonOfPackage++;
+				CurrentGame.Balloons[0].Add(currentWavePackage[currentBallonOfPackage]);
+				currentBallonOfPackage++;
 				currentBallonOfWave++;
 			}
 
-			if (CurrentWavePackage.Count - 1 == CurrentBallonOfPackage)
-			{
-				CurrentGame.Round++;
-				currentWave = GetNextBallonWave((int)(100));
-				currentBallonOfWave = 0;
-			}
 		}
 	}
 }
