@@ -92,10 +92,14 @@ namespace NoPasaranTD.Model
         }
         #endregion
 
+        /// <summary>
+        /// Bestimmt alle Pfadeigenschaften für den Turm abhängig, von der Reichweite, also welche Segmente in Reichweite sind und welche Teile durch ein Hinderniss verdeckt sind
+        /// </summary>
+        /// <param name="map"></param>
         public void SearchSegments(Map map)
         {
-            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox);
-            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
+            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox); // Das skallierte Rechteck des Turmes
+            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2); // Das Zentrum des Turmes welches als Anhaltspunkt für die Reichweite genommen wird
             FindSegmentsInRange(map, centreP);
             FindObstaclesInTheWay(map, centreP);
         }
@@ -127,7 +131,7 @@ namespace NoPasaranTD.Model
         private void FindObstaclesInTheWay(Map map, Vector2D centreP)
         {
             List<Vector2D> blindSpots = new List<Vector2D>();
-            for (int j = 0; j < SegmentsInRange.Count - 1; j++)// Alle Pfadstücke des Ballonpfades durchgehen
+            for (int j = 0; j < SegmentsInRange.Count; j++)// Alle Pfadstücke des Ballonpfades durchgehen
             {
                 foreach (var item in map.Obstacles) // Alle Hindernisse durchgehen
                 {
