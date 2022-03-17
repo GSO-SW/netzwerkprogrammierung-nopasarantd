@@ -10,7 +10,7 @@ namespace NoPasaranTD.Model
     [Serializable]
     public abstract class Tower
     {
-        public TowerTargetMode TowerTargetMode { get; set; } = TowerTargetMode.Farthest;
+        public TowerTargetMode TargetMode { get; set; } = TowerTargetMode.Farthest;
         public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
         public uint Level { get; set; } = 1;
 
@@ -30,7 +30,7 @@ namespace NoPasaranTD.Model
         { 
             get
             {
-                switch(TowerTargetMode)
+                switch(TargetMode)
                 {
                     case TowerTargetMode.Farthest: return FarthestBallonCheck;
                     case TowerTargetMode.FarthestBack: return FarthestBackBallonCheck;

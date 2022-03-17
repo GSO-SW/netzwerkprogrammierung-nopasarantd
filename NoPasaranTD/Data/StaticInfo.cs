@@ -32,12 +32,6 @@ namespace NoPasaranTD.Data
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der TowerDaten/Werte 
         /// </summary>
-        public static string GetTowerName(Type type) 
-        {
-            TowerName.TryGetValue(type, out string name);
-            return name;
-        }
-
         public static uint GetTowerPrice(Type type)
         {
             TowerPrice.TryGetValue(type, out uint price);
@@ -136,12 +130,6 @@ namespace NoPasaranTD.Data
         #endregion  // Dictionary für die Ballons
 
         #region Tower
-        private static readonly Dictionary<Type, string> TowerName = new Dictionary<Type, string>()
-        {
-            {typeof(TowerCanon),     "Canon"},
-            {typeof(TowerArtillerie), "Artillerie" },
-        };
-
         private static readonly Dictionary<Type, uint> TowerPrice = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     40},

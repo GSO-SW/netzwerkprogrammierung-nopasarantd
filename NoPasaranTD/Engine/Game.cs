@@ -240,7 +240,7 @@ namespace NoPasaranTD.Engine
 			}
 			else
 			{
-				Money += (int)Balloons[segment][index].Strength; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				Money += (int)Balloons[segment][index].Value; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
 				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
 				Balloons[segment].RemoveAt(index);
 			}
