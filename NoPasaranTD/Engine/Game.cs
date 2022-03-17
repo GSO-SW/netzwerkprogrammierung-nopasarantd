@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace NoPasaranTD.Engine
 {
@@ -48,6 +49,8 @@ namespace NoPasaranTD.Engine
 		{
 			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
+			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
+			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
 		}
 
 		private void InitBalloons()
@@ -271,7 +274,7 @@ namespace NoPasaranTD.Engine
 							foundBalloon = true;
 						}
 						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
-						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.Item1][currentSelectedBalloon.Item2]))
+						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
 							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
 								currentSelectedBalloon = (item, i);
 					}
@@ -305,19 +308,39 @@ namespace NoPasaranTD.Engine
 
 			Towers.Add((Tower)t);
 			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
+			Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
 		}
 
 		private void RemoveTower(object t)
 		{
-			// TODO network communication
-			Towers.Remove((Tower)t);
+			Tower tower = FindTowerID(t);
+			if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
+				UILayout.TowerDetailsContainer.Visible = false;
+			Towers.Remove(tower);
 		}
 
-		public void UpgradeTower(Tower t)
+		public void UpgradeTower(object t)
         {
-			t.Level++;
-			t.SearchSegments(CurrentMap);
+			Tower tower = FindTowerID(t);
+			tower.Level++;
+			tower.SearchSegments(CurrentMap);
         }
+
+		public void ModeChangeTower(object t)
+        {
+			Tower tower = FindTowerID(t);
+			tower.TargetMode = (t as Tower).TargetMode;
+            if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
+				UILayout.TowerDetailsContainer.Context = tower;
+		}
+
+		private Tower FindTowerID(object t)
+        {
+			Tower tower = Towers.Where(x => x.ID.ToString() == (t as Tower).ID.ToString()).FirstOrDefault();
+			if (tower == null)
+				throw new Exception("Tower ist null");
+			return tower;
+		}
 	}
 }
 

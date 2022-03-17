@@ -25,6 +25,7 @@ namespace NoPasaranTD.Model
         public uint Strength { get => StaticInfo.GetTowerDamage(GetType()) * Level; }
         public uint Delay { get => StaticInfo.GetTowerDelay(GetType()) / (Level * 2); }
         public double Range { get => StaticInfo.GetTowerRange(GetType()) * Level * 0.3; }
+        public Guid ID { get; } = Guid.NewGuid();
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc 
         { 
