@@ -4,8 +4,11 @@ using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
 using System.Media;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,23 +17,26 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
 {
     public class GuiGameOver:GuiComponent
     {
-        private ButtonContainer btnReturnLobby { get; }
+        private readonly ButtonContainer btnReturnLobby;
 
-        private SoundPlayer Youdied = new SoundPlayer(Environment.CurrentDirectory + "\\img\\Youdied.wav");
+        private readonly SoundPlayer Youdied;
         
-        Bitmap GameoverScreen = new Bitmap(Environment.CurrentDirectory+ "\\img\\YouDied2.jpg");
-        public override void Render(Graphics g)
-        {
-            g.DrawImage(GameoverScreen, 0, 0);
-            btnReturnLobby.Render(g);
-        }
-
+        private readonly Bitmap  GameoverScreen;
+        
         public GuiGameOver() 
         {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoverscreen.jpg")) 
+            { //Gameoverscreen wird aus Resourceordner geladen 
+                GameoverScreen = new Bitmap(stream);
+            }
+         
+            //Gameoversound wird aus resourceordner geladen
+            Youdied = new SoundPlayer(assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
             Youdied.Play();
             btnReturnLobby =  new ButtonContainer
             {
-                Bounds = new Rectangle(StaticEngine.RenderWidth/2-100, StaticEngine.RenderHeight/ 2+80, 200,60),
+                Bounds = new Rectangle(StaticEngine.RenderWidth/2-100, (int)(StaticEngine.RenderHeight/ 1.5)-30, 200,60),
                 Content = "Return to Lobby",
                 StringFont = StandartText1Font,
                 Foreground = Brushes.Red,
@@ -40,6 +46,22 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
             };
             btnReturnLobby.ButtonClicked += () => Program.LoadScreen(new Main.GuiLobby());
         }
+        
+        public override void Render(Graphics g)
+        {
+            { // Zeichne Karte
+                float scaledWidth = (float)StaticEngine.RenderWidth / GameoverScreen.Width;
+                float scaledHeight = (float)StaticEngine.RenderHeight / GameoverScreen.Height;
+
+                Matrix m = g.Transform;
+                g.ScaleTransform(scaledWidth, scaledHeight);
+                g.DrawImageUnscaled(GameoverScreen, 0, 0);
+                g.Transform = m;
+            }
+         
+            btnReturnLobby.Render(g);
+        }
+        
         public override void MouseDown(MouseEventArgs e)
         {
             btnReturnLobby.MouseDown(e);

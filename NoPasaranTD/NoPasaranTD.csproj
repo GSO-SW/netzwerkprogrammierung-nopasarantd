@@ -112,5 +112,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\spentagon.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
+    <EmbeddedResource Include="Resources\gameoversound.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
