@@ -14,16 +14,15 @@ namespace NoPasaranTD.Model
     {
         double shotAnimationLength = 1; // in percent of delay   E[0;1]
 
-        SolidBrush bruhBlack, bruhRed, bruhPurple, bruhLightGray, bruhFireColor, bruhDarkGray, bruhSlateGray, bruhWhite, bruhTransparent, bruhWhiteTransparent;
-        Pen penBlack, penRed, penPurple, penWhite, penSlateGray, penOrange;
+        SolidBrush bruhBlack, bruhRed, bruhPurple, bruhLightGray, bruhFireColor, bruhDarkGray, 
+            bruhSlateGray, bruhWhite, bruhTransparent, bruhWhiteTransparent;
+        Pen penBlack, penRed, penPurple, penWhite, penSlateGray, penOrange, penTransparent;
         Font font;
 
 
         Utilities.Vector2D lastBalloonPos;
         Utilities.Vector2D[] lastBalloonPositions;
-        Utilities.Vector2D rotationVec = new Utilities.Vector2D(30,30);
-        //int lastBalloonIndex = -1;
-        //int centerX, centerY, sizeX, sizeY;
+        Utilities.Vector2D rotationVec = new Utilities.Vector2D(30,30), vect = new Utilities.Vector2D(0,0);
         PointF centerCanon = new Point(0,0);
         RectangleF rectPipeTransformed = new RectangleF(), rectCircle1 = new RectangleF(), rectCircle2 = new RectangleF(),
             rectCircle3 = new RectangleF(), rectPipe = new RectangleF();
@@ -32,7 +31,7 @@ namespace NoPasaranTD.Model
         int phaseUp = 1; // 1:reloading | 2:firing | 3:waiting
         int phaseDown = 3; // 1:midair | 2:impact | 3:void
         float ratioPipeToHitbox;
-        
+        int targetCounter = 0;
 
         uint delay;
         uint strength;
@@ -41,13 +40,17 @@ namespace NoPasaranTD.Model
         ulong ticks = 0; // Anzahl vergangener Ticks
         ulong tickReloadStart = 0;
         ulong tickFireStart = 0;
-        ulong tickLastImpact = 0;
         ulong tickImpactStart = 0;
-        ulong tickLength_fireAnimation = 2000;
-        ulong tickLength_waitBetween = 1000;
 
+        ulong tickLength_fireAnimation = 2000;
+        ulong tickLength_reloadAnimation;
+        ulong tickLength_waitBetweenReloadAndFire = 1000;
+        ulong tickLength_impactAnimation = 1000;
+        ulong tickLength_impactCrossFade = 1500;
+        bool reloadOnlyAfterImpact = true;
         int maxTargetsLocked = 10;
-        int targetCounter = 0;
+
+        
         
         public TowerArtillerie()
         {
@@ -65,7 +68,10 @@ namespace NoPasaranTD.Model
             lastBalloonPositions = new Utilities.Vector2D[maxTargetsLocked];
 
             delay = Delay; // TODO: do math --> ms in ticks, based on current engine tps | currently inaccessable
-            delay = 10000;
+            tickLength_reloadAnimation = delay
+                - tickLength_fireAnimation
+                - tickLength_waitBetweenReloadAndFire
+                - (reloadOnlyAfterImpact ? Math.Max(tickLength_impactAnimation,tickLength_impactCrossFade) : 0);
             strength = Strength;
             range = Range;
 
@@ -114,8 +120,8 @@ namespace NoPasaranTD.Model
                     
                     PointF margin = new PointF(Hitbox.Width*(1-ratioPipeToHitbox)/2, Hitbox.Height*(1-ratioPipeToHitbox)/2);
                     rectPipe = new RectangleF(Hitbox.X+margin.X, Hitbox.Y+margin.Y, Hitbox.Width * ratioPipeToHitbox, Hitbox.Height * ratioPipeToHitbox);
-                    float TS1 = TweenService(tickReloadStart, tickReloadStart + delay, 0, diameter/2, lTicks); // für die linke seite
-                    float TS2 = TweenServiceExp(tickReloadStart, tickReloadStart + delay, 0, rectPipe.Width - TS1 - diameter / 2, lTicks, 4); // für die rechte seite
+                    float TS1 = TweenService(tickReloadStart, tickReloadStart + tickLength_reloadAnimation, 0, diameter/2, lTicks); // für die linke seite
+                    float TS2 = TweenServiceExp(tickReloadStart, tickReloadStart + tickLength_reloadAnimation, 0, rectPipe.Width - TS1 - diameter / 2, lTicks, 6); // für die rechte seite
                     
                     float upperY = rectPipe.Y,
                         lowerY = rectPipe.Bottom,
@@ -148,7 +154,7 @@ namespace NoPasaranTD.Model
 
                     centerCanon = new PointF(leftLineX,upperY + (lowerY-upperY)/2);
 
-                    if (tickReloadStart + delay < lTicks) { tickFireStart = tickReloadStart + delay + tickLength_waitBetween; phaseUp = 2; }
+                    if (tickReloadStart + tickLength_reloadAnimation < lTicks) { tickFireStart = tickReloadStart + tickLength_reloadAnimation + tickLength_waitBetweenReloadAndFire; phaseUp = 2; }
                     break;
                 case 2: // animation: fire!!
                     if (phaseDown != 1 && phaseDown != 2) // [!phaseDown2] could be optional
@@ -195,9 +201,9 @@ namespace NoPasaranTD.Model
                     g.FillEllipse(bruhBlack, rectCircle3);
                     g.DrawEllipse(penSlateGray, rectCircle2);
 
-                    if (phaseDown != 1 && phaseDown != 2) // [!phaseDown2] could be optional
+                    if (phaseDown != 1 && ( !reloadOnlyAfterImpact || phaseDown != 2)) // [!phaseDown2] could be optional
                     {
-                        tickReloadStart = tickFireStart + tickLength_fireAnimation + tickLength_waitBetween;
+                        tickReloadStart = lTicks;// + tickLength_waitBetween;
                         phaseUp = 1;
                     }
                     break;
@@ -209,21 +215,45 @@ namespace NoPasaranTD.Model
                     break;
                 case 2: // animation: impact
 
-                    // impact crosses
-                    int crossSize = 10, projectileSize = 20;
-                    for (int i = 0; i < maxTargetsLocked; i++)
+
+                    // impact ground wave
+                    ulong groundWaveTime = (ulong)(tickLength_impactAnimation * 4.0 / 5);
+                    float blastRadius = 200;
+                    if (tickImpactStart + groundWaveTime < lTicks)
                     {
-                        
-                        g.DrawRectangle(penWhite,
-                            lastBalloonPositions[i].X - crossSize, lastBalloonPositions[i].Y - crossSize,
-                            crossSize*2, crossSize*2);
-                        g.DrawLine(penWhite,
-                            lastBalloonPositions[i].X - crossSize, lastBalloonPositions[i].Y,
-                            lastBalloonPositions[i].X + crossSize, lastBalloonPositions[i].Y);
-                        g.DrawLine(penWhite,
-                            lastBalloonPositions[i].X, lastBalloonPositions[i].Y - crossSize,
-                            lastBalloonPositions[i].X, lastBalloonPositions[i].Y + crossSize);    
+                        float TS12 = TweenServiceExp(tickImpactStart + groundWaveTime, tickImpactStart + tickLength_impactAnimation, 1, 0, lTicks, 2, false);
+                        bruhTransparent = new SolidBrush(Color.FromArgb((int)(TS12*150), Color.DarkGray));
+                        g.FillEllipse(bruhTransparent,
+                                lastBalloonPositions[0].X - blastRadius * (1 - TS12),
+                                lastBalloonPositions[0].Y - blastRadius * (1 - TS12),
+                                blastRadius * 2 * (1 - TS12), blastRadius * 2 * (1-TS12));
                     }
+
+                    // impact crosses
+                    if (tickImpactStart + tickLength_impactCrossFade > lTicks)
+                    {
+                        int crossSize = 10;
+                        float TS14 = TweenServiceExp(tickImpactStart, tickImpactStart + tickLength_impactCrossFade, 1, 0, lTicks, 1);
+                        penTransparent = new Pen(Color.FromArgb((int)Math.Max(TS14*255,10), Color.White));
+                        bruhTransparent = new SolidBrush(Color.FromArgb((int)Math.Max(TS14*100,5), Color.White));
+                        for (int i = 0; i < realTargetCounter; i++)
+                        {
+                            g.FillEllipse(bruhTransparent,
+                                lastBalloonPositions[i].X - crossSize*2, lastBalloonPositions[i].Y - crossSize*2,
+                                crossSize * 4, crossSize * 4);
+                            g.DrawEllipse(penTransparent,
+                                lastBalloonPositions[i].X - crossSize, lastBalloonPositions[i].Y - crossSize,
+                                crossSize * 2, crossSize * 2);
+                            g.DrawLine(penTransparent,
+                                lastBalloonPositions[i].X - crossSize, lastBalloonPositions[i].Y,
+                                lastBalloonPositions[i].X + crossSize, lastBalloonPositions[i].Y);
+                            g.DrawLine(penTransparent,
+                                lastBalloonPositions[i].X, lastBalloonPositions[i].Y - crossSize,
+                                lastBalloonPositions[i].X, lastBalloonPositions[i].Y + crossSize);
+                            
+                        }
+                    }
+                    
                     // gray lines / earthquake thingy  [deprecated]
                     /*if (tickImpactStart + 400 < lTicks)
                         for (int i = 1; i < maxTargetsLocked; i++)
@@ -235,31 +265,56 @@ namespace NoPasaranTD.Model
                         }
                     */
                     // falling projectile
-                    if (tickImpactStart + 500 > lTicks)
+                    if (tickImpactStart + tickLength_impactAnimation > lTicks)
                     {
-                        float pathLength = 500;
-                        float TS1 = TweenService(tickImpactStart,tickImpactStart+500, lastBalloonPositions[0].Y-pathLength, lastBalloonPositions[0].Y,lTicks);
+                        // Vector Balloon to Canon
+                        vect = new Utilities.Vector2D(
+                            (rectPipe.X + diameter / 2)-lastBalloonPositions[0].X,
+                            (rectPipe.Y + diameter / 2)-lastBalloonPositions[0].Y
+                        );
+                        // draw line between canon center and target / debugging thingy
+                        //g.DrawLine(penBlack, lastBalloonPositions[0].X + vect.X, lastBalloonPositions[0].Y + vect.Y,
+                        //    lastBalloonPositions[0].X, lastBalloonPositions[0].Y);
+                        vect = vect.WithMagnitude(vect.Magnitude * 0.2f); // cutting the vector down to 20% --> this is then the trajectory vector
+                        float TS1 = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, lTicks);
+                        float TS3 = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 100, 20, lTicks);
+                        float TS4 = TweenServiceExp(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 0, 255, lTicks, 2, true);
+
+                        bruhTransparent = new SolidBrush(Color.FromArgb((int)TS4, Color.SlateGray));
+                        g.FillEllipse(bruhTransparent,
+                            lastBalloonPositions[0].X + vect.X * TS1 - TS3, lastBalloonPositions[0].Y + vect.Y * TS1 - TS3,
+                            TS3 * 2, TS3 * 2);
                         
-                        g.FillRectangle(bruhWhiteTransparent,
-                            lastBalloonPositions[0].X - projectileSize, 0,
-                            projectileSize*2, TS1 + projectileSize);
-                        g.DrawLine(penWhite,
-                            lastBalloonPositions[0].X - projectileSize, 0,
-                            lastBalloonPositions[0].X - projectileSize, TS1);
-                        g.DrawLine(penWhite,
-                            lastBalloonPositions[0].X + projectileSize, 0,
-                            lastBalloonPositions[0].X + projectileSize, TS1);
-                        g.FillEllipse(bruhSlateGray,
-                            lastBalloonPositions[0].X - projectileSize, TS1,
-                            projectileSize * 2, projectileSize * 2);
+                        // super sonic sound/air waves
+                        float sonicBoomSize = 100;
+                        ulong layerTimeToLive = 500;
+                        int layerAmount = 20;
+                        int transparencyValue = 200;
+                        ulong layersFinalEndTime = (ulong)(tickLength_impactAnimation*0.8);
+                        int initalTransparency = Math.Max(Math.Min(transparencyValue / layerAmount,255),0);
+                        for (int i = 0; i < layerAmount; i++)
+                        {
+                            ulong
+                                layerStart = tickImpactStart + (ulong)(
+                                (double)layersFinalEndTime * i / layerAmount),
+                                layerEnd   = tickImpactStart + (ulong)(
+                                (double)layersFinalEndTime * i / layerAmount + layerTimeToLive);
+                            float TS_fadeLayer = TweenService(layerStart, layerEnd, initalTransparency, 0, lTicks);
+                            float TS_constP= TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, layerStart);
+                            
+                            float TS3_projectileSizeAtT = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 100, 20, layerStart);
+                            float TS1_fixed = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, layerStart);
+                            float lSonicBoomSize = sonicBoomSize * TS1_fixed + TS3_projectileSizeAtT * (1 - TS1_fixed);
+                            bruhTransparent = new SolidBrush(Color.FromArgb((int)TS_fadeLayer, Color.White));
+                            g.FillEllipse(bruhTransparent,
+                            lastBalloonPositions[0].X + vect.X * TS_constP - lSonicBoomSize,
+                            lastBalloonPositions[0].Y + vect.Y * TS_constP - lSonicBoomSize,
+                            lSonicBoomSize * 2, lSonicBoomSize * 2);
+                        }
                     }
                     
-                            
-                        
-                    
-
-
-                    if (tickImpactStart + 5000 < lTicks) phaseDown = 3;
+                    if (tickImpactStart + tickLength_impactCrossFade < lTicks
+                        && tickImpactStart + tickLength_impactAnimation < lTicks) phaseDown = 3;
                     break;
                 case 3:
                     break;
@@ -267,7 +322,8 @@ namespace NoPasaranTD.Model
 
 
         }
-        (int segment,int index) target = (-1, -1);
+        (int segment, int index) target = (-1, -1);
+        int realTargetCounter = 0;
         public override void Update(Game game)
         {
             ticks++;
@@ -279,11 +335,11 @@ namespace NoPasaranTD.Model
                     
                     target = game.FindTargetForTower(this);
                     if (target.index == -1) { break; }
-                    targetCounter = 1;
+                    // targetCounter --> total tries of searchin target; realTargetCounter --> total unique targets found
+                    targetCounter = 1; realTargetCounter = 1;
 
                     lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[target.segment][target.index].PathPosition);
                     lastBalloonPositions[0] = lastBalloonPos;
-                    tickLastImpact = ticks;
 
                     game.DamageBalloon(target.segment, target.index, (int)strength, this); // TODO: uint to int could be an oof conversion
 
@@ -297,11 +353,20 @@ namespace NoPasaranTD.Model
                     
 
                     lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[target.segment][target.index].PathPosition);
-                    lastBalloonPositions[targetCounter-1] = lastBalloonPos;
-                    tickLastImpact = ticks;
+                    /* 
+                    bool b = false;
+                    for (int i = 1; i < realTargetCounter; i++)
+                    {
+                        Utilities.Vector2D v = lastBalloonPositions[i - 1];
+                        if (v.X == lastBalloonPos.X && v.Y == lastBalloonPos.Y) { b = true; break; } 
+                    }
+                    if (b) break;
+                    */
+                    lastBalloonPositions[realTargetCounter-1] = lastBalloonPos;
+                    
+                    realTargetCounter++;
 
-
-                    game.DamageBalloon(target.Item1, target.index, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(target.segment, target.index, (int)strength, this); // TODO: uint to int could be an oof conversion
                     break;
                 case 3: // void
                     break;
@@ -325,6 +390,20 @@ namespace NoPasaranTD.Model
             float factor = Math.Min(Math.Max(currentTick - tickStart, 0), deltaTick) / deltaTick;  //  E[0;1]
             return minValue + deltaValue * factor;
         }
+        /// <summary>
+        /// Simplifies code for animations. Exponential. <br />
+        /// --> x^y , xE[0;1] <br />
+        /// Regarding "invert", you can find a good visualization of similar concepts here <br />
+        /// https://developer.roblox.com/en-us/api-reference/enum/EasingStyle
+        /// </summary>
+        /// <param name="tickStart"></param>
+        /// <param name="tickEnd"></param>
+        /// <param name="minValue"></param>
+        /// <param name="maxValue"></param>
+        /// <param name="currentTick"></param>
+        /// <param name="power"></param>
+        /// <param name="invert"></param>
+        /// <returns></returns>
         private static float TweenServiceExp(ulong tickStart, ulong tickEnd, float minValue, float maxValue, ulong currentTick, float power, bool invert = false)
         {
             float deltaValue = maxValue - minValue, deltaTick = tickEnd - tickStart;

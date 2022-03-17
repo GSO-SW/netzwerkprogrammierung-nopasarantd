@@ -3,6 +3,8 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
+using NoPasaranTD.Visuals.Ingame.GameOver;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,6 +24,7 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
+		public bool GodMode { get; set; }
 		public bool Paused { get; set; }
 
 		public Map CurrentMap { get; }
@@ -39,6 +42,7 @@ namespace NoPasaranTD.Engine
 
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
+			GodMode = false;
 			Paused = false;
 
 			InitNetworkHandler();
@@ -58,9 +62,9 @@ namespace NoPasaranTD.Engine
 			for (int i = 0; i < Balloons.Length; i++)
 				Balloons[i] = new List<Balloon>();
 		}
-
-		#region Game logic region
-		public void Update()
+	
+        #region Game logic region
+        public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
 			for (int i = 0; i < Balloons.Length; i++)
@@ -70,7 +74,12 @@ namespace NoPasaranTD.Engine
 					Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
 					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
 					{
-						HealthPoints -= (int)Balloons[i][j].Strength;
+						if(!GodMode)
+						{
+							HealthPoints -= (int)Balloons[i][j].Strength;
+							if(HealthPoints <= 0) GameOver();
+						}
+
 						Balloons[i].RemoveAt(j);
 					}
 					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
@@ -162,8 +171,9 @@ namespace NoPasaranTD.Engine
 
 		public void KeyDown(KeyEventArgs e)
 		{
-			if (HealthPoints > 0 && e.KeyCode == Keys.Escape)
-			{
+			if ((HealthPoints > 0 || GodMode) && e.KeyCode == Keys.Escape)
+			{ // Lade Pause Menü und pausiere das Spiel im Offline Modus
+			  // (Sofern Escape gedrückt wurde und der Spieler noch lebt oder sich im Gott Modus befindet)
 				Program.LoadScreen((Paused = !Paused) ?
 					new GuiPauseMenu(this) : null);
 			}
@@ -202,8 +212,14 @@ namespace NoPasaranTD.Engine
 			if (CurrentTick % 1000 == 0)
 			{ // Spawne jede Sekunde einen Ballon
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				Balloons[0].Add(new Balloon(values[RANDOM.Next(1, values.Length - 1)]));
+				Balloons[0].Add(new Balloon(values[RANDOM.Next(1, values.Length)]));
 			}
+		}
+
+		private void GameOver()
+		{
+			Paused = true;
+			Program.LoadScreen(new GuiGameOver());
 		}
 
 		/// <summary>
@@ -239,11 +255,11 @@ namespace NoPasaranTD.Engine
 			if (Balloons[segment][index].Type - damage > BalloonType.None)
 			{
 				Balloons[segment][index].Type -= damage; // Aufaddieren des Geldes
-				Money += damage;
+				if(!GodMode) Money += damage;
 			}
 			else
 			{
-				Money += (int)Balloons[segment][index].Value; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				if(!GodMode) Money += (int)Balloons[segment][index].Value; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
 				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
 				Balloons[segment].RemoveAt(index);
 			}
@@ -308,7 +324,8 @@ namespace NoPasaranTD.Engine
 
 			Towers.Add((Tower)t);
 			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
-			Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
+			if (!GodMode)
+				Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
 		}
 
 		private void RemoveTower(object t)

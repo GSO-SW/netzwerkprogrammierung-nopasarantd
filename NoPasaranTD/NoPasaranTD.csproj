@@ -60,6 +60,7 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
     <Compile Include="Networking\NetworkLobby.cs" />
     <Compile Include="Networking\NetworkHandler.cs" />
@@ -121,6 +122,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\spentagon.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
+    <EmbeddedResource Include="Resources\gameoversound.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
