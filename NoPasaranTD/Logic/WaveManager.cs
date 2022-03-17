@@ -11,10 +11,20 @@ namespace NoPasaranTD.Engine
     public class WaveManager
     {
 		/// <summary>
+		/// Event das beim vollständigen Wellen Abschluss ausgelöst wird
+		/// </summary>
+		public event Action WaveCompleted;
+
+		/// <summary>
 		/// Das derzeitige Spiel
 		/// </summary>
 		public Game CurrentGame { get; set; }
-	
+		
+		/// <summary>
+		/// Soll nach Wellenabschluss eine neue Welle automatisch generiert werden?
+		/// </summary>
+		public bool AutoStart { get; set; } = true;
+
         public WaveManager(Game game, int numberBallon)
         {
 			CurrentGame = game;
@@ -48,6 +58,8 @@ namespace NoPasaranTD.Engine
 		private double waveSensitivity = 0.0015; // Die Sensitivität der Wellen
 		private double ballonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
 		private uint waveSensitivityExponent = 2; // Der Exponent der den Spawn-Grad verändern kann
+
+		private bool isCompleted = false;
 		private List<Balloon> GetNextBallonWave(int numberBallons)
 		{
 			int currentBallons = 0;
@@ -122,6 +134,19 @@ namespace NoPasaranTD.Engine
 		private int GetBallonNumberInRound() => (int)(ballonStartValue * (waveSensitivity * Math.Pow(CurrentGame.Round, waveSensitivityExponent)+1));
 
 		/// <summary>
+		/// Checkt ob im laufenden Spiel noch Balloons vorhanden sind
+		/// </summary>
+		/// <returns></returns>
+		private bool CheckIsBallonsEmpty()
+		{
+			for (int i = 0; i < CurrentGame.Balloons.Length; i++)
+				if (CurrentGame.Balloons[i].Count != 0)
+					return false;
+
+			return true;
+		}
+
+		/// <summary>
 		/// Update Methode des Ballon-Wave Managers
 		/// </summary>
 		public void Update()
@@ -129,9 +154,9 @@ namespace NoPasaranTD.Engine
 			int currentWaitTime;
 
 			if (currentBallonOfPackage == 0)
-				currentWaitTime = 1000;
+				currentWaitTime = 1500;
 			else
-				currentWaitTime = 150;
+				currentWaitTime = 200;
 				
 			// Setzt eine neue Welle falls die derzeitige bereits vorüber ist
 			if (currentWave.Count - 1 == currentBallonOfWave)
@@ -141,23 +166,50 @@ namespace NoPasaranTD.Engine
 				currentBallonOfWave = 0;
 				currentBallonOfPackage = 0;
 				currentWavePackage = GetNewBallonPackage(currentWave);
-			}
-			
-			// Setzt ein neues Paket an Ballons falls das derzeitige bereits genutzt wurde
-			if (currentBallonOfPackage == currentWavePackage.Count - 1)
-			{
-				currentWavePackage = GetNewBallonPackage(currentWave);
-				currentBallonOfPackage = 0;
+				isCompleted = true;
 			}
 
-			// Setzt einen Ballon an den Spawnpoint
-			if (CurrentGame.CurrentTick % currentWaitTime == 0)
+			if (!isCompleted)
 			{
-				CurrentGame.Balloons[0].Add(currentWavePackage[currentBallonOfPackage]);
-				currentBallonOfPackage++;
-				currentBallonOfWave++;
-			}
+				// Setzt ein neues Paket an Ballons falls das derzeitige bereits genutzt wurde
+				if (currentBallonOfPackage == currentWavePackage.Count - 1)
+				{
+					currentWavePackage = GetNewBallonPackage(currentWave);
+					currentBallonOfPackage = 0;
+				}
 
+				// Setzt einen Ballon an den Spawnpoint
+				if (CurrentGame.CurrentTick % currentWaitTime == 0)
+				{
+					CurrentGame.Balloons[0].Add(currentWavePackage[currentBallonOfPackage]);
+					currentBallonOfPackage++;
+					currentBallonOfWave++;
+				}
+			}
+			else if (CheckIsBallonsEmpty())
+            {
+				WaveCompleted.Invoke();
+                if (AutoStart)
+					isCompleted = false;
+            }							
 		}
+	
+		/// <summary>
+		/// Setzt das Spawnen von Ballons fort
+		/// </summary>
+		public void StartSpawn()
+        {
+            if (isCompleted == true)
+				isCompleted = false;
+        }
+
+		/// <summary>
+		/// Stopt das Spawnen von neuen Ballons
+		/// </summary>
+		public void StopSpawn()
+        {
+            if (isCompleted == false)
+				isCompleted = true;
+        }		
 	}
 }
