@@ -4,7 +4,7 @@
   "Obstacles": [
     {
       "ObstacleType": 3,
-      "Hitbox": "2, 2, 2, 2"
+      "Hitbox": "100, 50, 25, 25"
     }
   ],
   "BalloonPath": [

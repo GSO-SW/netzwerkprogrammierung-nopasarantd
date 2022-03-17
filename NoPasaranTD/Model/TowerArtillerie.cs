@@ -112,9 +112,8 @@ namespace NoPasaranTD.Model
             //g.DrawString((delay - lTicks + tickReloadStart).ToString(), font, bruhBlack, Hitbox.Location);
 
             // attack radius
-            if (IsSelected) g.DrawEllipse(penPurple, Hitbox.X+(int)(Hitbox.Width/2.0-range), Hitbox.Y + (int)(Hitbox.Height/2-range), (int)range*2, (int)range*2);
+            if (IsSelected) g.DrawEllipse(penPurple, Hitbox.X + (int)(Hitbox.Width / 2.0 - range), Hitbox.Y + (int)(Hitbox.Height / 2 - range), (int)range * 2, (int)range * 2);
 
-            
             switch (phaseUp)
             {
                 case 1: // animation: reload
@@ -323,7 +322,8 @@ namespace NoPasaranTD.Model
 
 
         }
-        int targetIndex = -1, realTargetCounter = 0;
+        (int segment, int index) target = (-1, -1);
+        int realTargetCounter = 0;
         public override void Update(Game game)
         {
             ticks++;
@@ -333,26 +333,26 @@ namespace NoPasaranTD.Model
 
                 case 1: // midair
                     
-                    targetIndex = game.FindTargetForTower(this);
-                    if (targetIndex == -1) { break; }
+                    target = game.FindTargetForTower(this);
+                    if (target.index == -1) { break; }
                     // targetCounter --> total tries of searchin target; realTargetCounter --> total unique targets found
                     targetCounter = 1; realTargetCounter = 1;
 
-                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex].PathPosition);
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[target.segment][target.index].PathPosition);
                     lastBalloonPositions[0] = lastBalloonPos;
 
-                    game.DamageBalloon(targetIndex, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(target.segment, target.index, (int)strength, this); // TODO: uint to int could be an oof conversion
 
                     phaseDown = 2;
                     break;
                 case 2: // impact
                     if (targetCounter == maxTargetsLocked) { break; }
-                    targetIndex = game.FindTargetForTower(this);
+                    target = game.FindTargetForTower(this);
                     targetCounter++;
-                    if (targetIndex == -1) { break; }
+                    if (target.index == -1) { break; }
                     
 
-                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex].PathPosition);
+                    lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[target.segment][target.index].PathPosition);
                     /* 
                     bool b = false;
                     for (int i = 1; i < realTargetCounter; i++)
@@ -366,7 +366,7 @@ namespace NoPasaranTD.Model
                     
                     realTargetCounter++;
 
-                    game.DamageBalloon(targetIndex, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(target.segment, target.index, (int)strength, this); // TODO: uint to int could be an oof conversion
                     break;
                 case 3: // void
                     break;

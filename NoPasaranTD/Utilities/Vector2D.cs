@@ -14,9 +14,11 @@ namespace NoPasaranTD.Utilities
 		public override bool Equals(object obj) => obj is Vector2D d && X == d.X && Y == d.Y;
 		public override int GetHashCode() => (X, Y).GetHashCode();
 		public override string ToString() => "(" + X + '|' + Y + ')';
+		public static float Intersection(Vector2D locationVA, Vector2D directionVA, Vector2D locationVB, Vector2D directionVB) => (directionVB.X * (locationVA.Y - locationVB.Y) + directionVB.Y * (locationVB.X - locationVA.X)) / (directionVA.X * directionVB.Y - directionVA.Y * directionVB.X);
 
 		[JsonIgnore]
 		public float Magnitude => (float)Math.Sqrt(X * X + Y * Y);
+		public float MagnitudeSquared => (float)(X * X + Y * Y);
 
 		[JsonIgnore]
 		public float Angle => (float)Math.Atan2(Y, X);

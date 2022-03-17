@@ -10,17 +10,21 @@ namespace NoPasaranTD.Visuals.Ingame
     /// </summary>
     public class TowerDetailsContainer : GuiComponent
     {
-        // Der Button für das schließen des Fensters
-        private ButtonContainer closeButton = new ButtonContainer();
-        // Der Button für das starten eines Towers Upgradevorgang
-        private ButtonContainer upgradeButton = new ButtonContainer();
-        // Der Button für das starten eines Towers Verkaufsvorgang 
-        private ButtonContainer sellButton = new ButtonContainer();
+        #region Eigenschaften
 
+        private Tower context = null;
         /// <summary>
         /// Der ausgewählte Tower
         /// </summary>
-        public Tower Context { get; set; }
+        public Tower Context 
+        {
+            get => context;
+            set
+            {
+                context = value;
+                TargetModesList.SelectedItem = context.TowerTargetMode;
+            }
+        }
 
         /// <summary>
         /// Die Hintergrundfarbe des Containers
@@ -42,9 +46,25 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public Font TextFont { get; set; }
 
-        private Game currentGame;
+        #endregion
 
-        public TowerDetailsContainer() { }
+        #region Buttons
+        // Der Button für das schließen des Fensters
+        private ButtonContainer closeButton = new ButtonContainer();
+        // Der Button für das starten eines Towers Upgradevorgang
+        private ButtonContainer upgradeButton = new ButtonContainer();
+        // Der Button für das starten eines Towers Verkaufsvorgang 
+        private ButtonContainer sellButton = new ButtonContainer();
+        #endregion
+
+        private Game currentGame;
+        public ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
+
+
+        public TowerDetailsContainer()
+        {
+            
+        }
 
         public override void Render(Graphics g)
         {
@@ -56,6 +76,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 closeButton.Render(g);
                 upgradeButton.Render(g);
                 sellButton.Render(g);
+                TargetModesList.Render(g);
 
                 // Die normale Texthöhe der Beschreibung
                 int normalTextHeight = TextRenderer.MeasureText(Context.NumberKills.ToString(), TextFont).Height;
@@ -120,6 +141,24 @@ namespace NoPasaranTD.Visuals.Ingame
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
             }; sellButton.ButtonClicked += SellButton_ButtonClicked;
+
+            TargetModesList = new ListContainer<TowerTargetMode, TowerModeItemContainer>()
+            {
+                Items = new NotifyCollection<TowerTargetMode>() { TowerTargetMode.Strongest, TowerTargetMode.Farthest, TowerTargetMode.FarthestBack, TowerTargetMode.Weakest },
+                Margin = 3,
+                Orientation = Orientation.Vertical,
+                ItemSize = new System.Drawing.Size(190, 25),
+                Position = new System.Drawing.Point(Bounds.X + 5, Bounds.Y + 150),
+                ContainerSize = new System.Drawing.Size(200, 130),
+                BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+            };
+            TargetModesList.DefineItems();
+            TargetModesList.SelectionChanged += TargetModesList_SelectionChanged;
+        }
+
+        private void TargetModesList_SelectionChanged()
+        {
+            Context.TowerTargetMode = TargetModesList.SelectedItem;
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
@@ -132,7 +171,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            // TODO: Tower Upgraden
+            currentGame.UpgradeTower(Context);
         }
 
         public override void MouseDown(MouseEventArgs e)
@@ -140,6 +179,7 @@ namespace NoPasaranTD.Visuals.Ingame
             closeButton.MouseDown(e);
             sellButton.MouseDown(e);
             upgradeButton.MouseDown(e);
+            TargetModesList.MouseDown(e);
         }
            
         // Versteckt das Fenster wenn der Schließenbutton betätigt wird

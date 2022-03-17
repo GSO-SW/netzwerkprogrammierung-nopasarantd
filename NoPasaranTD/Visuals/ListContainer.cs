@@ -93,7 +93,20 @@ namespace NoPasaranTD.Visuals
         /// <summary>
         /// Das dezeitige Ausgewählte Model Objekt
         /// </summary>
-        public T SelectedItem { get => selectedItem.DataContext; }
+        public T SelectedItem 
+        { 
+            get => selectedItem.DataContext; 
+            set 
+            {
+                selectedItem = items.Find(x => x.DataContext.Equals(value));
+                if (selectedItem != null)
+                {                   
+                    for (int i = 0; i < items.Count; i++)
+                        items[i].IsSelected = false;
+                    selectedItem.IsSelected = true;
+                }                
+            } 
+        }
         
         #endregion      
         #region Public Methods
@@ -128,12 +141,14 @@ namespace NoPasaranTD.Visuals
 
         public override void Update()
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].Update();
         }
 
         public override void Render(Graphics g)
         {
+            if (!Visible) return;
             g.FillRectangle(BackgroundColor, Bounds);
 
             Region clip = g.Clip; // Speichere ursprüngliche Region
@@ -148,43 +163,59 @@ namespace NoPasaranTD.Visuals
 
         public override void KeyUp(KeyEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyUp(e);
         }
 
+        public override void KeyPress(KeyPressEventArgs e)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].KeyPress(e);
+        }
+
         public override void KeyDown(KeyEventArgs args)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseUp(e);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            for (int i = items.Count - 1; i >= 0; i--)
+            if (IsMouseOver)
             {
-                items[i].MouseDown(e);
-                if (items[i].IsMouseOver)
+                for (int i = items.Count - 1; i >= 0; i--)
                 {
-                    selectedItem = items[i];
-                    SelectionChanged?.Invoke();
+                    items[i].MouseDown(e);
+                    items[i].IsSelected = false;
+                    if (items[i].IsMouseOver)
+                    {
+                        selectedItem = items[i];
+                        selectedItem.IsSelected = true;
+                        SelectionChanged?.Invoke();
+                    }
                 }
-            }
+            }            
         }
 
         public override void MouseMove(MouseEventArgs e)
         {
+            if (!Active) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
+            if (!Active) return;
             if (items.Count == 0) return;
 
             bool firstOutOfBounds, lastOutOfBounds;

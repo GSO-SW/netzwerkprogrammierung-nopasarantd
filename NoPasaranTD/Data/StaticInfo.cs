@@ -54,7 +54,7 @@ namespace NoPasaranTD.Data
             return towerimg;
         }
 
-        public static string GetTowerName(Type type)
+        public static string GetTowerName(Type type) 
         {
             TowerName.TryGetValue(type, out string name);
             return name;
@@ -64,7 +64,6 @@ namespace NoPasaranTD.Data
             TowerPrice.TryGetValue(type, out uint price);
             return price;
         }
-
         public static uint GetTowerDamage(Type type)
         {
             TowerDamage.TryGetValue(type, out uint damage);
@@ -80,7 +79,7 @@ namespace NoPasaranTD.Data
             TowerSize.TryGetValue(type, out Size size);
             return size;
         }
-        public static uint GetTowerDelay(Type type)
+        public static uint GetTowerDelay(Type type) 
         {
             TowerDelay.TryGetValue(type, out uint delay);
             return delay;
@@ -173,8 +172,8 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
-            {typeof(TowerCanon),     150},
-            {typeof(TowerArtillerie), 340},
+            {typeof(TowerCanon),     450},
+            {typeof(TowerArtillerie), 1000},
         };
 
         private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
@@ -186,7 +185,7 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     2500},
-            {typeof(TowerArtillerie), 24000},
+            {typeof(TowerArtillerie), 48000},
         };
         #endregion // Dictionary für die Türme
     }

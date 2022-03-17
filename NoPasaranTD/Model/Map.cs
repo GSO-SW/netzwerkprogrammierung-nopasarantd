@@ -98,12 +98,17 @@ namespace NoPasaranTD.Model
 
         public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
         {
-            return IsCollidingWithPath(new Rectangle(
+            return IsCollidingWithPath(GetScaledRect(scaledWidth,scaledHeight,rect));
+        }
+
+        public Rectangle GetScaledRect(int scaledWidth, int scaledHeight, Rectangle rect)
+        {
+            return new Rectangle(
                 (int)((float)rect.X / scaledWidth * Dimension.Width),
                 (int)((float)rect.Y / scaledHeight * Dimension.Height),
                 (int)((float)rect.Width / scaledWidth * Dimension.Width),
                 (int)((float)rect.Height / scaledHeight * Dimension.Height)
-            ));
+            );
         }
 
         /// <summary>
@@ -132,12 +137,7 @@ namespace NoPasaranTD.Model
                 * (length - fragment.StartLength); // & mithilfe von differenz zwischen 'StartLength' & 'length' faktorisieren
         }
 
-        /// <summary>
-        /// Kontrolliert, ob das angegebene Recheck einen Abstand von X Einheiten zum nächsten Pfadpunkt hat und ob keine Hitbox des Pfades getroffen wurde
-        /// </summary>
-        /// <param name="rect">Zu überprüfendes Rechteck</param>
-        /// <returns>False wenn es eine Überschneidung gibt</returns>
-        private bool IsCollidingWithPath(Rectangle rect)
+        public Vector2D[] GetRectangleCorners(Rectangle rect)
         {
             Vector2D[] cornersV = new Vector2D[4]; // Speichern der Ecken des Rechtecks
             for (int i = 0; i < 2; i++) // Alle Ecken durchgehen
@@ -146,8 +146,19 @@ namespace NoPasaranTD.Model
             Vector2D save = cornersV[2]; // Ecke 2 mit 3 tauschen um eine durchgehende Reihenfolge zu haben
             cornersV[2] = cornersV[3];
             cornersV[3] = save;
+            return cornersV;
+        }
 
-            for (int i = 0; i < cornersV.Length; i++) // Alle Ecken durchgehen
+        /// <summary>
+        /// Kontrolliert, ob das angegebene Recheck einen Abstand von X Einheiten zum nächsten Pfadpunkt hat und ob keine Hitbox des Pfades getroffen wurde
+        /// </summary>
+        /// <param name="rect">Zu überprüfendes Rechteck</param>
+        /// <returns>False wenn es eine Überschneidung gibt</returns>
+        private bool IsCollidingWithPath(Rectangle rect)
+        {
+            Vector2D[] cornersV = GetRectangleCorners(rect);
+
+            for (int i = 0; i < cornersV.Length; i++) // Alle Seiten durchgehen
             {
                 Vector2D connectionRecV;
                 if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
@@ -172,13 +183,22 @@ namespace NoPasaranTD.Model
                 // Alle Hitboxen des Pfades durchgehen und auf Kollisionen kontrollieren
                 for (int j = 0; j < BalloonPath.Length - 1; j++)
                 {
-                    for (int k = 0; k < 2; k++) // Hitbox ober- und unterhalb kontrollieren
+                    for (int k = 0; k < 3; k++) // Hitbox ober- und unterhalb kontrollieren
                     {
-                        Vector2D pathLocationV = pathHitbox[k, j * 2];
-                        Vector2D pathDirectionV = pathHitbox[k, j * 2 + 1] - pathLocationV;
+                        Vector2D pathLocationV, pathDirectionV;
+                        if (k == 2) // Kontrolle des eigentlichen Pfades auf Kollisionen
+                        {
+                            pathLocationV = BalloonPath[j];
+                            pathDirectionV = BalloonPath[j + 1] - pathLocationV;
+                        }
+                        else // Kontrolle der Hitboxen auf Kollisionen
+                        {
+                            pathLocationV = pathHitbox[k, j * 2]; // j * 2, wird mal 2 gerechnet, um nur jede 2. Stelle zu nehmen, da für jeden Pfadpunkt 2 Punkte auf jeder Seite erstellt werden 
+                            pathDirectionV = pathHitbox[k, j * 2 + 1] - pathLocationV;
+                        }
                         // Wert der Variable für die Geradengleichung an der Schnittstelle
-                        float collisionVariablePathF = ((pathLocationV.Y - cornersV[i].Y) * connectionRecV.X + (cornersV[i].X - pathLocationV.X) * connectionRecV.Y) / (pathDirectionV.X * connectionRecV.Y - pathDirectionV.Y * connectionRecV.X);
-                        float collisionVariableRecF = ((cornersV[i].Y - pathLocationV.Y) * pathDirectionV.X + (pathLocationV.X - cornersV[i].X) * pathDirectionV.Y) / (connectionRecV.X * pathDirectionV.Y - connectionRecV.Y * pathDirectionV.X);
+                        float collisionVariablePathF = Vector2D.Intersection(pathLocationV, pathDirectionV, cornersV[i], connectionRecV);
+                        float collisionVariableRecF = Vector2D.Intersection(cornersV[i], connectionRecV, pathLocationV, pathDirectionV);
                         // Kontrolle, ob die Schnittstelle zwischen Gerade und Seite des Rechtecks innerhalb der Intervalle von [0,1] liegt
                         if (collisionVariablePathF >= 0 && collisionVariablePathF <= 1 && collisionVariableRecF >= 0 && collisionVariableRecF <= 1)
                             return false;
@@ -188,12 +208,23 @@ namespace NoPasaranTD.Model
             return true;
         }
 
+        /// <summary>
+        /// Gibt an ob ein Ballon das nächste Segment des Pfades erreicht hat
+        /// </summary>
+        /// <returns>Gibt true zurück wenn der nächste Pfadabschnitt erreicht wurde</returns>
+        public bool CheckBalloonPosFragment(float pos, uint segmentID)
+        {
+            if (pos > pathFragments[segmentID].EndLength)
+                return true;
+            return false;
+        }
+
         // Berechnen des Betrags zwischen Punkt 'index' und 'index + 1'
         private double GetFragmentMagnitudeOf(int index)
             => (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
 
         // Berechnen des Betrags zwischen Punkt '(0, 0)' und 'index'
-        private double GetFragmentMagnitudeTo(int index)
+        public double GetFragmentMagnitudeTo(int index)
         {
             double sum = 0;
             for (int i = 0; i <= index; i++)

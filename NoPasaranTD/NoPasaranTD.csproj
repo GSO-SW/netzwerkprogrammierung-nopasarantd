@@ -60,6 +60,13 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Networking\DiscoveryClient.cs" />
+    <Compile Include="Networking\NetworkLobby.cs" />
+    <Compile Include="Networking\NetworkHandler.cs" />
+    <Compile Include="Networking\NetworkClient.cs" />
+    <Compile Include="Utilities\Serializer.cs" />
+    <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
     <Compile Include="Model\TowerArtillerie.cs" />
     <Compile Include="Visuals\ListContainer.cs" />
     <Compile Include="Visuals\ButtonContainer.cs" />
@@ -80,8 +87,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\QuickDiagnostics.cs" />
     <Compile Include="Utilities\Vector2D.cs" />
-    <Compile Include="Visuals\Main\GuiLobby.cs" />
+    <Compile Include="Visuals\Main\GuiMainMenu.cs" />
     <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
+    <Compile Include="Visuals\Main\LobbyListScreen.cs" />
+    <Compile Include="Visuals\Main\LobbyScreen.cs" />
+    <Compile Include="Visuals\TextBoxContainer.cs" />
     <EmbeddedResource Include="Engine\StaticDisplay.resx">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>
