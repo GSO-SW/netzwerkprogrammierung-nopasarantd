@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using System.Threading;
 using System.Net.Sockets;
-using Newtonsoft.Json;
+using NoPasaranTD.Utilities;
 
 namespace NoPasaranTD.Networking
 {
@@ -62,7 +62,7 @@ namespace NoPasaranTD.Networking
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
-                string message = $"{command}({JsonConvert.SerializeObject(param, Formatting.None)})";
+                string message = $"{command}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 for (int i = 0; i < Clients.Count; i++)
@@ -99,9 +99,9 @@ namespace NoPasaranTD.Networking
                     byte[] encodedMessage = Socket.Receive(ref endPoint);
                     string message = Encoding.ASCII.GetString(encodedMessage);
 
-                    // Index bei welchem der Parameter im JSON-Format beginnt
+                    // Index bei welchem der Parameter beginnt
                     int firstIndex = message.IndexOf('(');
-                    // Index bei welchem der Parameter im JSON-Format endet
+                    // Index bei welchem der Parameter endet
                     int lastIndex = message.LastIndexOf(')');
 
                     if (firstIndex == -1 || lastIndex == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
@@ -112,7 +112,7 @@ namespace NoPasaranTD.Networking
 
                     // COMMAND(PARAMETER)
                     string command = message.Substring(0, firstIndex); // Der Command der Nachricht
-                    string jsonString = message.Substring(firstIndex + 1, lastIndex - firstIndex - 1); // Die Weiteren Daten die übertragen wurden
+                    string base64String = message.Substring(firstIndex + 1, lastIndex - firstIndex - 1); // Die Weiteren Daten die übertragen wurden
 
                     // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
                     if(!EventHandlers.TryGetValue(command, out Action<object> handler))
@@ -121,11 +121,14 @@ namespace NoPasaranTD.Networking
                         continue;
                     }
 
-                    try { handler(JsonConvert.DeserializeObject(jsonString)); } // Deserialisiert die Daten von JSON in ein Objekt                   
+                    try { handler(Serializer.DeserializeObject(Convert.FromBase64String(base64String))); } // Deserialisiert die Daten in ein Objekt                   
                     catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
                 }
             }
-            catch { }
+            catch(Exception e) 
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public void Dispose() => Socket?.Dispose();

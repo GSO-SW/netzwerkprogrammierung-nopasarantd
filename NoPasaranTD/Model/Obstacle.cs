@@ -21,7 +21,7 @@ namespace NoPasaranTD.Model
         public Rectangle Hitbox { get; set; } // Maybe change to RectangleF
 
         [JsonIgnore]
-        public Bitmap Image { get; } // Link with static class
+        public Bitmap Image { get; } // TODO: Link with static class
     }
 
     public enum ObstacleType

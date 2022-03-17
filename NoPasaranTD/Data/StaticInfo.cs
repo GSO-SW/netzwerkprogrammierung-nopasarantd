@@ -14,22 +14,7 @@ namespace NoPasaranTD.Data
         public static int StartHP = 100;
         #endregion
 
-        #region Obstacle
-        private static readonly Dictionary<Type, Bitmap> ObstacleImage = new Dictionary<Type, Bitmap>()
-        {
-
-        };
-        
-        private static readonly Dictionary<Type, Size> ObstacleSize = new Dictionary<Type, Size>()
-        {
-
-        };
-
-        
-        #endregion
-
         #region GetObstacle Methoden
-
         public static Bitmap GetObstacleImage(Type type)
         {
             ObstacleImage.TryGetValue(type, out Bitmap obstacleimg);
@@ -44,41 +29,33 @@ namespace NoPasaranTD.Data
         #endregion
 
         #region GetTower Methoden
-
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der TowerDaten/Werte 
         /// </summary>
-        public static Bitmap GetTowerImage(Type type)
-        {
-            TowerImage.TryGetValue(type, out Bitmap towerimg);
-            return towerimg;
-        }
-
-        public static string GetTowerName(Type type) 
-        {
-            TowerName.TryGetValue(type, out string name);
-            return name; ;
-        }
         public static uint GetTowerPrice(Type type)
         {
             TowerPrice.TryGetValue(type, out uint price);
             return price;
         }
+
         public static uint GetTowerDamage(Type type)
         {
             TowerDamage.TryGetValue(type, out uint damage);
             return damage;
         }
+
         public static double GetTowerRange(Type type)
         {
             TowerRange.TryGetValue(type, out double range);
             return range;
         }
+
         public static Size GetTowerSize(Type type)
         {
             TowerSize.TryGetValue(type, out Size size);
             return size;
         }
+
         public static uint GetTowerDelay(Type type) 
         {
             TowerDelay.TryGetValue(type, out uint delay);
@@ -87,8 +64,7 @@ namespace NoPasaranTD.Data
         #endregion
 
         #region GetBalloon Methoden 
-
-        public static Size GetBalloonSize = new Size(10,10);
+        public static readonly Size BalloonSize = new Size(10, 10);
 
         /// <summary>
         /// Öffentliche Methoden zum Aufrufen der BallonDaten/Werte 
@@ -98,16 +74,24 @@ namespace NoPasaranTD.Data
             BalloonStrength.TryGetValue(type, out uint strength);
             return strength;
         }
+
         public static float GetBalloonVelocity(BalloonType type)
         {
             BalloonVelocity.TryGetValue(type, out float velocity);
             return velocity;
         }
+
         public static uint GetBalloonValue(BalloonType type)
         {
             BalloonValue.TryGetValue(type, out uint value);
             return value;
         }
+        #endregion
+
+        #region Obstacle
+        private static readonly Dictionary<Type, Bitmap> ObstacleImage = new Dictionary<Type, Bitmap>() { };
+
+        private static readonly Dictionary<Type, Size> ObstacleSize = new Dictionary<Type, Size>() { };
         #endregion
 
         #region Ballon
@@ -146,18 +130,6 @@ namespace NoPasaranTD.Data
         #endregion  // Dictionary für die Ballons
 
         #region Tower
-
-        private static readonly Dictionary<Type, Bitmap> TowerImage = new Dictionary<Type, Bitmap>()
-        {
-
-        };
-
-        private static readonly Dictionary<Type, string> TowerName = new Dictionary<Type, string>()
-        {
-            {typeof(TowerCanon),     "Canon"},
-            {typeof(TowerArtillerie), "Artillerie" },
-        };
-
         private static readonly Dictionary<Type, uint> TowerPrice = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     40},
