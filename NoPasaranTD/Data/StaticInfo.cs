@@ -10,7 +10,7 @@ namespace NoPasaranTD.Data
     {
 
         #region Startwerte
-        public static int StartMoney = 150;
+        public static int StartMoney = 1500;
         public static int StartHP = 100;
         #endregion
 
@@ -168,7 +168,7 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, uint> TowerDamage = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     1},
-            {typeof(TowerArtillerie), 4},
+            {typeof(TowerArtillerie), 8},
         };
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
@@ -186,7 +186,7 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     2500},
-            {typeof(TowerArtillerie), 15000},
+            {typeof(TowerArtillerie), 24000},
         };
         #endregion // Dictionary für die Türme
     }
