@@ -133,31 +133,31 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<Type, uint> TowerPrice = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     40},
-            {typeof(TowerArtillerie), 230},
+            {typeof(TowerArtillery), 230},
         };
 
         private static readonly Dictionary<Type, uint> TowerDamage = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     1},
-            {typeof(TowerArtillerie), 8},
+            {typeof(TowerArtillery), 8},
         };
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
             {typeof(TowerCanon),     450},
-            {typeof(TowerArtillerie), 1000},
+            {typeof(TowerArtillery), 1000},
         };
 
         private static readonly Dictionary<Type, Size> TowerSize = new Dictionary<Type, Size>()
         {
             {typeof(TowerCanon),     new Size(50, 50)},
-            {typeof(TowerArtillerie), new Size(150, 80)},
+            {typeof(TowerArtillery), new Size(150, 80)},
         };
 
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
             {typeof(TowerCanon),     2500},
-            {typeof(TowerArtillerie), 48000},
+            {typeof(TowerArtillery), 48000},
         };
         #endregion // Dictionary für die Türme
     }

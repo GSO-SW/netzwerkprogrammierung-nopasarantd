@@ -32,7 +32,7 @@ namespace NoPasaranTD.Visuals.Ingame
             Items = new NotifyCollection<Tower>()
             {
                 new TowerCanon(),
-                new TowerArtillerie(),
+                new TowerArtillery(),
             },            
         };
 
@@ -118,7 +118,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             Tower tower = null;
             if (args.Context is TowerCanon) tower = new TowerCanon();
-            if (args.Context is TowerArtillerie) tower = new TowerArtillerie();
+            if (args.Context is TowerArtillery) tower = new TowerArtillery();
             // TODO: Towers Spezifizeiren
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
@@ -133,8 +133,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
             if (TowerBuildMenu.SelectedItem is TowerCanon)
                 tower = new TowerCanon();
-            else if (TowerBuildMenu.SelectedItem is TowerArtillerie)
-                tower = new TowerArtillerie();
+            else if (TowerBuildMenu.SelectedItem is TowerArtillery)
+                tower = new TowerArtillery();
            
             if (tower != null)
             {
