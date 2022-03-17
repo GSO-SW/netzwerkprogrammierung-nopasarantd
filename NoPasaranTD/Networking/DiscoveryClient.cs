@@ -163,7 +163,7 @@ namespace NoPasaranTD.Networking
                     // Sende auf Serverendpunkt die gegebene ID
                     byte[] data = Encoding.ASCII.GetBytes(id.ToString());
                     UdpClient.Send(data, data.Length, remoteEndpoint);
-                    Task.Delay(1000);
+                    Task.Delay(1000).Wait();
                 }
             });
 

@@ -54,7 +54,7 @@ namespace NoPasaranTD.Model
         
         public TowerArtillerie()
         {
-            GetBalloonFunc = FarthestBallonCheck;
+            TargetMode = TowerTargetMode.Farthest;
             //sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
             bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red);
             bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);

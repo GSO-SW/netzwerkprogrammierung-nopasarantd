@@ -13,29 +13,33 @@ namespace NoPasaranTD.Engine
 {
 	public class Game
 	{
-		private readonly Random random = new Random();
+		private static readonly Random RANDOM = new Random();
 
 		public uint CurrentTick { get; private set; }
-
-		public NetworkHandler NetworkHandler { get; }
-		public Map CurrentMap { get; }
-		public List<Balloon>[] Balloons { get; private set; }
+		public List<Balloon>[] Balloons { get; }
 		public List<Tower> Towers { get; }
-		public UILayout UILayout { get; }
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
 		public bool Paused { get; set; }
 
+		public Map CurrentMap { get; }
+		public NetworkHandler NetworkHandler { get; }
+		public UILayout UILayout { get; }
 		public Game(Map map, NetworkHandler networkHandler)
 		{
-			NetworkHandler = networkHandler;
 			CurrentMap = map;
+			NetworkHandler = networkHandler;
+			UILayout = new UILayout(this);
+
+			CurrentTick = 0;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			Towers = new List<Tower>();
-			UILayout = new UILayout(this);
+
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
+			Paused = false;
+
 			InitNetworkHandler();
 			InitBalloons();
 		}
@@ -77,7 +81,6 @@ namespace NoPasaranTD.Engine
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
-
 			UILayout.Update();
 
 			ManageBalloonSpawn(); // Spawne Ballons
@@ -118,17 +121,23 @@ namespace NoPasaranTD.Engine
 						item[i].PathPosition
 					);
 
-					g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
+					g.FillEllipse(brush, 
+						pos.X - StaticInfo.BalloonSize.Width / 2, 
+						pos.Y - StaticInfo.BalloonSize.Height / 2, 
+						StaticInfo.BalloonSize.Width,
+						StaticInfo.BalloonSize.Height
+					);
 				}
 			}
 
 			foreach (var item in CurrentMap.Obstacles)
-            {
-				Brush brush = new SolidBrush(Color.Red);
-				g.FillRectangle(brush, (float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
+			{ // Hindernisse rendern
+				g.FillRectangle(Brushes.Red, 
+					(float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
 					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
 					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
-					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight);
+					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
+				);
             }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
@@ -187,16 +196,53 @@ namespace NoPasaranTD.Engine
 
 		private void ManageBalloonSpawn()
 		{
-			if (CurrentTick % 1200 == 0)
+			if (CurrentTick % 1000 == 0)
 			{ // Spawne jede Sekunde einen Ballon
-				Balloon balloon = new Balloon
-				{
-					PathPosition = 0
-				};
-
 				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				balloon.Type = values[random.Next(1, values.Length - 1)];
-				Balloons[0].Add(balloon);
+				Balloons[0].Add(new Balloon(values[RANDOM.Next(1, values.Length - 1)]));
+			}
+		}
+
+		/// <summary>
+		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
+		/// </summary>
+		/// <param name="rect">Zu kontrollierendes Rechteck</param>
+		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
+		public bool IsTowerValidPosition(Rectangle rect)
+		{
+			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
+				if (Towers[i].Hitbox.IntersectsWith(rect))
+					return false;
+
+			for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
+				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
+					return false;
+
+			return CurrentMap.IsCollidingWithPath(
+				StaticEngine.RenderWidth,
+				StaticEngine.RenderHeight,
+				rect
+			); //Überprüft, ob es eine Kollision mit dem Pfad gibt
+		}
+
+		/// <summary>
+		/// Fügt einen Ballon eine bestimmte Menge an Schaden hinzu.<br/>
+		/// Sollte der Ballon danach keinen gültigen Typ mehr haben, wird er von der Liste entfernt.
+		/// </summary>
+		/// <param name="index">Der Index des Ballons</param>
+		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
+		public void DamageBalloon(int segment, int index, int damage, Tower tower)
+		{
+			if (Balloons[segment][index].Type - damage > BalloonType.None)
+			{
+				Balloons[segment][index].Type -= damage; // Aufaddieren des Geldes
+				Money += damage;
+			}
+			else
+			{
+				Money += (int)Balloons[segment][index].Value; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
+				Balloons[segment].RemoveAt(index);
 			}
 		}
 
@@ -251,49 +297,6 @@ namespace NoPasaranTD.Engine
 			return true;
 		}
 
-		/// <summary>
-		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
-		/// </summary>
-		/// <param name="rect">Zu kontrollierendes Rechteck</param>
-		/// <returns>Gibt True zurück, wenn keine Kollision vorliegt</returns>
-		public bool IsTowerValidPosition(Rectangle rect)
-		{
-			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
-				if (Towers[i].Hitbox.IntersectsWith(rect))
-					return false;
-
-			for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
-				if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
-					return false;
-
-			return CurrentMap.IsCollidingWithPath(
-				StaticEngine.RenderWidth,
-				StaticEngine.RenderHeight,
-				rect
-			); //Überprüft, ob es eine Kollision mit dem Pfad gibt
-		}
-
-		/// <summary>
-		/// Fügt einen Ballon eine bestimmte Menge an Schaden hinzu.<br/>
-		/// Sollte der Ballon danach keinen gültigen Typ mehr haben, wird er von der Liste entfernt.
-		/// </summary>
-		/// <param name="index">Der Index des Ballons</param>
-		/// <param name="damage">Die Anzahl an Lebenspunkten die entfernt werden sollen</param>
-		public void DamageBalloon(int segment, int index, int damage, Tower tower)
-		{
-			if (Balloons[segment][index].Type - damage > BalloonType.None)
-			{
-				Balloons[segment][index].Type -= damage; // Aufaddieren des Geldes
-				Money += damage;
-			}
-			else
-			{
-				Money += (int)Balloons[segment][index].Strength; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
-				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
-				Balloons[segment].RemoveAt(index);
-			}
-		}
-
 		private void AddTower(object t)
 		{
 			// TODO network communication
@@ -314,7 +317,6 @@ namespace NoPasaranTD.Engine
         {
 			t.Level++;
 			t.SearchSegments(CurrentMap);
-          
         }
 	}
 }

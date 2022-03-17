@@ -22,7 +22,7 @@ namespace NoPasaranTD.Visuals.Ingame
             set
             {
                 context = value;
-                TargetModesList.SelectedItem = context.TowerTargetMode;
+                TargetModesList.SelectedItem = context.TargetMode;
             }
         }
 
@@ -158,7 +158,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private void TargetModesList_SelectionChanged()
         {
-            Context.TowerTargetMode = TargetModesList.SelectedItem;
+            Context.TargetMode = TargetModesList.SelectedItem;
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
