@@ -3,6 +3,8 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
+using NoPasaranTD.Visuals.Ingame.GameOver;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -55,9 +57,16 @@ namespace NoPasaranTD.Engine
 			for (int i = 0; i < Balloons.Length; i++)
 				Balloons[i] = new List<Balloon>();
 		}
+	
+		public void GameOver() 
+		{
+			Paused = true;
+			Program.LoadScreen(new GuiGameOver());
+		}
 
-		#region Game logic region
-		public void Update()
+        #region Game logic region
+		
+        public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
 			for (int i = 0; i < Balloons.Length; i++)
@@ -69,6 +78,10 @@ namespace NoPasaranTD.Engine
 					{
 						HealthPoints -= (int)Balloons[i][j].Strength;
 						Balloons[i].RemoveAt(j);
+                        if (HealthPoints<=0)
+                        {
+							GameOver();
+                        }
 					}
 					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
 					{

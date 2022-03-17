@@ -10,7 +10,7 @@ namespace NoPasaranTD.Data
     {
 
         #region Startwerte
-        public static int StartMoney = 1500;
+        public static int StartMoney = 150;
         public static int StartHP = 100;
         #endregion
 
