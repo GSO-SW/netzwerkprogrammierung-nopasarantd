@@ -113,23 +113,21 @@ namespace NoPasaranTD.Visuals.Ingame
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
         private void PlacingTowerDragDrop_DragDropFinish(DragDropArgs args)
         {
-            if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject))
-                return;
+            if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject)) return;
+            if (!game.IsTowerValidPosition(args.MovedObject)) return;
 
-            if (!game.IsTowerValidPosition(args.MovedObject))
-                return;
+            Tower tower = null;
+            if (args.Context is TowerCanon) tower = new TowerCanon();
+            if (args.Context is TowerArtillerie) tower = new TowerArtillerie();
 
-            if (args.Context is TowerCanon && StaticInfo.GetTowerPrice(typeof(TowerCanon)) <= game.Money)
+            if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
-                game.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = args.MovedObject });
-                game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerCanon));
+                tower.Hitbox = args.MovedObject;
+                game.NetworkHandler.InvokeEvent("AddTower", tower);
+
+                if(!game.GodMode)
+                    game.Money -= (int)StaticInfo.GetTowerPrice(tower.GetType());
             }
-            if (args.Context is TowerArtillerie && StaticInfo.GetTowerPrice(typeof(TowerArtillerie)) <= game.Money)
-            {
-                game.NetworkHandler.InvokeEvent("AddTower", new TowerArtillerie() { Hitbox = args.MovedObject });
-                game.Money -= (int)StaticInfo.GetTowerPrice(typeof(TowerArtillerie));
-            }
-            // TODO: Towers Spezifizeiren
         }
 
         private void TowerBuildMenu_SelectionChanged()
@@ -253,9 +251,9 @@ namespace NoPasaranTD.Visuals.Ingame
             // DAS BLEIBT ALLES SO WIE ES HIER IST!!!
 
             // Die Kontostandanzeige des derzeitigen Spieles
-            g.DrawString(game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
+            g.DrawString(game.GodMode ? "∞₿" : game.Money + "₿",GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 0,0);         
             // Die Lebensanzeige des derzeitigen Spieles
-            g.DrawString(game.HealthPoints + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
+            g.DrawString(game.GodMode ? "∞♥" : game.HealthPoints + "♥", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 150, 0);
             // Die Zahl der derzeitigen Runde
             g.DrawString("x" + ". Round", GuiComponent.StandartHeader1Font, new SolidBrush(Color.FromArgb(200, 24, 24, 24)), 300, 0);
         }        

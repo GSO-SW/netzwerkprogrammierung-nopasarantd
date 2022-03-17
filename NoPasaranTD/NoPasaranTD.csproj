@@ -60,7 +60,7 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
-    <Compile Include="Visuals\Ingame\GameOver\GuiGameOver.cs" />
+    <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
     <Compile Include="Networking\NetworkLobby.cs" />
     <Compile Include="Networking\NetworkHandler.cs" />

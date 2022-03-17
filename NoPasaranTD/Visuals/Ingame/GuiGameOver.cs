@@ -33,7 +33,8 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
          
             //Gameoversound wird aus resourceordner geladen
             Youdied = new SoundPlayer(assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
-            Youdied.Play();
+            Youdied.Play(); // TODO: Stoppen und Schließen des Streams beim verlassen
+
             btnReturnLobby =  new ButtonContainer
             {
                 Bounds = new Rectangle(StaticEngine.RenderWidth/2-100, (int)(StaticEngine.RenderHeight/ 1.5)-30, 200,60),
