@@ -154,7 +154,7 @@ namespace NoPasaranTD.Engine
 			int currentWaitTime;
 
 			if (currentBallonOfPackage == 0)
-				currentWaitTime = 1500;
+				currentWaitTime = 2800;
 			else
 				currentWaitTime = 200;
 				
@@ -188,7 +188,7 @@ namespace NoPasaranTD.Engine
 			}
 			else if (CheckIsBallonsEmpty())
             {
-				WaveCompleted.Invoke();
+				WaveCompleted?.Invoke();
                 if (AutoStart)
 					isCompleted = false;
             }							
