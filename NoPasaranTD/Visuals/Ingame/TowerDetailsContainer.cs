@@ -159,19 +159,19 @@ namespace NoPasaranTD.Visuals.Ingame
         private void TargetModesList_SelectionChanged()
         {
             Context.TargetMode = TargetModesList.SelectedItem;
-            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context, 500);
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
         private void SellButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context, 500);
         }
 
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context, 500);
         }
 
         public override void MouseDown(MouseEventArgs e)

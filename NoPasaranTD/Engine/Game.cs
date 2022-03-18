@@ -23,6 +23,7 @@ namespace NoPasaranTD.Engine
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
 		public WaveManager WaveManager { get; private set; }
+		public List<NetworkTask> TaskQueue { get; set; }
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
@@ -47,6 +48,10 @@ namespace NoPasaranTD.Engine
 			HealthPoints = StaticInfo.StartHP;
 
 			WaveManager = new WaveManager(this,50);
+
+			networkHandler.CurrentGame = this;
+
+			TaskQueue = new List<NetworkTask>();
 
 			GodMode = false;
 			Paused = false;
@@ -73,6 +78,17 @@ namespace NoPasaranTD.Engine
         public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
+			if (TaskQueue.Count != 0)
+			{
+                for (int i = TaskQueue.Count - 1; i >= 0; i--)
+                {
+					if (TaskQueue[i].TickToPerform <= CurrentTick)
+					{
+						TaskQueue[i].Handler(TaskQueue[i].Parameter);
+						TaskQueue.RemoveAt(TaskQueue.Count - 1);
+					}
+				}	
+			}
 			for (int i = 0; i < Balloons.Length; i++)
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
@@ -80,10 +96,10 @@ namespace NoPasaranTD.Engine
 					Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
 					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
 					{
-						if(!GodMode)
+						if (!GodMode)
 						{
 							HealthPoints -= (int)Balloons[i][j].Strength;
-							if(HealthPoints <= 0) GameOver();
+							if (HealthPoints <= 0) GameOver();
 						}
 
 						Balloons[i].RemoveAt(j);
