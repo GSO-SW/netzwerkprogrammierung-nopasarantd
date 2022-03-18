@@ -60,6 +60,7 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Networking\NetworkTask.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
