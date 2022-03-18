@@ -65,9 +65,12 @@ namespace NoPasaranTD.Networking
                 string message = $"{command}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
-                for (int i = 0; i < Clients.Count; i++)
-                    await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint);
                 // Die Nachricht wird an alle Teilnehmer versendet
+                for (int i = Clients.Count - 1; i >= 0; i--)
+                {
+                    try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint); } // Versuche nachricht an Empfänger zu Senden
+                    catch (Exception ex) { Console.WriteLine(ex); Clients.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
+                }
             }
 
             // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert

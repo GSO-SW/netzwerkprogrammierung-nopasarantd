@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace NoPasaranTD.Engine
 {
-	public class Game
+	public class Game : IDisposable
 	{
 		public uint CurrentTick { get; private set; }
 		public NetworkHandler NetworkHandler { get; }
@@ -68,7 +68,13 @@ namespace NoPasaranTD.Engine
 			for (int i = 0; i < Balloons.Length; i++)
 				Balloons[i] = new List<Balloon>();
 		}
-	
+
+        public void Dispose()
+        {
+            UILayout.Dispose();
+            NetworkHandler.Dispose();
+        }
+
         #region Game logic region
         public void Update()
 		{
@@ -357,6 +363,7 @@ namespace NoPasaranTD.Engine
 				throw new Exception("Tower ist null");
 			return tower;
 		}
-	}
+
+    }
 }
 

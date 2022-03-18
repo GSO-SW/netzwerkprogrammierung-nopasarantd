@@ -48,6 +48,7 @@
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "NoPasaranTD";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Display_FormClosing);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Display_Paint);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Display_KeyDown);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Display_KeyPress);
