@@ -113,7 +113,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Resources\spentagon.json" />
-    <EmbeddedResource Include="Resources\haus.json" />
+    <EmbeddedResource Include="Resources\house.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -122,7 +122,7 @@
     <EmbeddedResource Include="Resources\spentagon.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\haus.jpg" />
+    <EmbeddedResource Include="Resources\house.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

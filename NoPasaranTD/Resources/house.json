@@ -1,5 +1,5 @@
 {
-  "Name": "NikolausHaus",
+  "Name": "House",
   "Dimension": "400, 512",
   "Obstacles": [
     {
@@ -60,7 +60,7 @@
       "X": 378.0,
       "Y": 511.0
     }
-  ]
+  ],
   "PathWidth": 5.3576,
-  "BackgroundPath": "NikolausHaus.jpg"
+  "BackgroundPath": "house.jpg"
 }
