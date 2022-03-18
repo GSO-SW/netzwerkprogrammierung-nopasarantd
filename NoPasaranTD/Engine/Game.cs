@@ -325,10 +325,13 @@ namespace NoPasaranTD.Engine
 
 		private void RemoveTower(object t)
 		{
-			Tower tower = FindTowerID(t);
-			if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
+			Tower targetTower = FindTowerID(t);
+
+			Tower selectedTower = UILayout.TowerDetailsContainer.Context;
+			if (selectedTower != null && selectedTower.ID == targetTower.ID)
 				UILayout.TowerDetailsContainer.Visible = false;
-			Towers.Remove(tower);
+
+			Towers.Remove(targetTower);
 		}
 
 		public void UpgradeTower(object t)
@@ -340,18 +343,23 @@ namespace NoPasaranTD.Engine
 
 		public void ModeChangeTower(object t)
         {
-			Tower tower = FindTowerID(t);
-			tower.TargetMode = (t as Tower).TargetMode;
-            if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
-				UILayout.TowerDetailsContainer.Context = tower;
+			Tower targetTower = FindTowerID(t);
+			targetTower.TargetMode = (t as Tower).TargetMode;
+
+			Tower selectedTower = UILayout.TowerDetailsContainer.Context;
+			if (selectedTower != null && selectedTower.ID == targetTower.ID)
+				UILayout.TowerDetailsContainer.Context = targetTower;
 		}
 
 		private Tower FindTowerID(object t)
         {
-			Tower tower = Towers.Where(x => x.ID.ToString() == (t as Tower).ID.ToString()).FirstOrDefault();
-			if (tower == null)
-				throw new Exception("Tower ist null");
-			return tower;
+			foreach(Tower tower in Towers)
+            {
+				if (tower.ID == (t as Tower).ID)
+					return tower;
+            }
+
+			throw new Exception("Tower not found");
 		}
 
     }
