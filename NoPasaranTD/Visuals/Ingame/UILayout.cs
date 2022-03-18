@@ -123,7 +123,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
                 tower.Hitbox = args.MovedObject;
-                game.NetworkHandler.InvokeEvent("AddTower", tower, 500);
+                game.NetworkHandler.InvokeEvent("AddTower", tower);
             }
         }
 

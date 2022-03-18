@@ -32,6 +32,8 @@ namespace NoPasaranTD.Networking
         /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
         /// </summary>
         public bool OfflineMode { get => Socket == null || Clients == null; }
+        private int highestPing;
+        private List<int> pingRequestAnswers = new List<int>();
 
         #endregion
         #region Konstruktor
@@ -47,6 +49,7 @@ namespace NoPasaranTD.Networking
             Socket = socket;
             Clients = clients;
             EventHandlers = new Dictionary<string, Action<object>>();
+            highestPing = 300;
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();
@@ -59,13 +62,13 @@ namespace NoPasaranTD.Networking
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
         /// </summary>
         /// <param name="message">Die Nachricht als String</param>
-        public async void InvokeEvent(string command, object param, ulong tickDelay)
+        public async void InvokeEvent(string command, object param)
         {
             if(!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
-                string message = $"{command}:{tickDelay + CurrentGame.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
+                string message = $"{command}:{highestPing + CurrentGame.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 for (int i = 0; i < Clients.Count; i++)
@@ -81,7 +84,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            CurrentGame.TaskQueue.Add(new NetworkTask(handler, param, CurrentGame.CurrentTick + (long)tickDelay));
+            CurrentGame.TaskQueue.Add(new NetworkTask(handler, param, CurrentGame.CurrentTick + highestPing));
             //handler(param);
             
         }
@@ -136,6 +139,24 @@ namespace NoPasaranTD.Networking
             catch(Exception e) 
             {
                 Console.WriteLine(e);
+            }
+        }
+        /// <summary>
+        /// PingRequest Antworten vergleichen und den Höchsten Ping
+        /// abspeichern, wenn dieser über 300 liegt
+        /// </summary>
+        /// <param name="t"></param>
+        public void PingAnswerCheck(object t)
+        {
+            pingRequestAnswers.Add((int)(CurrentGame.CurrentTick - (long)t)); // Delay zwischen senden 
+            if (pingRequestAnswers.Count + 1 == Clients.Count + 1) // Nur kontrollieren, sobald alle Clients geantwortet haben
+            {
+                highestPing = 300; // Ping erstmal wieder auf 300 als Basiswert setzen
+                foreach (var item in pingRequestAnswers) // Alle Eingegangenen Werte überprüfen
+                    if (highestPing < item * 2) // Höchsten Ping suchen
+                        highestPing = item * 2;
+                pingRequestAnswers.Clear();
+                Console.WriteLine(highestPing + "");
             }
         }
 

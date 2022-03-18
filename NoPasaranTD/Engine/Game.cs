@@ -66,6 +66,7 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
+			NetworkHandler.EventHandlers.Add("PingRequest", NetworkHandler.PingAnswerCheck);
 		}
 
 		private void InitBalloons()
@@ -78,16 +79,18 @@ namespace NoPasaranTD.Engine
         public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
-			if (TaskQueue.Count != 0)
+			for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
 			{
-                for (int i = TaskQueue.Count - 1; i >= 0; i--)
+                if (TaskQueue[i].Handler == NetworkHandler.PingAnswerCheck) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
                 {
-					if (TaskQueue[i].TickToPerform <= CurrentTick)
-					{
-						TaskQueue[i].Handler(TaskQueue[i].Parameter);
-						TaskQueue.RemoveAt(TaskQueue.Count - 1);
-					}
-				}	
+					TaskQueue[i].Handler(TaskQueue[i].Parameter); // PingRequest ausführen
+					TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
+				}
+				else if (TaskQueue[i].TickToPerform <= CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+				{
+					TaskQueue[i].Handler(TaskQueue[i].Parameter); // Task ausführen
+					TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
+				}
 			}
 			for (int i = 0; i < Balloons.Length; i++)
 			{
@@ -116,7 +119,8 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
 			UILayout.Update();
-
+            if (CurrentTick % 500 == 0 && !GodMode)
+				NetworkHandler.InvokeEvent("PingRequest", (long)CurrentTick);
 			CurrentTick++;
 			WaveManager.Update();
 		}
