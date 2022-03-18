@@ -23,7 +23,6 @@ namespace NoPasaranTD.Engine
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
 		public WaveManager WaveManager { get; private set; }
-		public List<NetworkTask> TaskQueue { get; set; }
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
@@ -51,8 +50,6 @@ namespace NoPasaranTD.Engine
 
 			networkHandler.CurrentGame = this;
 
-			TaskQueue = new List<NetworkTask>();
-
 			GodMode = false;
 			Paused = false;
 
@@ -79,19 +76,7 @@ namespace NoPasaranTD.Engine
         public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
-			for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
-			{
-                if (TaskQueue[i].Handler == NetworkHandler.PingAnswerCheck) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
-                {
-					TaskQueue[i].Handler(TaskQueue[i].Parameter); // PingRequest ausführen
-					TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
-				}
-				else if (TaskQueue[i].TickToPerform <= CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
-				{
-					TaskQueue[i].Handler(TaskQueue[i].Parameter); // Task ausführen
-					TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
-				}
-			}
+			NetworkHandler.CheckQueue();
 			for (int i = 0; i < Balloons.Length; i++)
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
@@ -119,7 +104,7 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
 			UILayout.Update();
-            if (CurrentTick % 500 == 0 && !GodMode)
+            if (CurrentTick % 500 == 0 && !NetworkHandler.OfflineMode)
 				NetworkHandler.InvokeEvent("PingRequest", (long)CurrentTick);
 			CurrentTick++;
 			WaveManager.Update();

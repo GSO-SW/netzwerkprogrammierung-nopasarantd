@@ -32,8 +32,10 @@ namespace NoPasaranTD.Networking
         /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
         /// </summary>
         public bool OfflineMode { get => Socket == null || Clients == null; }
+
+        private List<NetworkTask> TaskQueue { get; set; } = new List<NetworkTask>();
         private int highestPing;
-        private List<int> pingRequestAnswers = new List<int>();
+        private List<int> pings = new List<int>();
 
         #endregion
         #region Konstruktor
@@ -84,7 +86,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            CurrentGame.TaskQueue.Add(new NetworkTask(handler, param, CurrentGame.CurrentTick + highestPing));
+            TaskQueue.Add(new NetworkTask(handler, param, CurrentGame.CurrentTick + highestPing));
             //handler(param);
             
         }
@@ -132,7 +134,7 @@ namespace NoPasaranTD.Networking
                         continue;
                     }
 
-                    try { CurrentGame.TaskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
+                    try { TaskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
                     catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
                 }
             }
@@ -141,6 +143,27 @@ namespace NoPasaranTD.Networking
                 Console.WriteLine(e);
             }
         }
+
+        /// <summary>
+        /// Kontrolle, ob es Aufgaben gibt die in dem derzeitigen Tick erledigt werden müssen
+        /// </summary>
+        public void CheckQueue()
+        {
+            for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
+            {
+                if (TaskQueue[i].Handler == PingAnswerCheck) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
+                {
+                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // PingRequest ausführen
+                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
+                }
+                else if (TaskQueue[i].TickToPerform <= CurrentGame.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+                {
+                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // Task ausführen
+                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
+                }
+            }
+        }
+
         /// <summary>
         /// PingRequest Antworten vergleichen und den Höchsten Ping
         /// abspeichern, wenn dieser über 300 liegt
@@ -148,15 +171,14 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         public void PingAnswerCheck(object t)
         {
-            pingRequestAnswers.Add((int)(CurrentGame.CurrentTick - (long)t)); // Delay zwischen senden 
-            if (pingRequestAnswers.Count + 1 == Clients.Count + 1) // Nur kontrollieren, sobald alle Clients geantwortet haben
+            pings.Add((int)(CurrentGame.CurrentTick - (long)t)); // Delay zwischen senden 
+            if (pings.Count == Clients.Count + 1) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
                 highestPing = 300; // Ping erstmal wieder auf 300 als Basiswert setzen
-                foreach (var item in pingRequestAnswers) // Alle Eingegangenen Werte überprüfen
+                foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
                     if (highestPing < item * 2) // Höchsten Ping suchen
                         highestPing = item * 2;
-                pingRequestAnswers.Clear();
-                Console.WriteLine(highestPing + "");
+                pings.Clear();
             }
         }
 
