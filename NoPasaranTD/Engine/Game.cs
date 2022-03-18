@@ -16,8 +16,6 @@ namespace NoPasaranTD.Engine
 {
 	public class Game
 	{
-		private static readonly Random RANDOM = new Random();
-
 		public uint CurrentTick { get; private set; }
 		public NetworkHandler NetworkHandler { get; }
 		public Map CurrentMap { get; }
@@ -31,9 +29,6 @@ namespace NoPasaranTD.Engine
 		public bool GodMode { get; set; }
 		public bool Paused { get; set; }
 		public int Round { get; set; } = 1;
-
-		private List<Balloon> currentWave;
-		private int currentBallonOfWave = 0;
 
 		public Game(Map map, NetworkHandler networkHandler)
 		{
