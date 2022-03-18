@@ -14,6 +14,11 @@ namespace NoPasaranTD.Networking
         #region Eigenschaften
 
         /// <summary>
+        /// Game instanz auf die dieser Handler basiert
+        /// </summary>
+        public Game Game { get; set; }
+
+        /// <summary>
         /// Socket für die UDP-Protokoll Verbindung
         /// </summary>
         public UdpClient Socket { get; }
@@ -33,25 +38,31 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public bool OfflineMode { get => Socket == null || Clients == null; }
 
-        private List<NetworkTask> TaskQueue { get; set; } = new List<NetworkTask>();
-        private int highestPing;
-        private List<int> pings = new List<int>();
-
         #endregion
         #region Konstruktor
 
-        // Offlinemodus des Networkhandlers
-        public NetworkHandler() => EventHandlers = new Dictionary<string, Action<object>>();
+        private readonly List<NetworkTask> taskQueue;
+        private readonly List<int> pings;
+        private int highestPing = 0;
 
-        public Game CurrentGame { get; set; }
+        // Offlinemodus des Networkhandlers
+        public NetworkHandler()
+        {
+            EventHandlers = new Dictionary<string, Action<object>>();
+            taskQueue = new List<NetworkTask>();
+            pings = new List<int>();
+        }
 
         // Onlinemodus des Networkhandlers
         public NetworkHandler(UdpClient socket, List<NetworkClient> clients)
         {
             Socket = socket;
             Clients = clients;
+
             EventHandlers = new Dictionary<string, Action<object>>();
-            highestPing = 300;
+            EventHandlers.Add("PingRequest", PingRequest);
+            taskQueue = new List<NetworkTask>();
+            pings = new List<int>();
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();
@@ -59,6 +70,29 @@ namespace NoPasaranTD.Networking
 
         #endregion
         #region Methoden
+
+        /// <summary>
+        /// Kontrolle, ob es Aufgaben gibt die in dem derzeitigen Tick erledigt werden müssen
+        /// </summary>
+        public void Update()
+        {
+            for (int i = taskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
+            {
+                if (taskQueue[i].Handler == PingRequest) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
+                {
+                    taskQueue[i].Handler(taskQueue[i].Parameter); // PingRequest ausführen
+                    taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
+                }
+                else if (taskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+                {
+                    taskQueue[i].Handler(taskQueue[i].Parameter); // Task ausführen
+                    taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
+                }
+            }
+
+            if (Game.CurrentTick % 500 == 0 && !OfflineMode)
+                InvokeEvent("PingRequest", (long)Game.CurrentTick);
+        }
 
         /// <summary>
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
@@ -70,7 +104,7 @@ namespace NoPasaranTD.Networking
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
-                string message = $"{command}:{highestPing + CurrentGame.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
+                string message = $"{command}:{highestPing + Game.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 for (int i = 0; i < Clients.Count; i++)
@@ -86,7 +120,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            TaskQueue.Add(new NetworkTask(handler, param, CurrentGame.CurrentTick + highestPing));
+            taskQueue.Add(new NetworkTask(handler, param, Game.CurrentTick + highestPing));
             //handler(param);
             
         }
@@ -134,7 +168,7 @@ namespace NoPasaranTD.Networking
                         continue;
                     }
 
-                    try { TaskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
+                    try { taskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
                     catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
                 }
             }
@@ -145,36 +179,16 @@ namespace NoPasaranTD.Networking
         }
 
         /// <summary>
-        /// Kontrolle, ob es Aufgaben gibt die in dem derzeitigen Tick erledigt werden müssen
-        /// </summary>
-        public void CheckQueue()
-        {
-            for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
-            {
-                if (TaskQueue[i].Handler == PingAnswerCheck) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
-                {
-                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // PingRequest ausführen
-                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
-                }
-                else if (TaskQueue[i].TickToPerform <= CurrentGame.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
-                {
-                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // Task ausführen
-                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
-                }
-            }
-        }
-
-        /// <summary>
         /// PingRequest Antworten vergleichen und den Höchsten Ping
         /// abspeichern, wenn dieser über 300 liegt
         /// </summary>
         /// <param name="t"></param>
-        public void PingAnswerCheck(object t)
+        private void PingRequest(object t)
         {
-            pings.Add((int)(CurrentGame.CurrentTick - (long)t)); // Delay zwischen senden 
+            pings.Add((int)(Game.CurrentTick - (long)t)); // Delay zwischen senden 
             if (pings.Count == Clients.Count + 1) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
-                highestPing = 300; // Ping erstmal wieder auf 300 als Basiswert setzen
+                highestPing = 0; // Ping erstmal wieder auf 300 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
                     if (highestPing < item * 2) // Höchsten Ping suchen
                         highestPing = item * 2;

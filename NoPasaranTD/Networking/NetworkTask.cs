@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Networking
 {
@@ -14,8 +10,20 @@ namespace NoPasaranTD.Networking
             Parameter = parameter;
             TickToPerform = tickToPerform;
         }
-        public Action<object> Handler { get;}
-        public object Parameter { get;}
-        public long TickToPerform { get;}
+
+        /// <summary>
+        /// Handler der ausgeführt werden soll
+        /// </summary>
+        public Action<object> Handler { get; }
+
+        /// <summary>
+        /// Parameter der dem Handler übergeben werden soll
+        /// </summary>
+        public object Parameter { get; }
+
+        /// <summary>
+        /// Zeitpunkt in Ticks an dem der Handler ausgeführt werden soll
+        /// </summary>
+        public long TickToPerform { get; }
     }
 }

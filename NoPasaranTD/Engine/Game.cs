@@ -18,40 +18,29 @@ namespace NoPasaranTD.Engine
 	{
 		public uint CurrentTick { get; private set; }
 		public NetworkHandler NetworkHandler { get; }
+		public WaveManager WaveManager { get; }
+
 		public Map CurrentMap { get; }
-		public List<Balloon>[] Balloons { get; private set; }
+		public List<Balloon>[] Balloons { get; }
 		public List<Tower> Towers { get; }
 		public UILayout UILayout { get; }
-		public WaveManager WaveManager { get; private set; }
 
-		public int Money { get; set; }
-		public int HealthPoints { get; set; }
-		public bool GodMode { get; set; }
-		public bool Paused { get; set; }
+		public int Money { get; set; } = StaticInfo.StartMoney;
+		public int HealthPoints { get; set; } = StaticInfo.StartHP;
+		public bool GodMode { get; set; } = false;
+		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
 		public Game(Map map, NetworkHandler networkHandler)
 		{
 			CurrentMap = map;
 			NetworkHandler = networkHandler;
-			UILayout = new UILayout(this);
+			NetworkHandler.Game = this;
+			WaveManager = new WaveManager(this, 50);
 
-			CurrentTick = 0;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
-
-			//InitBalloon();
-
 			Towers = new List<Tower>();
-
-			Money = StaticInfo.StartMoney;
-			HealthPoints = StaticInfo.StartHP;
-
-			WaveManager = new WaveManager(this,50);
-
-			networkHandler.CurrentGame = this;
-
-			GodMode = false;
-			Paused = false;
+			UILayout = new UILayout(this);
 
 			InitNetworkHandler();
 			InitBalloons();
@@ -63,7 +52,6 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
-			NetworkHandler.EventHandlers.Add("PingRequest", NetworkHandler.PingAnswerCheck);
 		}
 
 		private void InitBalloons()
@@ -76,7 +64,9 @@ namespace NoPasaranTD.Engine
         public void Update()
 		{
 			if (Paused && NetworkHandler.OfflineMode) return;
-			NetworkHandler.CheckQueue();
+			NetworkHandler.Update();
+
+			WaveManager.Update();
 			for (int i = 0; i < Balloons.Length; i++)
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
@@ -104,10 +94,7 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
 			UILayout.Update();
-            if (CurrentTick % 500 == 0 && !NetworkHandler.OfflineMode)
-				NetworkHandler.InvokeEvent("PingRequest", (long)CurrentTick);
 			CurrentTick++;
-			WaveManager.Update();
 		}
 
 		public void Render(Graphics g)
@@ -218,7 +205,6 @@ namespace NoPasaranTD.Engine
 		}
 		#endregion
 
-
 		private void GameOver()
 		{
 			Paused = true;
@@ -322,7 +308,6 @@ namespace NoPasaranTD.Engine
 
 		private void AddTower(object t)
 		{
-			// TODO network communication
 			(t as Tower).IsSelected = false;
 			(t as Tower).IsPlaced = true;			
 
