@@ -20,8 +20,13 @@ namespace NoPasaranTD.Engine
 
         private void Display_FormClosing(object sender, FormClosingEventArgs e)
         {
-            LoadGame(null);
-            LoadScreen(null);
+            // Game instanz freigeben
+            currentGame?.Dispose();
+            currentGame = null;
+
+            // Screen instanz freigeben
+            currentScreen?.Dispose();
+            currentScreen = null;
         }
 
         /// <summary>
@@ -37,8 +42,7 @@ namespace NoPasaranTD.Engine
         /// <param name="handler">Dementsprechender Netzwerkmanager</param>
         public void LoadGame(string mapFile, NetworkHandler handler)
         {
-            if (currentGame != null)
-                currentGame.Dispose();
+            currentGame?.Dispose();
 
             if (mapFile == null)
             {
@@ -56,8 +60,7 @@ namespace NoPasaranTD.Engine
 
         public void LoadScreen(GuiComponent screen)
         {
-            if (currentScreen != null)
-                currentScreen.Dispose();
+            currentScreen?.Dispose();
             currentScreen = screen;
         }
 

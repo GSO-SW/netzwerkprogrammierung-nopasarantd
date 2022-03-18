@@ -235,7 +235,10 @@ namespace NoPasaranTD.Networking
                     }
                 }
             }
-            catch { }
+            catch(Exception e) 
+            {
+                Console.WriteLine(e);
+            }
         }
         #endregion
 
