@@ -18,11 +18,17 @@ namespace NoPasaranTD.Engine
         public StaticDisplay()
             => InitializeComponent();
 
+        private void Display_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            LoadGame(null);
+            LoadScreen(null);
+        }
+
         /// <summary>
         /// Lade Spielinstanz im Offlinemodus
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
-        public void LoadGame(string mapFile) => LoadGame(mapFile, new NetworkHandler());
+        public void LoadGame(string mapFile) => LoadGame(mapFile, mapFile == null ? null : new NetworkHandler());
 
         /// <summary>
         /// Lade Spielinstanz im Onlinemodus
@@ -31,6 +37,9 @@ namespace NoPasaranTD.Engine
         /// <param name="handler">Dementsprechender Netzwerkmanager</param>
         public void LoadGame(string mapFile, NetworkHandler handler)
         {
+            if (currentGame != null)
+                currentGame.Dispose();
+
             if (mapFile == null)
             {
                 currentGame = null; // Entlade Spiel
@@ -46,7 +55,11 @@ namespace NoPasaranTD.Engine
         }
 
         public void LoadScreen(GuiComponent screen)
-            => currentScreen = screen;
+        {
+            if (currentScreen != null)
+                currentScreen.Dispose();
+            currentScreen = screen;
+        }
 
         #region Mouse region
         /// <summary>

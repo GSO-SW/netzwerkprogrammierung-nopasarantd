@@ -99,6 +99,8 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
+        public override void Dispose() => DiscoveryClient?.Dispose();
+
         #region Discovery event region
         private void StartGame()
         { // Befehl zum Starten des Spiels

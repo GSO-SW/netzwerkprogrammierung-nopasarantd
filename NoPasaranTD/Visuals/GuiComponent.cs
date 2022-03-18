@@ -1,10 +1,11 @@
 ﻿using NoPasaranTD.Engine;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals
 {
-    public class GuiComponent 
+    public class GuiComponent : IDisposable
     {
         /// <summary>
         /// Ist das Control sichtbar?
@@ -36,6 +37,8 @@ namespace NoPasaranTD.Visuals
 		public virtual void MouseDown(MouseEventArgs e) { }
         public virtual void MouseMove(MouseEventArgs e) { }
         public virtual void MouseWheel(MouseEventArgs e) { }
+
+        public virtual void Dispose() { }
 
         public static Font StandartIconFont = new Font("Arial", 40);
         public static Font StandartHeader1Font = new Font("Arial",24);
