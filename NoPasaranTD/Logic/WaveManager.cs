@@ -160,8 +160,7 @@ namespace NoPasaranTD.Engine
 				
 			// Setzt eine neue Welle falls die derzeitige bereits vorüber ist
 			if (currentWave.Count - 1 == currentBallonOfWave)
-			{
-				CurrentGame.Round++;
+			{				
 				currentWave = GetNextBallonWave(GetBallonNumberInRound());
 				currentBallonOfWave = 0;
 				currentBallonOfPackage = 0;
@@ -188,6 +187,7 @@ namespace NoPasaranTD.Engine
 			}
 			else if (CheckIsBallonsEmpty())
             {
+				CurrentGame.Round++;
 				WaveCompleted?.Invoke();
                 if (AutoStart)
 					isCompleted = false;

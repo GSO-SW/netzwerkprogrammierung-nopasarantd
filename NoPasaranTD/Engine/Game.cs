@@ -32,9 +32,6 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; }
 		public int Round { get; set; } = 1;
 
-		public Map CurrentMap { get; }
-		public NetworkHandler NetworkHandler { get; }
-		public UILayout UILayout { get; }
 		private List<Balloon> currentWave;
 		private int currentBallonOfWave = 0;
 
@@ -47,7 +44,7 @@ namespace NoPasaranTD.Engine
 			CurrentTick = 0;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 
-			InitBalloon();
+			//InitBalloon();
 
 			Towers = new List<Tower>();
 
@@ -109,8 +106,8 @@ namespace NoPasaranTD.Engine
 				Towers[i].Update(this);
 			UILayout.Update();
 
-			ManageBalloonSpawn(); // Spawne Ballons
 			CurrentTick++;
+			WaveManager.Update();
 		}
 
 		public void Render(Graphics g)
@@ -221,14 +218,6 @@ namespace NoPasaranTD.Engine
 		}
 		#endregion
 
-		private void ManageBalloonSpawn()
-		{
-			if (CurrentTick % 1000 == 0)
-			{ // Spawne jede Sekunde einen Ballon
-				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
-				Balloons[0].Add(new Balloon(values[RANDOM.Next(1, values.Length)]));
-			}
-		}
 
 		private void GameOver()
 		{
