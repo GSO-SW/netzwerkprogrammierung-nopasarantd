@@ -33,7 +33,6 @@ namespace NoPasaranTD.Data
             using (StreamReader streamReader = new StreamReader(stream))
             {
                 string rawData = streamReader.ReadToEnd();
-
                 try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
                 catch (Exception ex) { throw new Exception("Failed loading Map", ex); }
 
@@ -60,7 +59,6 @@ namespace NoPasaranTD.Data
             using (StreamReader streamReader = new StreamReader(stream))
             {
                 string rawData = await streamReader.ReadToEndAsync();
-
                 try { obj = GetMapFromJson(JsonConvert.DeserializeObject(rawData)); }
                 catch (Exception ex) { throw new Exception("Failed loading Map", ex); }
 

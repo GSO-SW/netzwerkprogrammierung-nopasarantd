@@ -60,12 +60,16 @@
     <Compile Include="Engine\StaticDisplay.Designer.cs">
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
     <Compile Include="Networking\NetworkLobby.cs" />
     <Compile Include="Networking\NetworkHandler.cs" />
     <Compile Include="Networking\NetworkClient.cs" />
+    <Compile Include="Utilities\Serializer.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
+    <Compile Include="Model\TowerArtillery.cs" />
     <Compile Include="Visuals\ListContainer.cs" />
     <Compile Include="Visuals\ButtonContainer.cs" />
     <Compile Include="Visuals\DragDropService.cs" />
@@ -113,12 +117,20 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Resources\spentagon.json" />
+    <EmbeddedResource Include="Resources\house.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\spentagon.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
+    <EmbeddedResource Include="Resources\gameoversound.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\house.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -22,7 +22,7 @@ namespace NoPasaranTD.Visuals.Ingame
             set
             {
                 context = value;
-                TargetModesList.SelectedItem = context.TowerTargetMode;
+                TargetModesList.SelectedItem = context.TargetMode;
             }
         }
 
@@ -158,20 +158,20 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private void TargetModesList_SelectionChanged()
         {
-            Context.TowerTargetMode = TargetModesList.SelectedItem;
+            Context.TargetMode = TargetModesList.SelectedItem;
+            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context);
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
         private void SellButton_ButtonClicked()
         {
-            currentGame.Towers.Remove(Context);
-            Visible = false;
+            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context);
         }
 
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            // TODO: Tower Upgraden
+            currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context);
         }
 
         public override void MouseDown(MouseEventArgs e)

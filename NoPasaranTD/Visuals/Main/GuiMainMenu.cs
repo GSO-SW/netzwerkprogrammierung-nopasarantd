@@ -62,6 +62,7 @@ namespace NoPasaranTD.Visuals.Main
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Active = false;
                 backgroundGame.UILayout.Visible = false;
+                backgroundGame.GodMode = true;
 
                 // Spawne Türme in Spielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
@@ -151,41 +152,13 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void KeyUp(KeyEventArgs e)
-        {
-            backgroundGame.KeyUp(e);
-            ForegroundScreen.KeyUp(e);
-        }
+        public override void KeyUp(KeyEventArgs e) => ForegroundScreen.KeyUp(e);
+        public override void KeyDown(KeyEventArgs e) => ForegroundScreen.KeyDown(e);
 
-        public override void KeyDown(KeyEventArgs e)
-        {
-            backgroundGame.KeyDown(e);
-            ForegroundScreen.KeyDown(e);
-        }
-
-        public override void MouseUp(MouseEventArgs e)
-        {
-            backgroundGame.MouseUp(e);
-            ForegroundScreen.MouseUp(e);
-        }
-
-        public override void MouseDown(MouseEventArgs e)
-        {
-            backgroundGame.MouseDown(e);
-            ForegroundScreen.MouseDown(e);
-        }
-
-        public override void MouseMove(MouseEventArgs e)
-        {
-            backgroundGame.MouseMove(e);
-            ForegroundScreen.MouseMove(e);
-        }
-
-        public override void MouseWheel(MouseEventArgs e)
-        {
-            backgroundGame.MouseWheel(e);
-            ForegroundScreen.MouseWheel(e);
-        }
+        public override void MouseUp(MouseEventArgs e) => ForegroundScreen.MouseUp(e);
+        public override void MouseDown(MouseEventArgs e) => ForegroundScreen.MouseDown(e);
+        public override void MouseMove(MouseEventArgs e) => ForegroundScreen.MouseMove(e);
+        public override void MouseWheel(MouseEventArgs e) => ForegroundScreen.MouseWheel(e);
         #endregion
 
         internal static ButtonContainer CreateButton(string text, Rectangle bounds)

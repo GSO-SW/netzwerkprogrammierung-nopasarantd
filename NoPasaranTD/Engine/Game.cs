@@ -3,17 +3,20 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
+using NoPasaranTD.Visuals.Ingame.GameOver;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace NoPasaranTD.Engine
 {
 	public class Game
 	{
-		private readonly Random random = new Random();
+		private static readonly Random RANDOM = new Random();
 
 		public uint CurrentTick { get; private set; }
 		public NetworkHandler NetworkHandler { get; }
@@ -25,38 +28,59 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; }
 		public int HealthPoints { get; set; }
+		public bool GodMode { get; set; }
+		public bool Paused { get; set; }
 		public int Round { get; set; } = 1;
 
+		public Map CurrentMap { get; }
+		public NetworkHandler NetworkHandler { get; }
+		public UILayout UILayout { get; }
 		private List<Balloon> currentWave;
 		private int currentBallonOfWave = 0;
 
 		public Game(Map map, NetworkHandler networkHandler)
 		{
-			NetworkHandler = networkHandler;
 			CurrentMap = map;
+			NetworkHandler = networkHandler;
+			UILayout = new UILayout(this);
+
+			CurrentTick = 0;
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 
 			InitBalloon();
 
 			Towers = new List<Tower>();
-			UILayout = new UILayout(this);
+
 			Money = StaticInfo.StartMoney;
 			HealthPoints = StaticInfo.StartHP;
 
 			WaveManager = new WaveManager(this,50);
 
+			GodMode = false;
+			Paused = false;
+
 			InitNetworkHandler();
+			InitBalloons();
 		}
 
 		private void InitNetworkHandler()
 		{
 			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
+			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
+			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
 		}
 
-		#region Game logic region
-		public void Update()
+		private void InitBalloons()
 		{
+			for (int i = 0; i < Balloons.Length; i++)
+				Balloons[i] = new List<Balloon>();
+		}
+	
+        #region Game logic region
+        public void Update()
+		{
+			if (Paused && NetworkHandler.OfflineMode) return;
 			for (int i = 0; i < Balloons.Length; i++)
 			{
 				for (int j = Balloons[i].Count - 1; j >= 0; j--)
@@ -64,7 +88,12 @@ namespace NoPasaranTD.Engine
 					Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
 					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
 					{
-						HealthPoints -= (int)Balloons[i][j].Strength;
+						if(!GodMode)
+						{
+							HealthPoints -= (int)Balloons[i][j].Strength;
+							if(HealthPoints <= 0) GameOver();
+						}
+
 						Balloons[i].RemoveAt(j);
 					}
 					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
@@ -78,7 +107,6 @@ namespace NoPasaranTD.Engine
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
-
 			UILayout.Update();
 
 			ManageBalloonSpawn(); // Spawne Ballons
@@ -119,93 +147,93 @@ namespace NoPasaranTD.Engine
 						item[i].PathPosition
 					);
 
-					g.FillEllipse(brush, pos.X - 5, pos.Y - 6, 10, 12);
+					g.FillEllipse(brush, 
+						pos.X - StaticInfo.BalloonSize.Width / 2, 
+						pos.Y - StaticInfo.BalloonSize.Height / 2, 
+						StaticInfo.BalloonSize.Width,
+						StaticInfo.BalloonSize.Height
+					);
 				}
-				UILayout.Render(g);
 			}
+
+			foreach (var item in CurrentMap.Obstacles)
+			{ // Hindernisse rendern
+				g.FillRectangle(Brushes.Red, 
+					(float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
+					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
+					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
+					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
+				);
+            }
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
-			foreach (var item in CurrentMap.Obstacles)
-            {
-				Brush brush = new SolidBrush(Color.Red);
-				g.FillRectangle(brush, (float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
-					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
-					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
-					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight);
-            }
+			UILayout.Render(g);
 		}
 
-		public void KeyUp(KeyEventArgs e) => UILayout.KeyUp(e);
-		public void KeyPress(KeyPressEventArgs e) => UILayout.KeyPress(e);
-		public void KeyDown(KeyEventArgs e) => UILayout.KeyDown(e);
-
-		public void MouseUp(MouseEventArgs e) => UILayout.MouseUp(e);
-		public void MouseDown(MouseEventArgs e) => UILayout.MouseDown(e);
-		public void MouseMove(MouseEventArgs e) => UILayout.MouseMove(e);
-		public void MouseWheel(MouseEventArgs e) => UILayout.MouseWheel(e);
-		#endregion
-
-		private void InitBalloon()
+		public void KeyUp(KeyEventArgs e)
 		{
-			for (int i = 0; i < Balloons.Length; i++)
-				Balloons[i] = new List<Balloon>();
+			if (Paused) return;
+			UILayout.KeyUp(e);
 		}
+
+		public void KeyPress(KeyPressEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.KeyPress(e);
+		}
+
+		public void KeyDown(KeyEventArgs e)
+		{
+			if ((HealthPoints > 0 || GodMode) && e.KeyCode == Keys.Escape)
+			{ // Lade Pause Menü und pausiere das Spiel im Offline Modus
+			  // (Sofern Escape gedrückt wurde und der Spieler noch lebt oder sich im Gott Modus befindet)
+				Program.LoadScreen((Paused = !Paused) ?
+					new GuiPauseMenu(this) : null);
+			}
+
+			if (Paused) return;
+			UILayout.KeyDown(e);
+		}
+
+		public void MouseUp(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseUp(e);
+		}
+
+		public void MouseDown(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseDown(e);
+		}
+
+		public void MouseMove(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseMove(e);
+		}
+
+		public void MouseWheel(MouseEventArgs e)
+		{
+			if (Paused) return;
+			UILayout.MouseWheel(e);
+		}
+		#endregion
 
 		private void ManageBalloonSpawn()
 		{
-			WaveManager.Update();
-		}
-
-		/// <summary>
-		/// Gibt einen Ballon in Reichweite des Turms zurück, der das gesuchte Kriterium, des Turmes, am besten erfüllt
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns>Tuple mit item1 = Pfadabschnitt, item2 = Index im Pfadabschnitt</br>
-		/// Ohne Ballon in Reichweite -1</returns>
-		public (int segment, int index) FindTargetForTower(Tower tower)
-		{
-			(int segment, int index) currentSelectedBalloon = (0, 0); // Abspeichern der derzeit weitesten bekannten Position eines Ballons 
-			bool foundBalloon = false; // Variable zum festhalten, ob es einen Ballon in der Reichweite gibt
-			Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
-
-			foreach (var item in tower.SegmentsInRange) // Alle Segmente in Reichweite des Turmes durchgehen
-			{
-				for (int i = Balloons[item].Count - 1; i >= 0; i--)
-				{
-					Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[item][i].PathPosition); // Position des Ballons
-					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
-					{
-						if (!foundBalloon && CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower)) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
-						{
-							currentSelectedBalloon = (item, i);
-							foundBalloon = true;
-						}
-						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
-						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.Item1][currentSelectedBalloon.Item2]))
-							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
-								currentSelectedBalloon = (item, i);
-					}
-				}
+			if (CurrentTick % 1000 == 0)
+			{ // Spawne jede Sekunde einen Ballon
+				BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
+				Balloons[0].Add(new Balloon(values[RANDOM.Next(1, values.Length)]));
 			}
-			if (!foundBalloon) // Sollte kein Ballon in der Reichweite gefunden worden sein
-				return (-1, -1);
-
-			return currentSelectedBalloon;
 		}
 
-		/// <summary>
-		/// Kontrolliert, ob der Angegebene Punkt innerhalb eines nicht sichtbaren Bereiches ist
-		/// </summary>
-		/// <param name="balloonPos"></param>
-		/// <param name="tower"></param>
-		/// <returns>Gibt true zurück wenn der Ballon gesehen werden kann</returns>
-		private bool CheckBalloonIfHiddenPos(float balloonPos, Tower tower)
+		private void GameOver()
 		{
-			foreach (var item in tower.NotVisibleSpots) // Alle nicht sichtbaren Stellen kontrollieren
-				if (item.X < balloonPos && item.Y > balloonPos) // Sollte der Ballon innerhalb einer der nicht sichtbaren Stellen sein wird abgebrochen
-					return false;
-			return true;
+			Paused = true;
+			Program.LoadScreen(new GuiGameOver());
 		}
 
 		/// <summary>
@@ -241,14 +269,66 @@ namespace NoPasaranTD.Engine
 			if (Balloons[segment][index].Type - damage > BalloonType.None)
 			{
 				Balloons[segment][index].Type -= damage; // Aufaddieren des Geldes
-				Money += damage;
+				if(!GodMode) Money += damage;
 			}
 			else
 			{
-				Money += (int)Balloons[segment][index].Strength; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
+				if(!GodMode) Money += (int)Balloons[segment][index].Value; // Nur für jede zerstörte Schicht Geld geben und nicht für theoretischen Schaden
 				tower.NumberKills += (ulong)Balloons[segment][index].Strength;
 				Balloons[segment].RemoveAt(index);
 			}
+			WaveManager.Update();
+		}
+
+		/// <summary>
+		/// Gibt einen Ballon in Reichweite des Turms zurück, der das gesuchte Kriterium, des Turmes, am besten erfüllt
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns>Tuple mit item1 = Pfadabschnitt, item2 = Index im Pfadabschnitt</br>
+		/// Ohne Ballon in Reichweite -1</returns>
+		public (int segment, int index) FindTargetForTower(Tower tower)
+		{
+			(int segment, int index) currentSelectedBalloon = (0, 0); // Abspeichern der derzeit weitesten bekannten Position eines Ballons 
+			bool foundBalloon = false; // Variable zum festhalten, ob es einen Ballon in der Reichweite gibt
+			Vector2D towerCentre = new Vector2D(tower.Hitbox.Location.X + tower.Hitbox.Width / 2, tower.Hitbox.Location.Y + tower.Hitbox.Height / 2); // Zentrale Position des Turmes
+
+			foreach (var item in tower.SegmentsInRange) // Alle Segmente in Reichweite des Turmes durchgehen
+			{
+				for (int i = Balloons[item].Count - 1; i >= 0; i--)
+				{
+					Vector2D currentPosition = CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Balloons[item][i].PathPosition); // Position des Ballons
+					if ((currentPosition - towerCentre).Magnitude <= tower.Range) //Länge des Verbindungsvektors zwischen Turmmitte und dem Ballon muss kleiner sein als der Radius des Turmes
+					{
+						if (!foundBalloon && CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower)) // Der erste Ballon in der Reichweite wird nicht gecheckt ob er weiter ist als er selbst
+						{
+							currentSelectedBalloon = (item, i);
+							foundBalloon = true;
+						}
+						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
+						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
+							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
+								currentSelectedBalloon = (item, i);
+					}
+				}
+			}
+			if (!foundBalloon) // Sollte kein Ballon in der Reichweite gefunden worden sein
+				return (-1, -1);
+
+			return currentSelectedBalloon;
+		}
+
+		/// <summary>
+		/// Kontrolliert, ob der Angegebene Punkt innerhalb eines nicht sichtbaren Bereiches ist
+		/// </summary>
+		/// <param name="balloonPos"></param>
+		/// <param name="tower"></param>
+		/// <returns>Gibt true zurück wenn der Ballon gesehen werden kann</returns>
+		private bool CheckBalloonIfHiddenPos(float balloonPos, Tower tower)
+		{
+			foreach (var item in tower.NotVisibleSpots) // Alle nicht sichtbaren Stellen kontrollieren
+				if (item.X < balloonPos && item.Y > balloonPos) // Sollte der Ballon innerhalb einer der nicht sichtbaren Stellen sein wird abgebrochen
+					return false;
+			return true;
 		}
 
 		private void AddTower(object t)
@@ -259,13 +339,40 @@ namespace NoPasaranTD.Engine
 
 			Towers.Add((Tower)t);
 			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
+			if (!GodMode)
+				Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
 		}
 
 		private void RemoveTower(object t)
 		{
-			// TODO network communication
-			Towers.Remove((Tower)t);
-		}		
+			Tower tower = FindTowerID(t);
+			if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
+				UILayout.TowerDetailsContainer.Visible = false;
+			Towers.Remove(tower);
+		}
+
+		public void UpgradeTower(object t)
+        {
+			Tower tower = FindTowerID(t);
+			tower.Level++;
+			tower.SearchSegments(CurrentMap);
+        }
+
+		public void ModeChangeTower(object t)
+        {
+			Tower tower = FindTowerID(t);
+			tower.TargetMode = (t as Tower).TargetMode;
+            if (UILayout.TowerDetailsContainer.Context.ID == tower.ID)
+				UILayout.TowerDetailsContainer.Context = tower;
+		}
+
+		private Tower FindTowerID(object t)
+        {
+			Tower tower = Towers.Where(x => x.ID.ToString() == (t as Tower).ID.ToString()).FirstOrDefault();
+			if (tower == null)
+				throw new Exception("Tower ist null");
+			return tower;
+		}
 	}
 }
 
