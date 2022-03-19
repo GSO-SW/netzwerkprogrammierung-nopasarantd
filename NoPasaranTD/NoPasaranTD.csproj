@@ -61,6 +61,8 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
+    <Compile Include="Networking\ReliableUDPModell.cs" />
+    <Compile Include="Networking\ReliableUPDHandler.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />

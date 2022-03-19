@@ -2,13 +2,15 @@
 
 namespace NoPasaranTD.Networking
 {
-    public struct NetworkTask
+    [Serializable]
+    public class NetworkTask
     {
         public NetworkTask(Action<object> handler, object parameter, long tickToPerform)
         {
             Handler = handler;
             Parameter = parameter;
             TickToPerform = tickToPerform;
+            ID = Guid.NewGuid();
         }
 
         /// <summary>
@@ -25,5 +27,10 @@ namespace NoPasaranTD.Networking
         /// Zeitpunkt in Ticks an dem der Handler ausgeführt werden soll
         /// </summary>
         public long TickToPerform { get; }
+
+        /// <summary>
+        /// Id der Task um sie zuordnen zu können
+        /// </summary>
+        public Guid ID { get; }
     }
 }
