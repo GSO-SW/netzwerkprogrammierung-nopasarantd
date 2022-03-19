@@ -24,9 +24,16 @@ namespace NoPasaranTD.Networking
         public UdpClient Socket { get; }
 
         /// <summary>
-        /// Teilnehmer der derzeitigen Session
+        /// Teilnehmer der derzeitigen Session.<br/>
+        /// Ist eine Null-Referenz im OfflineModus (Keine Spieler vorhanden)
         /// </summary>
-        public List<NetworkClient> Clients { get; }
+        public List<NetworkClient> Participants { get; }
+
+        /// <summary>
+        /// Der lokale Spieler der Session.<br/>
+        /// Ist eine Null-Referenz im OfflineModus (Kein lokaler Spieler vorhanden)
+        /// </summary>
+        public NetworkClient LocalPlayer { get; }
 
         /// <summary>
         /// Alle möglichen Commands werden mit einer Methode hier abgelegt
@@ -36,7 +43,12 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
         /// </summary>
-        public bool OfflineMode { get => Socket == null || Clients == null; }
+        public bool OfflineMode { get => Socket == null || Participants == null; }
+
+        /// <summary>
+        /// Gibt an ob der ausgeführte Client der host der Sitzung ist
+        /// </summary>
+        public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
 
         #endregion
         #region Konstruktor
@@ -54,10 +66,11 @@ namespace NoPasaranTD.Networking
         }
 
         // Onlinemodus des Networkhandlers
-        public NetworkHandler(UdpClient socket, List<NetworkClient> clients)
+        public NetworkHandler(UdpClient socket, List<NetworkClient> participants, NetworkClient localPlayer)
         {
             Socket = socket;
-            Clients = clients;
+            Participants = participants;
+            LocalPlayer = localPlayer;
 
             EventHandlers = new Dictionary<string, Action<object>>();
             EventHandlers.Add("PingRequest", PingRequest);
@@ -107,11 +120,12 @@ namespace NoPasaranTD.Networking
                 string message = $"{command}:{highestPing + Game.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
-                // Die Nachricht wird an alle Teilnehmer versendet
-                for (int i = Clients.Count - 1; i >= 0; i--)
+                // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
+                for (int i = Participants.Count - 1; i >= 0; i--)
                 {
-                    try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Clients[i].EndPoint); } // Versuche nachricht an Empfänger zu Senden
-                    catch (Exception ex) { Console.WriteLine(ex); Clients.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
+                    if (Participants[i].Equals(LocalPlayer)) continue;
+                    try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche nachricht an Empfänger zu Senden
+                    catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
             }
 
@@ -124,8 +138,6 @@ namespace NoPasaranTD.Networking
 
             // Führe event im client aus
             taskQueue.Add(new NetworkTask(handler, param, Game.CurrentTick + highestPing));
-            //handler(param);
-            
         }
 
         /// <summary>
@@ -189,9 +201,9 @@ namespace NoPasaranTD.Networking
         private void PingRequest(object t)
         {
             pings.Add((int)(Game.CurrentTick - (long)t)); // Delay zwischen senden 
-            if (pings.Count == Clients.Count + 1) // Nur kontrollieren, sobald alle Clients geantwortet haben
+            if (pings.Count == Participants.Count) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
-                highestPing = 0; // Ping erstmal wieder auf 300 als Basiswert setzen
+                highestPing = 0; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
                     if (highestPing < item * 2) // Höchsten Ping suchen
                         highestPing = item * 2;

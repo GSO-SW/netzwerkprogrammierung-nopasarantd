@@ -4,6 +4,7 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -105,8 +106,31 @@ namespace NoPasaranTD.Visuals.Main
         private void StartGame()
         { // Befehl zum Starten des Spiels
             if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
+
+            List<NetworkClient> participants = new List<NetworkClient>();
+            { // Baue Mitspieler Liste auf (Host auf index 0)
+                string playerStr;
+                string hostStr = NetworkClient.Serialize(CurrentLobby.Host);
+                foreach(NetworkClient player in DiscoveryClient.Clients)
+                { // Alle Endpunkte (Außer lokaler Spieler)
+                    // Serialisiere den Spieler in ein String
+                    playerStr = NetworkClient.Serialize(player);
+
+                    if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                        participants.Insert(0, player);
+                    else // Wenn kein Host, einfach hinzufügen
+                        participants.Add(player);
+                }
+
+                // Lokaler Spieler
+                playerStr = NetworkClient.Serialize(LocalPlayer);
+                if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                    participants.Insert(0, LocalPlayer);
+                else 
+                    participants.Add(LocalPlayer); // Wenn kein Host, einfach hinzufügen
+            }
             Program.LoadGame("spentagon", new NetworkHandler(
-                DiscoveryClient.UdpClient, DiscoveryClient.Clients
+                DiscoveryClient.UdpClient, participants, LocalPlayer
             ));
         }
 

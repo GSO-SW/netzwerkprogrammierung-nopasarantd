@@ -47,7 +47,7 @@ namespace NoPasaranMS
 						{
 							if (i != j)
 							{
-								sb.Append(players[i].Info).Append('|')
+								sb.Append(players[j].Info).Append('|')
 									.Append(clientUdpEndpoints[j]).Append('|');
 							}
 						}
