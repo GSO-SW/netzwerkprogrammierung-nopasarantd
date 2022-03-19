@@ -64,6 +64,12 @@ namespace NoPasaranTD.Visuals.Ingame
             Margin = 1         
         };
 
+        public PlayerListContainer PlayerListContainer { get; set; } = new PlayerListContainer()
+        {
+            Bounds = new Rectangle(200, 100, 200, 300),
+        };
+
+
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
         
@@ -77,6 +83,7 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
+            PlayerListContainer.Init(gameObj);
 
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
@@ -160,6 +167,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (!Active) return;
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
+            PlayerListContainer.Update();
         }
 
         public override void Render(Graphics g)
@@ -168,6 +176,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerDetailsContainer.Render(g);   
             TowerBuildMenu.Render(g);
             HideBuildMenuContainer.Render(g);
+            PlayerListContainer.Render(g);
 
             DrawGameStats(g);
 
