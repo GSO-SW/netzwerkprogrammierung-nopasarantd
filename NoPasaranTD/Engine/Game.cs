@@ -27,7 +27,7 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; } = StaticInfo.StartMoney;
 		public int HealthPoints { get; set; } = StaticInfo.StartHP;
-		public bool GodMode { get; set; } = false;
+		public bool GodMode { get; set; } = true;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
