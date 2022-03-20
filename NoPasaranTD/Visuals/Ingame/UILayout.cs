@@ -77,7 +77,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public OptionsContainer OptionsContainer { get; set; } = new OptionsContainer()
         {
-            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100,5,200,50),
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150,5,300,50),
             Background = new SolidBrush(Color.FromArgb(150, 132, 140, 156)),
             Foreground = Brushes.Black,
         };
