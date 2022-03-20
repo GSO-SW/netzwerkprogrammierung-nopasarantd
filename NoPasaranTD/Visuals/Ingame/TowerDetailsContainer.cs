@@ -176,6 +176,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void MouseDown(MouseEventArgs e)
         {
+            if (!Visible) return;
             closeButton.MouseDown(e);
             sellButton.MouseDown(e);
             upgradeButton.MouseDown(e);
