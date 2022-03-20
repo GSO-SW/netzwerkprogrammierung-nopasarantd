@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace NoPasaranTD.Networking
 {
     [Serializable]
-    public class ReliableUDPModell
+    public class ReliableUDPModel
     {
-        public ReliableUDPModell(NetworkTask networkTask, long sendTick)
+        public ReliableUDPModel(NetworkTask networkTask, long sendTick)
         {
             Answers = new List<bool>();
             NetworkTask = networkTask;

@@ -66,6 +66,8 @@ namespace NoPasaranTD.Networking
             TaskQueue = new List<NetworkTask>();
             pings = new List<int>();
             ReliableUPD = new ReliableUPDHandler(this);
+            EventHandlers.Add("ReliableUDP", ReliableUPD.ReceiveReliableUDP);
+            EventHandlers.Add("ReceiveAck", ReliableUPD.ReceiveAck);
         }
 
         // Onlinemodus des Networkhandlers
@@ -76,12 +78,13 @@ namespace NoPasaranTD.Networking
             LocalPlayer = localPlayer;
 
             EventHandlers = new Dictionary<string, Action<object>>();
+            ReliableUPD = new ReliableUPDHandler(this);
             EventHandlers.Add("PingRequest", PingRequest);
-            EventHandlers.Add("ReliableUDP", ReliableUPD.ReceiveReliableUDP); // TODO Aufruf einfügen
-            EventHandlers.Add("Acknowledgement", ReliableUPD.ReceiveAck);
+            EventHandlers.Add("ReliableUDP", ReliableUPD.ReceiveReliableUDP);
+            EventHandlers.Add("ReceiveAck", ReliableUPD.ReceiveAck);
+            EventHandlers.Add("ResendTask", ReliableUPD.ReceiveResendReq);
             TaskQueue = new List<NetworkTask>();
             pings = new List<int>();
-            ReliableUPD = new ReliableUPDHandler(this);
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();
@@ -97,20 +100,17 @@ namespace NoPasaranTD.Networking
         {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
-                if (TaskQueue[i].Handler == PingRequest) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
+                if (TaskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
                 {
-                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // PingRequest ausführen
-                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
-                }
-                else if (TaskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
-                {
-                    TaskQueue[i].Handler(TaskQueue[i].Parameter); // Task ausführen
-                    TaskQueue.RemoveAt(TaskQueue.Count - 1); // Task aus der Queue entfernen
+                    EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
+                    handler(TaskQueue[i].Parameter); // Task ausführen
+                    TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
             }
 
             if (Game.CurrentTick % 500 == 0 && !OfflineMode)
                 InvokeEvent("PingRequest", (long)Game.CurrentTick);
+            ReliableUPD.CheckPackageLifeTime();
         }
 
         /// <summary>
@@ -123,19 +123,19 @@ namespace NoPasaranTD.Networking
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
-                string message = $"{command}:{HighestPing + Game.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
+                string message = $"{command}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
                 for (int i = Participants.Count - 1; i >= 0; i--)
                 {
                     if (Participants[i].Equals(LocalPlayer)) continue;
-                    try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche nachricht an Empfänger zu Senden
+                    try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche Nachricht an Empfänger zu Senden
                     catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
             }
 
-            // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+            // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
             if (!EventHandlers.TryGetValue(command, out Action<object> handler))
             {
                 Console.WriteLine("Cannot find such a command: " + command);
@@ -143,7 +143,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            TaskQueue.Add(new NetworkTask(handler, param, Game.CurrentTick + HighestPing));
+            TaskQueue.Add(new NetworkTask(command, param, -1));
         }
 
         /// <summary>
@@ -164,22 +164,19 @@ namespace NoPasaranTD.Networking
                     byte[] encodedMessage = Socket.Receive(ref endPoint);
                     string message = Encoding.ASCII.GetString(encodedMessage);
 
-                    // Index bei welchem der Tick zum Einfügen beginnt
-                    int firstIndexColon = message.IndexOf(':');
                     // Index bei welchem der Parameter beginnt
                     int firstIndexBracket = message.IndexOf('(');
                     // Index bei welchem der Parameter endet
                     int lastIndexBracket = message.LastIndexOf(')');
 
-                    if (firstIndexColon == -1 || firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
+                    if (firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
                     {
                         Console.WriteLine("Failed to parse message: " + message);                        
                         continue;
                     }
 
                     // COMMAND(PARAMETER)
-                    string command = message.Substring(0, firstIndexColon); // Der Command der Nachricht
-                    string tickToPerform = message.Substring(firstIndexColon + 1, firstIndexBracket - firstIndexColon - 1); // Der Tick in dem das Ereignis ausgeführt werden soll
+                    string command = message.Substring(0, firstIndexBracket); // Der Command der Nachricht
                     string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1); // Die Weiteren Daten die übertragen wurden
 
                     // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
@@ -189,7 +186,7 @@ namespace NoPasaranTD.Networking
                         continue;
                     }
 
-                    try { TaskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
+                    try { handler(Serializer.DeserializeObject(Convert.FromBase64String(base64String))); } // Deserialisiert die Daten in ein Objekt                   
                     catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
                 }
             }
@@ -211,8 +208,8 @@ namespace NoPasaranTD.Networking
             {
                 HighestPing = 0; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
-                    if (HighestPing < item * 2) // Höchsten Ping suchen
-                        HighestPing = item * 2;
+                    if (HighestPing < item * 4) // Höchsten Ping suchen
+                        HighestPing = item * 4; // Die Verbindung muss im zweifelsfall 4 mal hin und her gehen, um ein Paket mit Sicherheit zu senden
                 pings.Clear();
             }
         }
