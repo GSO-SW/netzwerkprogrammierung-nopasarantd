@@ -58,7 +58,7 @@ namespace NoPasaranTD.Visuals.Main
         {
             // Lade Spielszene
             Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
-            backgroundGame = new Game(map, new NetworkHandler());
+            backgroundGame = new Game(map, new NetworkHandler(),false);
             {
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Active = false;
@@ -131,7 +131,8 @@ namespace NoPasaranTD.Visuals.Main
             }
             Program.LoadGame("spentagon", new NetworkHandler(
                 DiscoveryClient.UdpClient, participants, LocalPlayer
-            ));
+            )
+            { Lobby = CurrentLobby});
         }
 
         private void UpdateInfo()

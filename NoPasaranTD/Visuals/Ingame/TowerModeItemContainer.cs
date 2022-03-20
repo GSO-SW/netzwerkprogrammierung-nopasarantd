@@ -18,9 +18,9 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void TranslateTransform(int offX, int offY)
             => Position += new Size(offX, offY);
 
-        private SolidBrush normalBackground = new SolidBrush(Color.FromArgb(103, 155, 240));
-        private SolidBrush selectedBackground = new SolidBrush(Color.FromArgb(121, 93, 222));
-        private SolidBrush hoverBackground = new SolidBrush(Color.FromArgb(133, 145, 166));
+        private SolidBrush normalBackground = new SolidBrush(Color.FromArgb(159, 161, 166));
+        private SolidBrush selectedBackground = new SolidBrush(Color.FromArgb(99, 124, 186));
+        private SolidBrush hoverBackground = new SolidBrush(Color.FromArgb(145, 155, 179));
         private Font textFont = GuiComponent.StandartText1Font;
         private int borderWidth = 2;
 

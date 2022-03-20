@@ -28,7 +28,7 @@ namespace NoPasaranTD.Visuals.Ingame
             ItemSize = new System.Drawing.Size(100, 110),
             Position = new System.Drawing.Point(120, StaticEngine.RenderHeight - 150),
             ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 40, 130),
-            BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+            BackgroundColor = new SolidBrush(Color.FromArgb(240, 132, 140, 156)),
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
             {
@@ -42,8 +42,8 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,100,240,450),        
-            Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
+            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,450),        
+            Background = new SolidBrush(Color.FromArgb(240, 132, 140, 156)),
             ButtonFont = GuiComponent.StandartText1Font,
             Visible = false,
             Foreground = Brushes.Black,
@@ -59,8 +59,8 @@ namespace NoPasaranTD.Visuals.Ingame
             StringFont = GuiComponent.StandartIconFont,
             Foreground = Brushes.Black,
             Content = "←",
-            BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
-            Background = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+            BorderBrush = new SolidBrush(Color.FromArgb(230, 128, 138, 189)),
+            Background = new SolidBrush(Color.FromArgb(240, 132, 140, 156)),
             Margin = 1         
         };
 
@@ -70,13 +70,15 @@ namespace NoPasaranTD.Visuals.Ingame
         public PlayerListContainer PlayerListContainer { get; set; } = new PlayerListContainer()
         {
             Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100, StaticEngine.RenderHeight/2 - 125, 200, 250),
+            Background = new SolidBrush(Color.FromArgb(230, 132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(150, 132, 140, 156)),
             Visible = false,
         };
 
         public OptionsContainer OptionsContainer { get; set; } = new OptionsContainer()
         {
-            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100,0,200,50),
-            Background = new SolidBrush(Color.FromArgb(150, 72, 75, 171)),
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100,5,200,50),
+            Background = new SolidBrush(Color.FromArgb(150, 132, 140, 156)),
             Foreground = Brushes.Black,
         };
 
@@ -90,12 +92,16 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public Tower SelectedTower { get { return selectedTower; } set { selectedTower = value; } }
 
-        public UILayout(Game gameObj)
+        public UILayout(Game gameObj, bool isActive)
         {
+            Active = isActive;
+
             // Initialisiert alle UI Komponenten
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
-            PlayerListContainer.Init(gameObj);
+            if (isActive)
+                PlayerListContainer.Init(gameObj);
+            
             OptionsContainer.Init(gameObj);
 
             // Initialisiert alle Events

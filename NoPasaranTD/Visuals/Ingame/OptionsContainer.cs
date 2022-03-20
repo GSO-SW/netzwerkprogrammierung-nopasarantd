@@ -41,9 +41,9 @@ namespace NoPasaranTD.Visuals.Ingame
         private readonly ButtonContainer startButton = new ButtonContainer()
         {
             Content = "▶",
-            Background = new SolidBrush(Color.FromArgb(122, 127, 255)),
-            BorderBrush = new SolidBrush(Color.FromArgb(72, 75, 171)),
-            Margin = 2,
+            Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+            Margin = 1,
             StringFont = StandartHeader2Font,
         };
 
@@ -51,9 +51,9 @@ namespace NoPasaranTD.Visuals.Ingame
         private readonly ButtonContainer autoStartButton = new ButtonContainer()
         {
             Content = "⤻",
-            Background = new SolidBrush(Color.FromArgb(122, 127, 255)),
-            BorderBrush = new SolidBrush(Color.FromArgb(72, 75, 171)),
-            Margin = 2,
+            Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+            Margin = 1,
             StringFont = StandartHeader2Font,
         };
 
@@ -61,9 +61,9 @@ namespace NoPasaranTD.Visuals.Ingame
         private readonly ButtonContainer playersButton = new ButtonContainer()
         {
             Content = "≡",
-            Background = new SolidBrush(Color.FromArgb(122, 127, 255)),
-            BorderBrush = new SolidBrush(Color.FromArgb(72, 75, 171)),
-            Margin = 2,
+            Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+            Margin = 1,
             StringFont = StandartHeader2Font,          
         };
 
@@ -71,9 +71,9 @@ namespace NoPasaranTD.Visuals.Ingame
         private readonly ButtonContainer expandButton = new ButtonContainer()
         {
             Content = "⬅",
-            Background = new SolidBrush(Color.FromArgb(122, 127, 255)),
-            BorderBrush = new SolidBrush(Color.FromArgb(72, 75, 171)),
-            Margin = 2,
+            Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+            Margin = 1,
             StringFont = StandartHeader2Font,
         };
 
@@ -82,6 +82,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
+            if (!Visible) return;
+
             g.FillRectangle(Background, Bounds);
 
             // Zeigt den Startbutton nur wenn die Runde pausuert ist
@@ -163,8 +165,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (!isExpanded)
                 await ExpandToAsync(expandButton.Bounds.Width * 4 + buttonMargin * 6);
             else
-                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*6);
-            isExpanded = !isExpanded;
+                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*6);           
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
@@ -188,6 +189,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Vergrößert das Fenster zur angegebenen Breite
         private async Task ExpandToAsync(int aimSize)
         {
+            isExpanded = !isExpanded;
             while (Bounds.Width <= aimSize)
             {
                 Bounds= new Rectangle(Bounds.X -10,Bounds.Y,Bounds.Width+20,Bounds.Height);
@@ -199,6 +201,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Verkleinert das Fenster zur angegebenen Breite
         private async Task CollapseToAsync(int aimSize)
         {
+            isExpanded = !isExpanded;
             while (Bounds.Width >= aimSize)
             {
                 Bounds = new Rectangle(Bounds.X + 10, Bounds.Y, Bounds.Width - 20, Bounds.Height);

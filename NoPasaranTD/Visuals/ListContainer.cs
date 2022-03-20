@@ -131,6 +131,7 @@ namespace NoPasaranTD.Visuals
                 item.ParentBounds = Bounds;
                 item.DataContext = Items[i];
                 item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
+                item.ListArgs = ListArgs;
 
                 item.Position = new Point(
                     Position.X + i*(ItemSize.Width + Margin)*factorX + Margin,

@@ -31,7 +31,13 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
-		public Game(Map map, NetworkHandler networkHandler)
+		/// <summary>
+		/// Initialisiert ein neues Spiel
+		/// </summary>
+		/// <param name="map">Die Map die gespielt werden soll</param>
+		/// <param name="networkHandler">Der genutzte Networkhandler</param>
+		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
+		public Game(Map map, NetworkHandler networkHandler, bool isActive)
 		{
 			CurrentMap = map;
 			NetworkHandler = networkHandler;
@@ -40,7 +46,7 @@ namespace NoPasaranTD.Engine
 
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			Towers = new List<Tower>();
-			UILayout = new UILayout(this);
+			UILayout = new UILayout(this,isActive);
 
 			InitNetworkHandler();
 			InitBalloons();
