@@ -61,7 +61,6 @@ namespace NoPasaranTD.Visuals.Main
             backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
-                backgroundGame.UILayout.Active = false;
                 backgroundGame.UILayout.Visible = false;
                 backgroundGame.GodMode = true;
 

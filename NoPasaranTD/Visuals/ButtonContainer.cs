@@ -57,7 +57,7 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             // Löst das Button Clicked Event aus wenn innerhalb der Bounds gecklickt wird
             if (Bounds.Contains(e.Location))
                 ButtonClicked?.Invoke();
