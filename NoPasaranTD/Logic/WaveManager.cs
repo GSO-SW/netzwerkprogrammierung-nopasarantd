@@ -72,6 +72,17 @@ namespace NoPasaranTD.Engine
                 }
 			}
         }
+
+		public bool IsRoundCompleted
+        {
+            get
+            {
+                if (isCompleted && CheckIsBallonsEmpty())
+					return true;
+				else
+					return false;
+            }
+        }
 		private List<Balloon> GetNextBallonWave(int numberBallons)
 		{
 			int currentBallons = 0;
