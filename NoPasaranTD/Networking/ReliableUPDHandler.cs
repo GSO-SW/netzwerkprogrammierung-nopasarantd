@@ -26,7 +26,7 @@ namespace NoPasaranTD.Networking
         public void SendReliableUDP(string command, object param)
         {
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, networkHandler.Game.CurrentTick + networkHandler.HighestPing), networkHandler.Game.CurrentTick));
-            networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask);
+            networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
         }
 
         /// <summary>
@@ -48,9 +48,9 @@ namespace NoPasaranTD.Networking
         private void SendAck(NetworkTask networkTask)
         {
             if (networkTask.Hash == networkTask.GenerateHash()) // Die Checksum stimmt, also kann angenommen werden, dass die Übertragung erfolgreich war
-                networkHandler.InvokeEvent("ReceiveAck", networkTask.ID);
+                networkHandler.InvokeEvent("ReceiveAck", networkTask.ID, true);
             else // Die Checksum stimmt nicht, also gab es einen Übertragungsfehler und es wird ein neusenden angefragt
-                networkHandler.InvokeEvent("ResendTask", networkTask.ID);
+                networkHandler.InvokeEvent("ResendTask", networkTask.ID, true);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace NoPasaranTD.Networking
         {
             for (int i = sendTasks.Count - 1; i >= 0; i--) // Alle gesendeten Pakete die nicht abgeschlossen sind durchgehen
                 if (sendTasks[i].NetworkTask.ID == (Guid)t) // Kontrollieren, welches erneut gesendet werden soll
-                    networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask);
+                    networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask, true);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace NoPasaranTD.Networking
                 {
                     // Ist der derzeitige Tick größer als die erwartete Zeit für eine Übertragung zum anderen Client und zurück
                     if (sendTasks[i].SendAtTick + (networkHandler.HighestPing / 2) < networkHandler.Game.CurrentTick)
-                        networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask); // In diesem Falle das Paket erneut senden
+                        networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask, true); // In diesem Falle das Paket erneut senden
                 } 
                 catch (Exception e)
                 {

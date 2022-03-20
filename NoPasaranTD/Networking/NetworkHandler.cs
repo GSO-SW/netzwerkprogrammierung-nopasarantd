@@ -108,16 +108,21 @@ namespace NoPasaranTD.Networking
                 }
             }
 
-            if (Game.CurrentTick % 500 == 0 && !OfflineMode)
-                InvokeEvent("PingRequest", (long)Game.CurrentTick);
-            ReliableUPD.CheckPackageLifeTime();
+            if (!OfflineMode)
+            {
+                if (Game.CurrentTick % 500 == 0)
+                    InvokeEvent("PingRequest", (long)Game.CurrentTick, false);
+                ReliableUPD.CheckPackageLifeTime();
+            }
+            
         }
 
         /// <summary>
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
         /// </summary>
         /// <param name="message">Die Nachricht als String</param>
-        public async void InvokeEvent(string command, object param)
+        /// <param resend="resend">Soll das Paket selbst ausgeführt werden</param>
+        public async void InvokeEvent(string command, object param, bool resend)
         {
             if(!OfflineMode)
             {
@@ -143,7 +148,10 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            TaskQueue.Add(new NetworkTask(command, param, -1));
+            if (!resend)
+            {
+                TaskQueue.Add(new NetworkTask(command, param, -1));
+            }
         }
 
         /// <summary>
