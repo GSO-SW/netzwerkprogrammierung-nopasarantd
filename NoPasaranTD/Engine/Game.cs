@@ -4,13 +4,11 @@ using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using NoPasaranTD.Visuals.Ingame.GameOver;
-using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace NoPasaranTD.Engine
 {
@@ -69,7 +67,8 @@ namespace NoPasaranTD.Engine
         #region Game logic region
         public void Update()
 		{
-			if (Paused && NetworkHandler.OfflineMode) return;
+			if (Paused && NetworkHandler.OfflineMode) return; // Abfragen ob das Spiel legitim pausiert ist
+			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
 			NetworkHandler.Update();
 
 			WaveManager.Update();
@@ -83,7 +82,8 @@ namespace NoPasaranTD.Engine
 						if (!GodMode)
 						{
 							HealthPoints -= (int)Balloons[i][j].Strength;
-							if (HealthPoints <= 0) GameOver();
+							if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
+								Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
 						}
 
 						Balloons[i].RemoveAt(j);
@@ -163,13 +163,15 @@ namespace NoPasaranTD.Engine
 
 		public void KeyUp(KeyEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyUp(e);
 		}
 
 		public void KeyPress(KeyPressEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyPress(e);
 		}
 
@@ -182,40 +184,39 @@ namespace NoPasaranTD.Engine
 					new GuiPauseMenu(this) : null);
 			}
 
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyDown(e);
 		}
 
 		public void MouseUp(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseUp(e);
 		}
 
 		public void MouseDown(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseDown(e);
 		}
 
 		public void MouseMove(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseMove(e);
 		}
 
 		public void MouseWheel(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseWheel(e);
 		}
 		#endregion
-
-		private void GameOver()
-		{
-			Paused = true;
-			Program.LoadScreen(new GuiGameOver());
-		}
 
 		/// <summary>
 		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.

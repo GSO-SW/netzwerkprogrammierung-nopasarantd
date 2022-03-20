@@ -1,6 +1,7 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
+using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -15,25 +16,23 @@ using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame.GameOver
 {
-    public class GuiGameOver:GuiComponent
+    public class GuiGameOver : GuiComponent
     {
         private readonly ButtonContainer btnReturnLobby;
 
-        private readonly SoundPlayer Youdied;
-        
-        private readonly Bitmap  GameoverScreen;
+        private readonly Bitmap GameOverScreen;
+        private readonly SoundPlayer GameOverSound;
         
         public GuiGameOver() 
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoverscreen.jpg")) 
-            { //Gameoverscreen wird aus Resourceordner geladen 
-                GameoverScreen = new Bitmap(stream);
+            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoverscreen.jpg"))
+            { // GameOverScreen wird aus Resourceordner geladen 
+                GameOverScreen = new Bitmap(stream);
             }
          
             //Gameoversound wird aus resourceordner geladen
-            Youdied = new SoundPlayer(assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
-            Youdied.Play(); // TODO: Stoppen und Schließen des Streams beim verlassen
+            GameOverSound = new SoundPlayer(assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
 
             btnReturnLobby =  new ButtonContainer
             {
@@ -45,28 +44,34 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
                 BorderBrush = Brushes.Blue,
                 Margin = 2
             };
-            btnReturnLobby.ButtonClicked += () => Program.LoadScreen(new Main.GuiMainMenu());
+            btnReturnLobby.ButtonClicked += () => Program.LoadGame(null); // Entlade Spiel (Wirft einen zurück ins Hauptmenü)
+
+            GameOverSound.Play();
         }
-        
+
+        public override void Dispose()
+        {
+            GameOverScreen?.Dispose();
+            GameOverSound?.Dispose();
+        }
+
         public override void Render(Graphics g)
         {
-            { // Zeichne Karte
-                float scaledWidth = (float)StaticEngine.RenderWidth / GameoverScreen.Width;
-                float scaledHeight = (float)StaticEngine.RenderHeight / GameoverScreen.Height;
+            { // Zeichne GameOverScreen
+                float scaledWidth = (float)StaticEngine.RenderWidth / GameOverScreen.Width;
+                float scaledHeight = (float)StaticEngine.RenderHeight / GameOverScreen.Height;
 
                 Matrix m = g.Transform;
                 g.ScaleTransform(scaledWidth, scaledHeight);
-                g.DrawImageUnscaled(GameoverScreen, 0, 0);
+                g.DrawImageUnscaled(GameOverScreen, 0, 0);
                 g.Transform = m;
             }
          
             btnReturnLobby.Render(g);
         }
         
-        public override void MouseDown(MouseEventArgs e)
-        {
-            btnReturnLobby.MouseDown(e);
-        }
+        public override void MouseDown(MouseEventArgs e) 
+            => btnReturnLobby.MouseDown(e);
 
     }
 }
