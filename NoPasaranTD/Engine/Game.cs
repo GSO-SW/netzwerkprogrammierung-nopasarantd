@@ -332,16 +332,18 @@ namespace NoPasaranTD.Engine
 			Tower selectedTower = UILayout.TowerDetailsContainer.Context;
 			if (selectedTower != null && selectedTower.ID == targetTower.ID)
 				UILayout.TowerDetailsContainer.Visible = false;
-
+			Money += (int)targetTower.SellPrice;
 			Towers.Remove(targetTower);
 		}
 
 		public void UpgradeTower(object t)
         {
 			Tower tower = FindTowerID(t);
+			if (!GodMode)
+				Money -= (int)tower.UpgradePrice;
 			tower.Level++;
 			tower.SearchSegments(CurrentMap);
-        }
+		}
 
 		public void ModeChangeTower(object t)
         {
