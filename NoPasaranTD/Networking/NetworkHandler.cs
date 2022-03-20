@@ -66,8 +66,6 @@ namespace NoPasaranTD.Networking
             TaskQueue = new List<NetworkTask>();
             pings = new List<int>();
             ReliableUPD = new ReliableUPDHandler(this);
-            EventHandlers.Add("ReliableUDP", ReliableUPD.ReceiveReliableUDP);
-            EventHandlers.Add("ReceiveAck", ReliableUPD.ReceiveAck);
         }
 
         // Onlinemodus des Networkhandlers
