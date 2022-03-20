@@ -1,14 +1,12 @@
 ﻿using NoPasaranTD.Networking;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
+    /// <summary>
+    /// Itemcontainer für einen Spieler in einer Spielerliste
+    /// </summary>
     public class PlayerItemContainer : ItemContainer<Networking.NetworkClient>
     {
         public override NetworkClient DataContext { get; set; }
@@ -35,8 +33,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 g.FillRectangle(HighlightBackground, Bounds);
             else
                 g.FillRectangle(Background, Bounds);
-
-            
+           
             Size nameSize = TextRenderer.MeasureText(DataContext.Name,ForegroundFont);
             g.DrawString(DataContext.Name, ForegroundFont, Foreground, new Point(Bounds.X + 5, Bounds.Y + (Bounds.Height / 2) - nameSize.Height / 2));
         }

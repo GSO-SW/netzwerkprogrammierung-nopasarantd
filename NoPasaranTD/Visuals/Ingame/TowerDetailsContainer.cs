@@ -108,7 +108,7 @@ namespace NoPasaranTD.Visuals.Ingame
             closeButton = new ButtonContainer()
             {
                 Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + 5, 20, 20),
-                Content = "X",
+                Content = "⮿",
                 Background = Brushes.Gray,
                 BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
                 Margin = 1,

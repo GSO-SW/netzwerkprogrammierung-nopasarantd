@@ -57,9 +57,12 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
-            g.FillRectangle(BorderBrush, Bounds);
-            g.FillRectangle(Background, new Rectangle(Bounds.X + BorderSize, Bounds.Y + BorderSize, Bounds.Width - BorderSize * 2, Bounds.Height - BorderSize * 2));
-            PlayersContainer.Render(g);
+            if (Visible)
+            {
+                g.FillRectangle(BorderBrush, Bounds);
+                g.FillRectangle(Background, new Rectangle(Bounds.X + BorderSize, Bounds.Y + BorderSize, Bounds.Width - BorderSize * 2, Bounds.Height - BorderSize * 2));
+                PlayersContainer.Render(g);
+            }        
         }
 
         public override void Update() =>

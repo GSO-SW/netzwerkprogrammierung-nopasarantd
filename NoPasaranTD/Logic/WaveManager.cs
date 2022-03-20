@@ -23,7 +23,7 @@ namespace NoPasaranTD.Engine
 		/// <summary>
 		/// Soll nach Wellenabschluss eine neue Welle automatisch generiert werden?
 		/// </summary>
-		public bool AutoStart { get; set; } = true;
+		public bool AutoStart { get; set; } = false;
 
         public WaveManager(Game game, int numberBallon)
         {
@@ -58,8 +58,20 @@ namespace NoPasaranTD.Engine
 		private double waveSensitivity = 0.0015; // Die Sensitivität der Wellen
 		private double ballonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
 		private uint waveSensitivityExponent = 2; // Der Exponent der den Spawn-Grad verändern kann
-
+		
 		private bool isCompleted = false;
+		public bool IsCompleted
+        {
+			get { return isCompleted; }
+			set 
+			{ 
+				isCompleted = value;
+                if (value)
+                {
+					CurrentGame.Round++;
+                }
+			}
+        }
 		private List<Balloon> GetNextBallonWave(int numberBallons)
 		{
 			int currentBallons = 0;
@@ -165,10 +177,10 @@ namespace NoPasaranTD.Engine
 				currentBallonOfWave = 0;
 				currentBallonOfPackage = 0;
 				currentWavePackage = GetNewBallonPackage(currentWave);
-				isCompleted = true;
+				IsCompleted = true;
 			}
 
-			if (!isCompleted)
+			if (!IsCompleted)
 			{
 				// Setzt ein neues Paket an Ballons falls das derzeitige bereits genutzt wurde
 				if (currentBallonOfPackage == currentWavePackage.Count - 1)
@@ -187,10 +199,9 @@ namespace NoPasaranTD.Engine
 			}
 			else if (CheckIsBallonsEmpty())
             {
-				CurrentGame.Round++;
 				WaveCompleted?.Invoke();
                 if (AutoStart)
-					isCompleted = false;
+					IsCompleted = false;
             }							
 		}
 	
@@ -199,8 +210,8 @@ namespace NoPasaranTD.Engine
 		/// </summary>
 		public void StartSpawn()
         {
-            if (isCompleted == true)
-				isCompleted = false;
+            if (IsCompleted == true)
+				IsCompleted = false;
         }
 
 		/// <summary>

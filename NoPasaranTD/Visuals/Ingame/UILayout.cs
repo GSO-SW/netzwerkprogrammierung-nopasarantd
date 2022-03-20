@@ -42,7 +42,7 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,5,240,450),        
+            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth-250,100,240,450),        
             Background = new SolidBrush(Color.FromArgb(250,143, 167, 186)),
             ButtonFont = GuiComponent.StandartText1Font,
             Visible = false,
@@ -64,9 +64,20 @@ namespace NoPasaranTD.Visuals.Ingame
             Margin = 1         
         };
 
+        /// <summary>
+        /// Zeigt alle derzeitigen Spieler in der Session an (Anzeige ist raus!)
+        /// </summary>
         public PlayerListContainer PlayerListContainer { get; set; } = new PlayerListContainer()
         {
-            Bounds = new Rectangle(200, 100, 200, 300),
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100, StaticEngine.RenderHeight/2 - 125, 200, 250),
+            Visible = false,
+        };
+
+        public OptionsContainer OptionsContainer { get; set; } = new OptionsContainer()
+        {
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 100,0,200,50),
+            Background = new SolidBrush(Color.FromArgb(150, 72, 75, 171)),
+            Foreground = Brushes.Black,
         };
 
 
@@ -81,18 +92,18 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public UILayout(Game gameObj)
         {
+            // Initialisiert alle UI Komponenten
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
             PlayerListContainer.Init(gameObj);
+            OptionsContainer.Init(gameObj);
 
+            // Initialisiert alle Events
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
             HideBuildMenuContainer.ButtonClicked += HideBuildMenüButton_ButtonClicked;
 
-            //Add(TowerBuildMenu);
-            //Add(hideBuildMenüButton);
-            //Add(TowerDetailsContainer);
-
+            // Verweist alle GUI Components
             GetGUIComponents(this,typeof(UILayout));
 
             game = gameObj;
@@ -168,6 +179,7 @@ namespace NoPasaranTD.Visuals.Ingame
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
             PlayerListContainer.Update();
+            OptionsContainer.Update();
         }
 
         public override void Render(Graphics g)
@@ -177,6 +189,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.Render(g);
             HideBuildMenuContainer.Render(g);
             PlayerListContainer.Render(g);
+            OptionsContainer.Render(g);
 
             DrawGameStats(g);
 
@@ -233,6 +246,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.MouseDown(e);
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
+            OptionsContainer.MouseDown(e);
 
             foreach (var item in game.Towers)
             {

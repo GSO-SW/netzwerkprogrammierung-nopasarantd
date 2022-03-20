@@ -68,6 +68,7 @@
     <Compile Include="Networking\NetworkHandler.cs" />
     <Compile Include="Networking\NetworkClient.cs" />
     <Compile Include="Utilities\Serializer.cs" />
+    <Compile Include="Visuals\Ingame\OptionsContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerItemContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerListContainer.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
