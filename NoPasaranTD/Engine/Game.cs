@@ -62,6 +62,7 @@ namespace NoPasaranTD.Engine
         {
             UILayout.Dispose();
             NetworkHandler.Dispose();
+			CurrentMap.Dispose();
         }
 
         #region Game logic region

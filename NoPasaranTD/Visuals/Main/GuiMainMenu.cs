@@ -100,7 +100,11 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void Dispose() => DiscoveryClient?.Dispose();
+        public override void Dispose()
+        {
+            DiscoveryClient?.Dispose();
+            backgroundGame?.Dispose();
+        }
 
         #region Discovery event region
         private void StartGame()

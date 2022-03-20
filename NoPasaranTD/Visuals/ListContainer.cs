@@ -139,6 +139,12 @@ namespace NoPasaranTD.Visuals
             }                                
         }
 
+        public override void Dispose()
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].Dispose();
+        }
+
         public override void Update()
         {
             if (!Active) return;
