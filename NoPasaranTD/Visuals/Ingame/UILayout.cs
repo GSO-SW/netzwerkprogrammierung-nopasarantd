@@ -147,7 +147,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Update()
         {
-            if (!Active) return;
+            if (!Visible) return;
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
         }
@@ -185,32 +185,34 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void KeyUp(KeyEventArgs e)
         {
-            if(Active) TowerBuildMenu.KeyUp(e);
+            if (!Visible) return;
+            TowerBuildMenu.KeyUp(e);
         }
 
         public override void KeyPress(KeyPressEventArgs e)
         {
-            if (Active) TowerBuildMenu.KeyPress(e);
+            if (!Visible) return;
+            TowerBuildMenu.KeyPress(e);
             hideBuildMenüButton.KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
         {
-            if(Active)
-                TowerBuildMenu.KeyDown(args);
+            if (!Visible) return;
+            TowerBuildMenu.KeyDown(args);
             hideBuildMenüButton.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             TowerBuildMenu.MouseUp(e);
             placingTowerDragDrop.MouseUp(e);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             TowerBuildMenu.MouseDown(e);
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
@@ -233,14 +235,14 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void MouseMove(MouseEventArgs e)
         {
-            if(Active)
-                TowerBuildMenu.MouseMove(e);
+            if (!Visible) return;
+            TowerBuildMenu.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
-            if(Active)
-                TowerBuildMenu.MouseWheel(e);
+            if (!Visible) return;
+            TowerBuildMenu.MouseWheel(e);
         }
 
         void DrawGameStats(Graphics g)

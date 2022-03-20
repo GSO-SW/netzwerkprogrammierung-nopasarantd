@@ -13,10 +13,6 @@ namespace NoPasaranTD.Visuals
         public bool Visible { get; set; } = true;
 
         /// <summary>
-        /// Ist das Control interakionsfähig?
-        /// </summary>
-        public bool Active { get; set; } = true;
-        /// <summary>
         /// Die Grenzen des Controls
         /// </summary>
         public Rectangle Bounds { get; set; }

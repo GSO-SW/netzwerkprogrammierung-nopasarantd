@@ -18,6 +18,9 @@ namespace NoPasaranTD.Networking
         public ReliableUPDHandler(NetworkHandler ntwH)
         {
             networkHandler = ntwH;
+            networkHandler.EventHandlers.Add("ReliableUDP", ReceiveReliableUDP);
+            networkHandler.EventHandlers.Add("ReceiveAck", ReceiveAck);
+            networkHandler.EventHandlers.Add("ResendTask", ReceiveResendReq);
         }
 
         /// <summary>

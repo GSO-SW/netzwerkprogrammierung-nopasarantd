@@ -80,9 +80,6 @@ namespace NoPasaranTD.Networking
             EventHandlers = new Dictionary<string, Action<object>>();
             ReliableUPD = new ReliableUPDHandler(this);
             EventHandlers.Add("PingRequest", PingRequest);
-            EventHandlers.Add("ReliableUDP", ReliableUPD.ReceiveReliableUDP);
-            EventHandlers.Add("ReceiveAck", ReliableUPD.ReceiveAck);
-            EventHandlers.Add("ResendTask", ReliableUPD.ReceiveResendReq);
             TaskQueue = new List<NetworkTask>();
             pings = new List<int>();
 
@@ -149,9 +146,7 @@ namespace NoPasaranTD.Networking
 
             // Führe event im client aus
             if (!resend)
-            {
                 TaskQueue.Add(new NetworkTask(command, param, -1));
-            }
         }
 
         /// <summary>

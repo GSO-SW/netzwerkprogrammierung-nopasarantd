@@ -61,7 +61,6 @@ namespace NoPasaranTD.Visuals.Main
             backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
-                backgroundGame.UILayout.Active = false;
                 backgroundGame.UILayout.Visible = false;
                 backgroundGame.GodMode = true;
 
@@ -100,7 +99,11 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void Dispose() => DiscoveryClient?.Dispose();
+        public override void Dispose()
+        {
+            DiscoveryClient?.Dispose();
+            backgroundGame?.Dispose();
+        }
 
         #region Discovery event region
         private void StartGame()

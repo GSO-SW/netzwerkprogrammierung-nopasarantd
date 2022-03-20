@@ -19,7 +19,7 @@ namespace NoPasaranTD.Model
     }
 
     [JsonObject(MemberSerialization.OptOut)]
-    public class Map
+    public class Map : IDisposable
     {
         public string Name { get; set; }
         public Size Dimension { get; set; }
@@ -55,6 +55,8 @@ namespace NoPasaranTD.Model
 
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
         private Fragment[] pathFragments;
+
+        public void Dispose() => BackgroundImage?.Dispose();
 
         /// <summary>
         /// Inizialisiert das Objekt und berechnet somit die Länge des Pfades und dessen einzelne Fragmente.<br/>

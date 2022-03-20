@@ -74,7 +74,9 @@ namespace NoPasaranTD.Visuals.Ingame
                 g.FillRectangle(Background, Bounds);
 
                 closeButton.Render(g);
+                upgradeButton.Content = "Upgrade: " + Context.UpgradePrice + "₿";
                 upgradeButton.Render(g);
+                sellButton.Content = "Sell: " + Context.SellPrice + "₿";
                 sellButton.Render(g);
                 TargetModesList.Render(g);
 
@@ -171,11 +173,13 @@ namespace NoPasaranTD.Visuals.Ingame
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.ReliableUPD.SendReliableUDP("UpgradeTower", Context);
+            if ((currentGame.Money >= Context.UpgradePrice && Context.LevelCap) || currentGame.GodMode)
+                currentGame.NetworkHandler.ReliableUPD.SendReliableUDP("UpgradeTower", Context);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
+            if (!Visible) return;
             closeButton.MouseDown(e);
             sellButton.MouseDown(e);
             upgradeButton.MouseDown(e);
