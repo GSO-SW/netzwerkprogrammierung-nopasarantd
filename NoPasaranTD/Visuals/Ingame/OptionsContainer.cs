@@ -161,7 +161,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public void Init(Game gamer)
         {
-            int buttonWidth = (Bounds.Width - 8 * buttonMargin)/6;
+            int buttonWidth = (Bounds.Width - 7 * buttonMargin)/6;
             int buttonHeight = Bounds.Height - buttonMargin*2;
 
             currentGame = gamer;
