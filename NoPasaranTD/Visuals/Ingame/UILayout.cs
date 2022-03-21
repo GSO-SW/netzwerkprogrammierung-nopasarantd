@@ -92,15 +92,12 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public Tower SelectedTower { get { return selectedTower; } set { selectedTower = value; } }
 
-        public UILayout(Game gameObj, bool isActive)
+        public UILayout(Game gameObj)
         {
-            Active = isActive;
-
             // Initialisiert alle UI Komponenten
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
-            if (isActive)
-                PlayerListContainer.Init(gameObj);
+            PlayerListContainer.Init(gameObj);
             
             OptionsContainer.Init(gameObj);
 
@@ -231,14 +228,14 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             if (!Visible) return;
             TowerBuildMenu.KeyPress(e);
-            hideBuildMenüButton.KeyPress(e);
+            HideBuildMenuContainer.KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
         {
             if (!Visible) return;
             TowerBuildMenu.KeyDown(args);
-            hideBuildMenüButton.KeyDown(args);
+            HideBuildMenuContainer.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)

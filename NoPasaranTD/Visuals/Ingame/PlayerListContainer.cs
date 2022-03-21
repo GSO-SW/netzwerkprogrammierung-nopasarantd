@@ -52,7 +52,8 @@ namespace NoPasaranTD.Visuals.Ingame
             if (currentGame.NetworkHandler.Lobby != null)
                 PlayersContainer.ListArgs = new object[] { currentGame.NetworkHandler.LocalPlayer, currentGame.NetworkHandler.Lobby.Host };
 
-            PlayersContainer.DefineItems();
+            if (currentGame.NetworkHandler.Participants != null)
+                PlayersContainer.DefineItems();          
         }
 
         public override void Render(Graphics g)
