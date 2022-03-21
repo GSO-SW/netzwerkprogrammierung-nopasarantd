@@ -133,6 +133,7 @@ namespace NoPasaranTD.Networking
                     try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche Nachricht an Empfänger zu Senden
                     catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
+                //Console.WriteLine(command);
             }
 
             // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
@@ -207,10 +208,10 @@ namespace NoPasaranTD.Networking
             pings.Add((int)(Game.CurrentTick - (long)t)); // Delay zwischen senden 
             if (pings.Count == Participants.Count) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
-                HighestPing = 0; // Ping erstmal wieder auf 0 als Basiswert setzen
+                HighestPing = 100; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
-                    if (HighestPing < item * 4) // Höchsten Ping suchen
-                        HighestPing = item * 4; // Die Verbindung muss im zweifelsfall 4 mal hin und her gehen, um ein Paket mit Sicherheit zu senden
+                    if (HighestPing < item * 2) // Höchsten Ping suchen
+                        HighestPing = item * 2; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
                 pings.Clear();
             }
         }

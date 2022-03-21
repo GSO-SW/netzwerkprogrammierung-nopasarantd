@@ -14,6 +14,7 @@ namespace NoPasaranTD.Networking
         /// Liste aller gesendeten Tasks auf die nicht alle Teilnehmer geantwortet haben
         /// </summary>
         private List<ReliableUDPModel> sendTasks = new List<ReliableUDPModel>();
+        private List<NetworkTask> receivedTasks = new List<NetworkTask>();
 
         public ReliableUPDHandler(NetworkHandler ntwH)
         {
@@ -37,10 +38,18 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void ReceiveReliableUDP(object t)
         {
+            //Console.WriteLine("Receive Task");
             foreach (var item in networkHandler.TaskQueue) // Checken, dass die Task nicht erneut gesendet wurde wegen eines Übertragungsfehlers an einen anderen Client
+                if (item.ID == ((NetworkTask)t).ID)
+                {
+                    item.TickToPerform = ((NetworkTask)t).TickToPerform;
+                    return;
+                }
+            foreach (var item in receivedTasks)
                 if (item.ID == ((NetworkTask)t).ID)
                     return;
             networkHandler.TaskQueue.Add((NetworkTask)t); // Die Task in die Liste der zu erledigenden Aufgaben einfügen
+            receivedTasks.Add((NetworkTask)t); // Die Task abspeichern, damit ein doppeltes Paket nach dem ausführen trotzdem noch erkannt wird
             if (!networkHandler.OfflineMode) // ACK Pakete müssen im Offlinemode an niemanden gesendet werden
                 SendAck((NetworkTask)t);
         }
@@ -95,14 +104,22 @@ namespace NoPasaranTD.Networking
                 {
                     // Ist der derzeitige Tick größer als die erwartete Zeit für eine Übertragung zum anderen Client und zurück
                     if (sendTasks[i].SendAtTick + (networkHandler.HighestPing / 2) < networkHandler.Game.CurrentTick)
+                    {
+                        sendTasks[i].SendAtTick = networkHandler.Game.CurrentTick; // Neues senden des Paketes abspeichern
+                        sendTasks[i].NetworkTask.TickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing; // Neuen Tick zum ausführen festlegen, da dieser verschoben werden muss
                         networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask, true); // In diesem Falle das Paket erneut senden
+                    }
+                        
                 } 
                 catch (Exception e)
                 {
                     Console.WriteLine("Package deleted before reviewing: " + e.Message);
                 }
-                
             }
+
+            for (int i = receivedTasks.Count - 1; i >= 0; i--) // Alle empfangenen Tasks durchgehen
+                if (networkHandler.Game.CurrentTick - receivedTasks[i].TickToPerform > 10000) //schauen ob diese vor mehr als 10000 Ticks ausgeführt wurden, um den Speicherverbrauch und die Geschwindigkeit begrenzt zu halten
+                    receivedTasks.RemoveAt(i);
         }
     }
 }

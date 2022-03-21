@@ -28,7 +28,7 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Zeitpunkt in Ticks an dem der Handler ausgeführt werden soll
         /// </summary>
-        public long TickToPerform { get; }
+        public long TickToPerform { get; set; }
 
         /// <summary>
         /// Id der Task um sie zuordnen zu können
