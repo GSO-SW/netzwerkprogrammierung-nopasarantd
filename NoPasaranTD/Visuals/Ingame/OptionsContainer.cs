@@ -47,6 +47,15 @@ namespace NoPasaranTD.Visuals.Ingame
             StringFont = StandartHeader2Font,
         };
 
+        private readonly ButtonContainer accelerationButton = new ButtonContainer()
+        {
+            Content = "►►",
+            Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+            BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+            Margin = 1,
+            StringFont = StandartText2Font,
+        };
+
         // Button zum Steuern des Autostart Modes
         private readonly ButtonContainer autoStartButton = new ButtonContainer()
         {
@@ -105,6 +114,7 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 autoStartButton.Render(g);
                 playersButton.Render(g);
+                accelerationButton.Render(g);
                 homeButton.Render(g);
             }          
             
@@ -114,10 +124,12 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Update()
         {
+            accelerationButton.Content = "►►\n " + StaticEngine.TickAcceleration + "x";
             if (isExpanded)
             {
                 autoStartButton.Update();
                 playersButton.Update();
+                accelerationButton.Update();
                 startButton.Update();
                 homeButton.Update();
             }           
@@ -131,6 +143,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 autoStartButton.MouseDown(e);
                 playersButton.MouseDown(e);
                 startButton.MouseDown(e);
+                accelerationButton.MouseDown(e);
                 homeButton.MouseDown(e);
             }            
             expandButton.MouseDown(e);
@@ -141,17 +154,18 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public void Init(Game gamer)
         {
-            int buttonWidth = (Bounds.Width - 8 * buttonMargin)/5;
+            int buttonWidth = (Bounds.Width - 10 * buttonMargin)/6;
             int buttonHeight = Bounds.Height - buttonMargin*2;
 
             currentGame = gamer;
 
             // Initialisiert die Grenzen der Buttons
             startButton.Bounds = new Rectangle(Bounds.X + buttonMargin, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            autoStartButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 2 + buttonWidth, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            playersButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 3 + buttonWidth * 2, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            homeButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 4 + buttonWidth * 3, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            expandButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 5 + buttonWidth * 4, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            accelerationButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 2 + buttonWidth, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            autoStartButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 3 + buttonWidth * 2, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            playersButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 4 + buttonWidth * 3, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            homeButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 5 + buttonWidth * 4, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            expandButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 6 + buttonWidth * 5, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
 
             // Initilialisiert die Schriftfarben des Buttons
             startButton.Foreground = Foreground;
@@ -159,6 +173,7 @@ namespace NoPasaranTD.Visuals.Ingame
             playersButton.Foreground = Foreground;
             expandButton.Foreground = Foreground;
             homeButton.Foreground = Foreground;
+            accelerationButton.Foreground = Foreground;
 
             // Initilisiert die Clickevents der Buttons
             startButton.ButtonClicked += StartButton_ButtonClicked;
@@ -166,8 +181,9 @@ namespace NoPasaranTD.Visuals.Ingame
             playersButton.ButtonClicked += PlayersButton_ButtonClicked; ;
             expandButton.ButtonClicked += ExpandButton_ButtonClicked;
             homeButton.ButtonClicked += HomeButton_ButtonClicked;
+            accelerationButton.ButtonClicked += AccelerationButton_ButtonClicked;
         }
-       
+        
         #endregion
         #region Event Methoden
 
@@ -179,9 +195,9 @@ namespace NoPasaranTD.Visuals.Ingame
         private async void ExpandButton_ButtonClicked()
         {           
             if (!isExpanded)
-                await ExpandToAsync(expandButton.Bounds.Width * 5 + buttonMargin * 7);
+                await ExpandToAsync(expandButton.Bounds.Width * 6 + buttonMargin * 8);
             else
-                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*7);           
+                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*8);           
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
@@ -199,8 +215,19 @@ namespace NoPasaranTD.Visuals.Ingame
         private void StartButton_ButtonClicked() =>
             currentGame.WaveManager.StartSpawn();
 
-        private void HomeButton_ButtonClicked() =>
-            Program.LoadScreen(new Main.GuiMainMenu());
+        private void HomeButton_ButtonClicked()
+        {
+            Program.LoadScreen((currentGame.Paused = !currentGame.Paused) ?
+                    new GuiPauseMenu(currentGame) : null);
+        }
+
+        private void AccelerationButton_ButtonClicked()
+        {
+            if (StaticEngine.TickAcceleration == 8)
+                StaticEngine.TickAcceleration = 1;
+            else
+                StaticEngine.TickAcceleration *= 2;
+        }
 
         #endregion
         #region Async Methoden
