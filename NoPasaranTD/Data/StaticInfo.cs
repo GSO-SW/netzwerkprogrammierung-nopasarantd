@@ -61,6 +61,18 @@ namespace NoPasaranTD.Data
             TowerDelay.TryGetValue(type, out uint delay);
             return delay;
         }
+
+        public static uint GetTowerUpgradePrice(Type type)
+        {
+            TowerUpgradePrice.TryGetValue(type, out uint price);
+            return price;
+        }
+
+        public static uint GetTowerLevelCap(Type type)
+        {
+            TowerLevelCap.TryGetValue(type, out uint levelCap);
+            return levelCap;
+        }
         #endregion
 
         #region GetBalloon Methoden 
@@ -158,6 +170,18 @@ namespace NoPasaranTD.Data
         {
             {typeof(TowerCanon),     2500},
             {typeof(TowerArtillery), 48000},
+        };
+
+        private static readonly Dictionary<Type, uint> TowerUpgradePrice = new Dictionary<Type, uint>()
+        {
+            {typeof(TowerCanon),     30},
+            {typeof(TowerArtillery), 200},
+        };
+
+        private static readonly Dictionary<Type, uint> TowerLevelCap = new Dictionary<Type, uint>()
+        {
+            {typeof(TowerCanon),     6},
+            {typeof(TowerArtillery), 3},
         };
         #endregion // Dictionary für die Türme
 

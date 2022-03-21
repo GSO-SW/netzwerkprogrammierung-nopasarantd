@@ -8,7 +8,7 @@ namespace NoPasaranTD
 {
     internal static class Program
     {
-        public const string SERVER_ADDRESS = "127.0.0.1";
+        public const string SERVER_ADDRESS = "85.214.40.156";
         public const int SERVER_PORT = 31415;
 
         private static StaticDisplay display;

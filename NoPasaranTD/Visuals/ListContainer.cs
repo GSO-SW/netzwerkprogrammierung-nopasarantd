@@ -142,9 +142,15 @@ namespace NoPasaranTD.Visuals
             }                                
         }
 
+        public override void Dispose()
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+                items[i].Dispose();
+        }
+
         public override void Update()
         {
-            if (!Active) return;
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].Update();
         }
@@ -166,34 +172,35 @@ namespace NoPasaranTD.Visuals
 
         public override void KeyUp(KeyEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyUp(e);
         }
 
         public override void KeyPress(KeyPressEventArgs e)
         {
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
         {
-            if (!Active) return;
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseUp(e);
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (IsMouseOver)
+            if (IsMouseOver && Visible)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -211,14 +218,14 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseMove(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             for (int i = items.Count - 1; i >= 0; i--)
                 items[i].MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible) return;
             if (items.Count == 0) return;
 
             bool firstOutOfBounds, lastOutOfBounds;
