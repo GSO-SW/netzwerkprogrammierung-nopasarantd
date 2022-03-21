@@ -47,6 +47,7 @@ namespace NoPasaranTD.Visuals.Ingame
             StringFont = StandartHeader2Font,
         };
 
+        // Button zum Steuern der Spielgeschwindigkeit
         private readonly ButtonContainer accelerationButton = new ButtonContainer()
         {
             Content = "►►",

@@ -29,11 +29,10 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private Game currentGame;
 
-        public PlayerListContainer()
-        {
-            
-        }
-
+        /// <summary>
+        /// Initialisiert alle GUI Components der Spielerliste
+        /// </summary>
+        /// <param name="game"></param>
         public void Init(Game game)
         {
             currentGame = game;
@@ -49,6 +48,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 BackgroundColor = Background,
             };
 
+            // Übergibt den Items den derzeitigen Host des Spieles
             if (currentGame.NetworkHandler.Lobby != null)
                 PlayersContainer.ListArgs = new object[] { currentGame.NetworkHandler.LocalPlayer, currentGame.NetworkHandler.Lobby.Host };
 
