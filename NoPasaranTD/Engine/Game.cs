@@ -58,6 +58,10 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
+			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
+			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
+			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+			
 		}
 
 		private void InitBalloons()
@@ -184,8 +188,7 @@ namespace NoPasaranTD.Engine
 			if ((HealthPoints > 0 || GodMode) && e.KeyCode == Keys.Escape)
 			{ // Lade Pause Menü und pausiere das Spiel im Offline Modus
 			  // (Sofern Escape gedrückt wurde und der Spieler noch lebt oder sich im Gott Modus befindet)
-				Program.LoadScreen((Paused = !Paused) ?
-					new GuiPauseMenu(this) : null);
+				TogglePauseMenu();
 			}
 
 			if (Paused) return;
@@ -356,6 +359,30 @@ namespace NoPasaranTD.Engine
 			if (selectedTower != null && selectedTower.ID == targetTower.ID)
 				UILayout.TowerDetailsContainer.Context = targetTower;
 		}
+
+		public void StartRound(object t)
+        {
+			WaveManager.StartSpawn();
+        }
+
+		public void AccelerateGame(object t)
+        {
+			if (StaticEngine.TickAcceleration == 8)
+				StaticEngine.TickAcceleration = 1;
+			else
+				StaticEngine.TickAcceleration *= 2;
+		}
+
+		public void TogglePauseMenu()
+        {
+			Program.LoadScreen((Paused = !Paused) ?
+					new GuiPauseMenu(this) : null);
+		}
+
+		public void ToggelAutoStart(object t)
+        {
+			WaveManager.AutoStart = !WaveManager.AutoStart;
+        }
 
 		private Tower FindTowerID(object t)
         {

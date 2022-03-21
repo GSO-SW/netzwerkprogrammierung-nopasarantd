@@ -126,6 +126,12 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void Update()
         {
             accelerationButton.Content = "►►\n " + StaticEngine.TickAcceleration + "x";
+
+            if (currentGame.WaveManager.AutoStart)
+                autoStartButton.Content = "⤻";
+            else
+                autoStartButton.Content = "⭯";
+
             if (isExpanded)
             {
                 autoStartButton.Update();
@@ -155,7 +161,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public void Init(Game gamer)
         {
-            int buttonWidth = (Bounds.Width - 10 * buttonMargin)/6;
+            int buttonWidth = (Bounds.Width - 8 * buttonMargin)/6;
             int buttonHeight = Bounds.Height - buttonMargin*2;
 
             currentGame = gamer;
@@ -203,32 +209,19 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
         private void AutoStartButton_ButtonClicked()
-        {
-            if (currentGame.WaveManager.AutoStart)
-                autoStartButton.Content = "⤻";
-            else
-                autoStartButton.Content = "⭯";
-
-            currentGame.WaveManager.AutoStart = !currentGame.WaveManager.AutoStart;
+        {           
+            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
         }
 
         // Startet das Spawning der Ballons beim betätigen des Buttons
         private void StartButton_ButtonClicked() =>
-            currentGame.WaveManager.StartSpawn();
+            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0);
 
-        private void HomeButton_ButtonClicked()
-        {
-            Program.LoadScreen((currentGame.Paused = !currentGame.Paused) ?
-                    new GuiPauseMenu(currentGame) : null);
-        }
+        private void HomeButton_ButtonClicked() =>
+            currentGame.TogglePauseMenu();
 
-        private void AccelerationButton_ButtonClicked()
-        {
-            if (StaticEngine.TickAcceleration == 8)
-                StaticEngine.TickAcceleration = 1;
-            else
-                StaticEngine.TickAcceleration *= 2;
-        }
+        private void AccelerationButton_ButtonClicked() =>
+            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0);
 
         #endregion
         #region Async Methoden

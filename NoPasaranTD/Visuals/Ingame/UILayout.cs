@@ -27,7 +27,7 @@ namespace NoPasaranTD.Visuals.Ingame
             Orientation = Orientation.Horizontal,
             ItemSize = new System.Drawing.Size(100, 110),
             Position = new System.Drawing.Point(120, StaticEngine.RenderHeight - 150),
-            ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 40, 130),
+            ContainerSize = new System.Drawing.Size(StaticEngine.RenderWidth - 150, 130),
             BackgroundColor = new SolidBrush(Color.FromArgb(240, 132, 140, 156)),
             // Spezifizierung der Verschiedenen Towers
             Items = new NotifyCollection<Tower>()
@@ -77,7 +77,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public OptionsContainer OptionsContainer { get; set; } = new OptionsContainer()
         {
-            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150,5,300,50),
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150,5,290,50),
             Background = new SolidBrush(Color.FromArgb(150, 132, 140, 156)),
             Foreground = Brushes.Black,
         };
