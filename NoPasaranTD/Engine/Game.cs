@@ -315,90 +315,89 @@ namespace NoPasaranTD.Engine
 		}
 
 		/// <summary>
-		/// Hinzufügen des übergebenen Turmes
+		/// Den übergebenen Turm lokal einfügen
 		/// </summary>
 		/// <param name="t"></param>
 		private void AddTower(object t)
 		{
-            if (StaticInfo.GetTowerPrice((t as Tower).GetType()) <= Money)
-			{
-				(t as Tower).IsSelected = false; // Derzeitiges auswählen des Turmes beenden
+            if (StaticInfo.GetTowerPrice(GetType()) <= Money) // Kontrollieren, dass der Spieler genug Geld hat
+            {
+				(t as Tower).IsSelected = false; // Ist nicht mehr der ausgewählte Turm
 				(t as Tower).IsPlaced = true;
 
 				Towers.Add((Tower)t);
-				Towers[Towers.Count - 1].SearchSegments(CurrentMap); // Segmente in Reichweite und Blindspots des Turmes herausfinden
-				if (!GodMode)
-					Money -= (int)StaticInfo.GetTowerPrice(t.GetType()); // Geld abziehen
+				Towers[Towers.Count - 1].SearchSegments(CurrentMap);
+				if (!GodMode) // Im GodMode kein Geld abziehen
+					Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
 			}
 		}
 
 		/// <summary>
-		/// Entfernt den Übergebenen Turm
+		/// Die lokale Version des übergebenen Turmes entfernen
 		/// </summary>
 		/// <param name="t"></param>
 		private void RemoveTower(object t)
 		{
-			Tower targetTower = FindTowerID(t);
-            if (targetTower != null) // Kontrollieren, dass der Turm existiert
+			Tower tower = FindTowerID(t);
+            if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
 				Tower selectedTower = UILayout.TowerDetailsContainer.Context;
-				if (selectedTower != null && selectedTower.ID == targetTower.ID) // GUI kontrollieren, ob der Turm angezeigt wird
-					UILayout.TowerDetailsContainer.Visible = false; // GUI ausblenden
-				Money += (int)targetTower.SellPrice; // Geld zurückgeben
-				Towers.Remove(targetTower);
+				if (selectedTower != null && selectedTower.ID == tower.ID) // Sollte der gelöschte Turm ausgewählt sein wird dieses Feld geschlossen
+					UILayout.TowerDetailsContainer.Visible = false;
+				Money += (int)tower.SellPrice; // Geld fürs verkaufen an den Spieler auszahlen
+				Towers.Remove(tower);
 			}
 		}
 
 		/// <summary>
-		/// Upgraded den Tower
+		/// Upgraded die lokale Vesion des übergebenen Turmes
 		/// </summary>
-		/// <param name="t">Der Turm der übertragen wurde um geupgraded zu werden</param>
+		/// <param name="t"></param>
 		public void UpgradeTower(object t)
         {
 			Tower tower = FindTowerID(t);
-			if (tower != null) // Kontrollieren, dass ein Turm gefunden wurde
-				if ((int)tower.UpgradePrice <= Money && tower.LevelCap) // Checken, dass der Client genug Geld hat zum kaufen und das das LevelCap nicht überschritten wird
-				{
-					if (!GodMode) // Im Godmode soll alles geupgraded werden können
-						Money -= (int)tower.UpgradePrice;
-					tower.Level++;
-					tower.SearchSegments(CurrentMap); // Upgraded die Segmente die der Turm abschießt entsprechend der neuen Reichweite
-				}
+            if (tower != null && tower.UpgradePrice <= Money && tower.LevelCap) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
+            {
+				if (!GodMode) // Im Godmode soll kein Geld abgezogen werden
+					Money -= (int)tower.UpgradePrice;
+				tower.Level++;
+				tower.SearchSegments(CurrentMap); // Pfadsegmente in der Reichweite entsprechend der neuen Reichweite updaten
+			}
 		}
 
 		/// <summary>
-		/// Wechselt den Modus des Turmes
+		/// Wechselt den Schussmodus der lokalen Version des übergebenen Turmes
 		/// </summary>
-		/// <param name="t">Der Turm dessen Modus übernommen wurde</param>
+		/// <param name="t"></param>
 		public void ModeChangeTower(object t)
         {
 			Tower tower = FindTowerID(t);
-            if (tower != null) // Checken, dass ein Turm gefunden wurde
+            if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
-				tower.TargetMode = (t as Tower).TargetMode; // Targetmode des des Übertragenen Turmes übernehmen
+				tower.TargetMode = (t as Tower).TargetMode;
 
-				Tower selectedTower = UILayout.TowerDetailsContainer.Context; // Derzeit angezeigten Turm speichern
-				if (selectedTower != null && selectedTower.ID == tower.ID) // Wenn ein Turm angezeigt wird und dieser dem gesendeten entspricht soll das UI geupdated werden
+				Tower selectedTower = UILayout.TowerDetailsContainer.Context; // Derzeit angezeigten Turm auswählen
+				if (selectedTower != null && selectedTower.ID == tower.ID) // Sollte ein Turm ausgewählt sein und dem veränderten entsprechen wird die Ansicht geupdated
 					UILayout.TowerDetailsContainer.Context = tower;
 			}
 		}
 
 		/// <summary>
-		/// Findet den Turm zur angegebenen ID
+		/// Findet den übergebenen Turm wenn dieser existiert 
 		/// </summary>
-		/// <param name="t">Der übertragene Turm</param>
-		/// <returns>Den internen Turm</returns>
+		/// <param name="t"></param>
+		/// <returns>Gibt einen Verweis auf das Objekt des übersendeten Turmes zurück</returns>
 		private Tower FindTowerID(object t)
         {
-            try // Try Catch für den Fall, das eine Task gespamt wurde und bsw mehrfach ein Tower entfernt werden soll der beim 2 versuch den Tower zu entfernen nicht mehr existiert
+            try // Falls kein Turm mehr gefunden wird, bsw bei mehrfachem Löschen soll das Program nicht crashen
             {
-				foreach (Tower tower in Towers) // Alle Tower durchgehen
+				foreach (Tower tower in Towers) // Alle Tower durchsuchen
 					if (tower.ID == (t as Tower).ID)
 						return tower;
 			}
             catch (Exception e)
             {
-                Console.WriteLine("No Tower was found and the process crashed with with the error Message:" + e.Message);
+                Console.WriteLine("The towersearch failed with following message: " + e.Message);
             }
 			return null;
 		}
