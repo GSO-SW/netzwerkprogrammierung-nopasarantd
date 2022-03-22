@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using NoPasaranTD.Engine;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Visuals;
+using NoPasaranTD.Visuals.Main;
 
 namespace NoPasaranTD
 {
@@ -25,7 +26,7 @@ namespace NoPasaranTD
                 display = new StaticDisplay();
                 display.LoadGame(null);
             }
-            Application.Run(display);
+            Application.Run(display);            
         }
 
         public static void LoadGame(string mapFile) => display.LoadGame(mapFile);
