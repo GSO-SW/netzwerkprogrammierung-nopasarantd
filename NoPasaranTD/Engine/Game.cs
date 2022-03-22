@@ -159,7 +159,7 @@ namespace NoPasaranTD.Engine
 
 			foreach (var item in CurrentMap.Obstacles)
 			{ // Hindernisse rendern
-				g.FillRectangle(Brushes.Red, 
+				g.DrawImage(item.Image, 
 					(float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
 					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
 					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,

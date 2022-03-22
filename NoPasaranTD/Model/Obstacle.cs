@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NoPasaranTD.Data;
 
 namespace NoPasaranTD.Model
 {
@@ -21,12 +22,12 @@ namespace NoPasaranTD.Model
         public Rectangle Hitbox { get; set; } // Maybe change to RectangleF
 
         [JsonIgnore]
-        public Bitmap Image { get; } // TODO: Link with static class
+        public Bitmap Image { get => StaticInfo.GetObstacleImage(ObstacleType); } // TODO: Link with static class
     }
 
     public enum ObstacleType
     {
-        House0 = 0,
+        Pool = 0,
         House1 = 1,
         Tree = 2,
         Rock = 3,
