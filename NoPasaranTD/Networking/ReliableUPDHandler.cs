@@ -14,7 +14,7 @@ namespace NoPasaranTD.Networking
         /// Liste aller gesendeten Tasks auf die nicht alle Teilnehmer geantwortet haben
         /// </summary>
         private List<ReliableUDPModel> sendTasks = new List<ReliableUDPModel>();
-        private List<NetworkTask> receivedTasks = new List<NetworkTask>();
+        private List<(NetworkTask task, long prevTime)> receivedTasks = new List<(NetworkTask task, long prevTime)>();
 
         public ReliableUPDHandler(NetworkHandler ntwH)
         {
@@ -46,10 +46,10 @@ namespace NoPasaranTD.Networking
                     return;
                 }
             foreach (var item in receivedTasks)
-                if (item.ID == ((NetworkTask)t).ID)
+                if (item.task.ID == ((NetworkTask)t).ID)
                     return;
             networkHandler.TaskQueue.Add((NetworkTask)t); // Die Task in die Liste der zu erledigenden Aufgaben einfügen
-            receivedTasks.Add((NetworkTask)t); // Die Task abspeichern, damit ein doppeltes Paket nach dem ausführen trotzdem noch erkannt wird
+            receivedTasks.Add(((NetworkTask)t, -1)); // Die Task abspeichern, damit ein doppeltes Paket nach dem ausführen trotzdem noch erkannt wird
             if (!networkHandler.OfflineMode) // ACK Pakete müssen im Offlinemode an niemanden gesendet werden
                 SendAck((NetworkTask)t);
         }
@@ -108,8 +108,7 @@ namespace NoPasaranTD.Networking
                         sendTasks[i].SendAtTick = networkHandler.Game.CurrentTick; // Neues senden des Paketes abspeichern
                         sendTasks[i].NetworkTask.TickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing; // Neuen Tick zum ausführen festlegen, da dieser verschoben werden muss
                         networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask, true); // In diesem Falle das Paket erneut senden
-                    }
-                        
+                    }  
                 } 
                 catch (Exception e)
                 {
@@ -118,7 +117,7 @@ namespace NoPasaranTD.Networking
             }
 
             for (int i = receivedTasks.Count - 1; i >= 0; i--) // Alle empfangenen Tasks durchgehen
-                if (networkHandler.Game.CurrentTick - receivedTasks[i].TickToPerform > 10000) //schauen ob diese vor mehr als 10000 Ticks ausgeführt wurden, um den Speicherverbrauch und die Geschwindigkeit begrenzt zu halten
+                if (networkHandler.Game.CurrentTick - receivedTasks[i].task.TickToPerform > 10000) //schauen ob diese vor mehr als 10000 Ticks ausgeführt wurden, um den Speicherverbrauch und die Geschwindigkeit begrenzt zu halten
                     receivedTasks.RemoveAt(i);
         }
     }
