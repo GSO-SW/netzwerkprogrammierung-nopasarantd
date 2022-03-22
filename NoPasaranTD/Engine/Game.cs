@@ -72,6 +72,8 @@ namespace NoPasaranTD.Engine
 
         public void Dispose()
         {
+			StaticEngine.TickAcceleration = 1;
+
             UILayout.Dispose();
             NetworkHandler.Dispose();
 			CurrentMap.Dispose();
