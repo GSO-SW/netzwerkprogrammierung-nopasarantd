@@ -25,7 +25,7 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; } = StaticInfo.StartMoney;
 		public int HealthPoints { get; set; } = StaticInfo.StartHP;
-		public bool GodMode { get; set; } = true;
+		public bool GodMode { get; set; } = false;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
@@ -59,8 +59,9 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
 			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-			
-		}
+            NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
+            
+        }
 
 		private void InitBalloons()
 		{
@@ -92,10 +93,9 @@ namespace NoPasaranTD.Engine
 					{
 						if (!GodMode)
 						{
-							HealthPoints -= (int)Balloons[i][j].Strength;
-							if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
-								Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
-						}
+							
+                            NetworkHandler.InvokeEvent("UpdateHealth", (int)(HealthPoints - Balloons[i][j].Strength));
+                        }
 
 						Balloons[i].RemoveAt(j);
 					}
@@ -344,6 +344,13 @@ namespace NoPasaranTD.Engine
 			Money += (int)targetTower.SellPrice;
 			Towers.Remove(targetTower);
 		}
+
+        public void UpdateHealth(object h)
+        {
+            HealthPoints = (int)h;
+            if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
+                Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
+        }
 
 		public void UpgradeTower(object t)
         {
