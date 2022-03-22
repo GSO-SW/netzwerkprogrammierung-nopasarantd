@@ -98,7 +98,8 @@ namespace NoPasaranTD.Data
         #region Obstacle
         private static readonly Dictionary<ObstacleType, Bitmap> ObstacleImage = new Dictionary<ObstacleType, Bitmap>()
         {
-            { ObstacleType.Pool, ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.pool.png") }
+            {ObstacleType.Pool, ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.pool.png") },
+            {ObstacleType.Factory, ResourceLoader.LoadBitmapResource("NoPasaran.Resources.factory.png" )}
         };
         #endregion
 

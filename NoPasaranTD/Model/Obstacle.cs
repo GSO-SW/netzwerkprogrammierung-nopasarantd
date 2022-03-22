@@ -28,7 +28,7 @@ namespace NoPasaranTD.Model
     public enum ObstacleType
     {
         Pool = 0,
-        House1 = 1,
+        Factory = 1,
         Tree = 2,
         Rock = 3,
         Fence = 4
