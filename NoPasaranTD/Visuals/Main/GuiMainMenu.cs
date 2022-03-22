@@ -63,6 +63,8 @@ namespace NoPasaranTD.Visuals.Main
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Visible = false;
                 backgroundGame.GodMode = true;
+                backgroundGame.WaveManager.AutoStart = true;
+                StaticEngine.TickAcceleration = 1;
 
                 // Spawne Türme in Spielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));

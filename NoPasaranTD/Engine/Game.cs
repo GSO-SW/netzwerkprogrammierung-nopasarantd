@@ -29,7 +29,7 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
-		public List<string> Messages = new List<string>();
+		public List<string> Messages { get; set; } = new List<string>();
 		
 		/// <summary>
 		/// Initialisiert ein neues Spiel
@@ -60,7 +60,8 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
 			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
-			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);			
+			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+			NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
 		}
 
 		private void InitBalloons()
@@ -385,10 +386,8 @@ namespace NoPasaranTD.Engine
 		public void ToggelAutoStart(object t) =>
 			WaveManager.AutoStart = !WaveManager.AutoStart;
 
-		public void SendMessage(object t)
-        {
-
-        }
+		public void SendMessage(object t) =>
+			Messages.Add(t.ToString());
 
 		private Tower FindTowerID(object t)
         {
