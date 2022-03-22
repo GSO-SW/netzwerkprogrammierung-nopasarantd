@@ -103,7 +103,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             // Initialisiert alle Events
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
-            placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
+            placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinishAsync;
             HideBuildMenuContainer.ButtonClicked += HideBuildMenüButton_ButtonClicked;
 
             // Verweist alle GUI Components
@@ -142,10 +142,13 @@ namespace NoPasaranTD.Visuals.Ingame
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
-        private void PlacingTowerDragDrop_DragDropFinish(DragDropArgs args)
+        private async void PlacingTowerDragDrop_DragDropFinishAsync(DragDropArgs args)
         {
-            if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject)) return;
+            if (HideBuildMenuContainer.Bounds.IntersectsWith(args.MovedObject)) return;
+            if (OptionsContainer.Bounds.IntersectsWith(args.MovedObject)) return;
             if (!game.IsTowerValidPosition(args.MovedObject)) return;
+            TowerBuildMenu.Visible = true;
+            await OptionsContainer.ExpandCollapseAsync(true);
 
             Tower tower = null;
             if (args.Context is TowerCanon) tower = new TowerCanon();
@@ -176,9 +179,17 @@ namespace NoPasaranTD.Visuals.Ingame
             // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
 
-        public override void Update()
+        public async override void Update()
         {
             if (!Visible) return;
+
+            if (placingTowerDragDrop.IsMoving)
+            {
+                TowerDetailsContainer.Visible = false;
+                TowerBuildMenu.Visible = false;
+                HideBuildMenuContainer.Content = "→";
+                await OptionsContainer.ExpandCollapseAsync(false);
+            }
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
             PlayerListContainer.Update();
