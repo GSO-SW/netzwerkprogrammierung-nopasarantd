@@ -210,8 +210,8 @@ namespace NoPasaranTD.Networking
             {
                 HighestPing = 100; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
-                    if (HighestPing < item * 2) // Höchsten Ping suchen
-                        HighestPing = item * 2; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
+                    if (HighestPing < item * 4) // Höchsten Ping suchen
+                        HighestPing = item * 4; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
                 pings.Clear();
             }
         }

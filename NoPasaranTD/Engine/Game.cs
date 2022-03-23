@@ -86,7 +86,6 @@ namespace NoPasaranTD.Engine
 							if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
 								Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
 						}
-
 						Balloons[i].RemoveAt(j);
 					}
 					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
@@ -99,7 +98,8 @@ namespace NoPasaranTD.Engine
 
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
-				Towers[i].Update(this);
+                if (Towers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
+					Towers[i].Update(this);
 			UILayout.Update();
 			CurrentTick++;
 		}

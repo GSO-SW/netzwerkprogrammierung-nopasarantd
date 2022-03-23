@@ -29,6 +29,9 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void SendReliableUDP(string command, object param)
         {
+            long tickToPerform = networkHandler.Game.CurrentTick;
+            if (command != "PlaceTower")
+                tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, networkHandler.Game.CurrentTick + networkHandler.HighestPing), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
         }
