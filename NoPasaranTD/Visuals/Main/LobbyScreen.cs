@@ -1,6 +1,10 @@
 ﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Networking;
+using NoPasaranTD.Visuals.Ingame;
+using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Main
@@ -12,11 +16,13 @@ namespace NoPasaranTD.Visuals.Main
         /// Die Lobby die gerendert werden soll
         /// </summary>
         public NetworkLobby Lobby { get; set; }
-
+        GuiSelectMap gsm =new GuiSelectMap();
         private readonly StringFormat textFormat;
         private readonly ButtonContainer btnLeaveLobby;
         private readonly ButtonContainer btnStartGame;
-
+        private readonly ButtonContainer btnNextMap;
+        private readonly ButtonContainer btnPreviousMap;
+        
         private readonly GuiMainMenu parent;
         public LobbyScreen(GuiMainMenu parent)
         {
@@ -26,6 +32,8 @@ namespace NoPasaranTD.Visuals.Main
                 Alignment = StringAlignment.Center
             };
 
+            gsm.GetMaps();
+            
             btnLeaveLobby = GuiMainMenu.CreateButton("Leave Lobby", new Rectangle(
                 5, StaticEngine.RenderHeight - 35,
                 150, 30
@@ -38,6 +46,26 @@ namespace NoPasaranTD.Visuals.Main
                 150, 30
             ));
             btnStartGame.ButtonClicked += StartGame;
+
+            btnNextMap = GuiMainMenu.CreateButton(">", new Rectangle(
+               StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3 + 300,  StaticEngine.RenderHeight / 3 + 30, 100, 30
+           ));
+            btnNextMap.ButtonClicked += () =>
+            {
+                gsm.CurrentMap = ++gsm.CurrentMap % gsm.mapList.Count;
+            };
+
+            btnPreviousMap = GuiMainMenu.CreateButton("<", new Rectangle(
+                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3 + 5, StaticEngine.RenderHeight / 3 + 30, 100, 30
+            )); 
+            
+            btnPreviousMap.ButtonClicked += () =>
+            {
+
+                gsm.CurrentMap = Math.Abs(--gsm.CurrentMap % gsm.mapList.Count);
+            };
+
+
         }
 
         #region Event region
@@ -51,6 +79,7 @@ namespace NoPasaranTD.Visuals.Main
         { // Befehl zum Starten des Spiels
             if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
             parent.DiscoveryClient.StartGameAsync();
+            Program.LoadGame(gsm.mapList.Values.ElementAt(gsm.CurrentMap));
         }
         #endregion
 
@@ -59,6 +88,17 @@ namespace NoPasaranTD.Visuals.Main
         {
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
+            btnNextMap.Render(g);
+            btnPreviousMap.Render(g);
+
+
+            float scaledWidth = (float)StaticEngine.RenderWidth / gsm.mapList.Keys.ElementAt(gsm.CurrentMap).BackgroundImage.Width / 3;
+            float scaledHeight = (float)StaticEngine.RenderHeight / gsm.mapList.Keys.ElementAt(gsm.CurrentMap).BackgroundImage.Height / 3;
+
+            Matrix m = g.Transform;
+            g.ScaleTransform(scaledWidth, scaledHeight);
+            g.DrawImageUnscaled(gsm.mapList.Keys.ElementAt(gsm.CurrentMap).BackgroundImage, StaticEngine.RenderWidth- StaticEngine.RenderWidth/3, 0);
+            g.Transform = m;
 
             // Lobby name
             g.DrawString(Lobby.Name, StandartHeader1Font, Brushes.Black, 0, 0);
@@ -81,6 +121,8 @@ namespace NoPasaranTD.Visuals.Main
         {
             btnLeaveLobby.MouseDown(e);
             btnStartGame.MouseDown(e);
+            btnNextMap.MouseDown(e);
+            btnPreviousMap.MouseDown(e);
         }
         #endregion
 

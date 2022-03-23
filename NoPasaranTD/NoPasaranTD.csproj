@@ -68,6 +68,7 @@
     <Compile Include="Networking\NetworkHandler.cs" />
     <Compile Include="Networking\NetworkClient.cs" />
     <Compile Include="Utilities\Serializer.cs" />
+    <Compile Include="Visuals\Ingame\GuiSelectMap.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
     <Compile Include="Model\TowerArtillery.cs" />
@@ -117,21 +118,21 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Resources\spentagon.json" />
-    <EmbeddedResource Include="Resources\house.json" />
+    <EmbeddedResource Include="Resources\Maps\spentagon.json" />
+    <EmbeddedResource Include="Resources\Maps\house.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\spentagon.jpg" />
+    <EmbeddedResource Include="Resources\Maps\spentagon.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
     <EmbeddedResource Include="Resources\gameoversound.wav" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\house.jpg" />
+    <EmbeddedResource Include="Resources\Maps\house.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -105,7 +105,7 @@ namespace NoPasaranTD.Visuals.Main
         private void StartGame()
         { // Befehl zum Starten des Spiels
             if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
-            Program.LoadGame("spentagon", new NetworkHandler(
+            Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
                 DiscoveryClient.UdpClient, DiscoveryClient.Clients
             ));
         }

@@ -21,7 +21,7 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
 
         private readonly SoundPlayer Youdied;
         
-        private readonly Bitmap  GameoverScreen;
+        private readonly Bitmap GameoverScreen;
         
         public GuiGameOver() 
         {
