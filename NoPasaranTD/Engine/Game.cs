@@ -28,6 +28,7 @@ namespace NoPasaranTD.Engine
 		public bool GodMode { get; set; } = true;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
+		private StaticDisplay StaticDisplay { get; } = null;
 
 		/// <summary>
 		/// Initialisiert ein neues Spiel
@@ -35,12 +36,13 @@ namespace NoPasaranTD.Engine
 		/// <param name="map">Die Map die gespielt werden soll</param>
 		/// <param name="networkHandler">Der genutzte Networkhandler</param>
 		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
-		public Game(Map map, NetworkHandler networkHandler)
+		public Game(Map map, NetworkHandler networkHandler, StaticDisplay StaticDisplay)
 		{
 			CurrentMap = map;
 			NetworkHandler = networkHandler;
 			NetworkHandler.Game = this;
 			WaveManager = new WaveManager(this, 50);
+            this.StaticDisplay = StaticDisplay;
 
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			Towers = new List<Tower>();
@@ -59,7 +61,7 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
 			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-			
+			NetworkHandler.EventHandlers.Add("ReceiveServerTick", StaticDisplay.ReceiveServerTick);
 		}
 
 		private void InitBalloons()
@@ -110,6 +112,8 @@ namespace NoPasaranTD.Engine
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
+
+
 			UILayout.Update();
 			CurrentTick++;
 		}

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NoPasaranTD.Networking;
+using System;
 
 namespace NoPasaranTD.Engine
 {
@@ -24,17 +25,30 @@ namespace NoPasaranTD.Engine
 
         // TODO: Ändern zu jetzige Server-Ticks
         private static int lastTick = Environment.TickCount;
-
         /// <summary>
         /// Errechnet die vergangenen Ticks seit dem letzten Aufruf dieser Methode
         /// </summary>
         internal static void Update()
         {
             // TODO: Ändern zu jetzige Server-Ticks
+            /*if (referenceValueOSticks < Environment.TickCount + 1000)
+            {
+                referenceValueOSticks = Environment.TickCount;
+                
+            }*/
             int currTick = Environment.TickCount;
             int deltaTick = currTick - lastTick;
             ElapsedTicks += ((ulong)deltaTick)*TickAcceleration;
             lastTick = currTick;
+            
+        }
+        [Serializable]
+        public class NetworkingPackage_ServerDataObj
+        {
+            public uint gameTick = 0;
+            public ulong tickAcceleration = 0;
+            public (int x, int y) mousePointer = (0,0);
+            public int currOsMs = 0;
         }
         #endregion
 

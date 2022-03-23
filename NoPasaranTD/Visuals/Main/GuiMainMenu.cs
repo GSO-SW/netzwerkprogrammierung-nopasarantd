@@ -58,7 +58,8 @@ namespace NoPasaranTD.Visuals.Main
         {
             // Lade Spielszene
             Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
-            backgroundGame = new Game(map, new NetworkHandler());
+            
+            backgroundGame = new Game(map, new NetworkHandler(), StaticDisplay.itself);
             {
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Visible = false;
@@ -74,7 +75,7 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
             }
-
+            
             LobbyScreen = new LobbyScreen(this);
             LobbyListScreen = new LobbyListScreen(this);
             ForegroundScreen = LobbyListScreen;

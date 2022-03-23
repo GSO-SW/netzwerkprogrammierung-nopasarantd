@@ -16,10 +16,14 @@ namespace NoPasaranTD.Engine
         private Game currentGame;
 
         public StaticDisplay()
-            => InitializeComponent();
-
+        {
+            itself = this; InitializeComponent();
+        }
+             
+        public static StaticDisplay itself = null;
         private void Display_FormClosing(object sender, FormClosingEventArgs e)
         {
+            itself = null;
             // Game instanz freigeben
             currentGame?.Dispose();
             currentGame = null;
@@ -53,7 +57,7 @@ namespace NoPasaranTD.Engine
             {
                 // Lade map und initialisiere sie
                 Map map = MapData.GetMapByFileName(mapFile); map.Initialize();
-                currentGame = new Game(map, handler);
+                currentGame = new Game(map, handler, this);
                 LoadScreen(null); // Screen entladen
             }
         }
@@ -185,14 +189,35 @@ namespace NoPasaranTD.Engine
             g.ResetTransform();
         }
 
+        int x;
         private void tmrGameUpdate_Tick(object sender, EventArgs e)
         {
             StaticEngine.Update();
             while (StaticEngine.ElapsedTicks > 0)
             {
+                x++; 
                 currentGame?.Update();
                 currentScreen?.Update();
                 StaticEngine.ElapsedTicks--;
+            }
+            if (currentGame != null &&
+                currentGame.NetworkHandler != null &&
+                currentGame.NetworkHandler.IsHost
+                && !currentGame.NetworkHandler.OfflineMode
+                && currentGame.CurrentTick % 100 == 0)
+            {
+                var dataPackage = new StaticEngine.NetworkingPackage_ServerDataObj();
+                dataPackage.gameTick = currentGame.CurrentTick;
+                dataPackage.currOsMs = Environment.TickCount;
+                dataPackage.mousePointer = (StaticEngine.MouseX, StaticEngine.MouseY);
+                dataPackage.tickAcceleration = StaticEngine.TickAcceleration;
+
+                Console.WriteLine("-§--§--§---------");
+                Console.WriteLine("Sending Data: gameTick: "+currentGame.CurrentTick.ToString());
+                Console.WriteLine("Ticks every send"+ x.ToString());
+                Console.WriteLine("-§--§--§---------");
+                
+                currentGame.NetworkHandler.InvokeEvent("ReceiveServerTick", dataPackage);
             }
 
             { // Framerate aktualisieren (falls geändert)
@@ -203,7 +228,62 @@ namespace NoPasaranTD.Engine
 
             Refresh();
         }
+        private ulong[] serverTicks = new ulong[5] {0l,0l,0l,0l,0l};
+        private int[] serverTickTimes = new int[5] { 0, 0, 0, 0, 0 };
+        private int selector = 0;
+        public void ReceiveServerTick(object s)
+        {
+            Console.WriteLine("| Received event");
+            if (currentGame == null ||
+                currentGame.NetworkHandler == null ||
+                currentGame.NetworkHandler.IsHost) return;
+            var dataPackage = s as StaticEngine.NetworkingPackage_ServerDataObj;
+            Console.WriteLine("| Received some ServerData: gametick: " + dataPackage.gameTick.ToString());
+
+            float avgTickChange, avgTimeFrame;
+            serverTicks[selector%serverTicks.Length] = dataPackage.gameTick;
+            serverTickTimes[selector++ % serverTickTimes.Length] = dataPackage.currOsMs;
+            if (selector >= serverTicks.Length)
+            {
+                // calculates the average difference between ticks   (with a bias. meaning that the most recent values should have a higher influence)
+                float biasExp = 2f; //  = 0 means no bias
+                float biasSum = 0; int sumTickChange = 0, sumTimeFrame = 0;
+                int forIEnd = serverTicks.Length;
+                for (int i = 1; i < forIEnd; i++)
+                {
+                    float bias = (float)Math.Pow((forIEnd - i) / (float)forIEnd, biasExp);
+                    biasSum += bias-1;
+                    sumTickChange += (int)(
+                        (
+                            // calculate tick change in a timeframe and then apply bias
+                            (serverTicks[(selector-i)%serverTicks.Length] - serverTicks[(selector - i - 1) % serverTicks.Length])
+                            /
+                            (double)(serverTickTimes[(selector - i) % serverTicks.Length] - serverTickTimes[(selector - i - 1) % serverTicks.Length])
+                        ) * bias); // multiplied with bias
+                    sumTimeFrame += (int)(
+                        (
+                            // calculate timeframe and then apply bias
+                            serverTickTimes[(selector - i) % serverTicks.Length] - serverTickTimes[(selector - i - 1) % serverTicks.Length]
+                        ) * bias); // multiplied with bias
+                }
+                avgTickChange = sumTickChange / (serverTicks.Length + biasSum);
+                avgTimeFrame = sumTimeFrame / (serverTicks.Length + biasSum);
+
+                // TODO noch zu machen
+                //  - schauen ob die ticks aus dem letzten angekommenen package
+                // bereits von der engine erreicht sind? wenn nicht ddann engine nachholen
+                //  - die avgTickChange und avgTime verwenden um einzuplanen,
+                // dass die Engine bei t=x y-viele ticks
+                // haben muss (durch if(x > ... && ticks < y) oder so)
+                // und wenn nicht dann soll sie direkt die prognostiziert fehlenden Ticks nachholen.
+
+
+            }
+
+
+        }
         #endregion
 
+        
     }
 }
