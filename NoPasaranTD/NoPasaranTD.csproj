@@ -136,5 +136,14 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\house.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Body.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Head.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Barrel.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
