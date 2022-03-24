@@ -322,13 +322,16 @@ namespace NoPasaranTD.Engine
 		{
             if (StaticInfo.GetTowerPrice(GetType()) <= Money) // Kontrollieren, dass der Spieler genug Geld hat
             {
-				(t as Tower).IsSelected = false; // Ist nicht mehr der ausgewählte Turm
-				(t as Tower).IsPlaced = true;
+                if (FindTowerID(t) == null) // Sicher gehen, dass der Turm nicht bereits platziert wurde und das Paket veraltet ist
+                {
+					(t as Tower).IsSelected = false; // Ist nicht mehr der ausgewählte Turm
+					(t as Tower).IsPlaced = true;
 
-				Towers.Add((Tower)t);
-				Towers[Towers.Count - 1].SearchSegments(CurrentMap);
-				if (!GodMode) // Im GodMode kein Geld abziehen
-					Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
+					Towers.Add((Tower)t);
+					Towers[Towers.Count - 1].SearchSegments(CurrentMap);
+					if (!GodMode) // Im GodMode kein Geld abziehen
+						Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
+				}
 			}
 		}
 

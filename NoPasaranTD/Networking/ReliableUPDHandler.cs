@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NoPasaranTD.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,10 +35,12 @@ namespace NoPasaranTD.Networking
                 tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, networkHandler.Game.CurrentTick + networkHandler.HighestPing), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
+            if (networkHandler.Participants.Count == 1) // Wenn der Spieler alleine ist wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
+                sendTasks.Clear();
         }
 
         /// <summary>
-        /// Empfangen von RUDP
+        /// Empfangen von RUDP und verarbeiten
         /// </summary>
         public void ReceiveReliableUDP(object t)
         {
@@ -48,9 +51,23 @@ namespace NoPasaranTD.Networking
                     item.TickToPerform = ((NetworkTask)t).TickToPerform;
                     return;
                 }
-            foreach (var item in receivedTasks)
-                if (item.task.ID == ((NetworkTask)t).ID)
+            foreach (var item in receivedTasks) // Alle derzeit gespeicherten Tasks durchgehen, ob diese bereits bekannt ist
+                if (item.task.ID == ((NetworkTask)t).ID) // Sollte die Task bereits angekommen und abgearbeitet sein wird kein ACK mehr gesendet
                     return;
+
+            if (((NetworkTask)t).Handler == "AddTower") // Sollte ein Tower hinzugefügt werden
+            {
+                Guid id = ((Tower)((NetworkTask)t).Parameter).ID;
+                foreach (var item in networkHandler.Game.Towers) // Alle bereits platzierten Türme durchgehen ob dieses Paket bereits ausgeführt wurde
+                {
+                    if (item.ID == id) // Checken ob der Tower der übergebenen ID entspricht
+                    {
+                        item.ActivateAtTick = ((Tower)((NetworkTask)t).Parameter).ActivateAtTick; // Den Tick in dem der Turm aktiviert wird aktualisieren
+                        break;
+                    }
+                }            
+            }  
+
             networkHandler.TaskQueue.Add((NetworkTask)t); // Die Task in die Liste der zu erledigenden Aufgaben einfügen
             receivedTasks.Add(((NetworkTask)t, -1)); // Die Task abspeichern, damit ein doppeltes Paket nach dem ausführen trotzdem noch erkannt wird
             if (!networkHandler.OfflineMode) // ACK Pakete müssen im Offlinemode an niemanden gesendet werden
