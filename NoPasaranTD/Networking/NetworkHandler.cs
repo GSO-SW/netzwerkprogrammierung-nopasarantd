@@ -6,6 +6,7 @@ using System.Threading;
 using System.Net.Sockets;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Model;
 
 namespace NoPasaranTD.Networking
 {
@@ -95,11 +96,18 @@ namespace NoPasaranTD.Networking
         {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
-                if (TaskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+                if (TaskQueue[i].TickToPerform == Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
                 {
                     EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
                     handler(TaskQueue[i].Parameter); // Task ausführen
-                    Console.WriteLine(TaskQueue[i].Handler + "   " + Game.CurrentTick);
+                    if (TaskQueue[i].Parameter.ToString() != "PingRequest")
+                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform + "   " + ((Tower)TaskQueue[i].Parameter).ActivateAtTick);
+                    
+                    TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                }
+                else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
+                {
+                    Console.WriteLine("Desync detected");
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
             }

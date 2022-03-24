@@ -35,7 +35,7 @@ namespace NoPasaranTD.Networking
                 tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, tickToPerform), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
-            if (networkHandler.Participants.Count == 1) // Wenn der Spieler alleine ist wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
+            if (!networkHandler.OfflineMode && networkHandler.Participants.Count == 1) // Wenn der Spieler alleine ist wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
                 sendTasks.Clear();
         }
 
@@ -137,7 +137,7 @@ namespace NoPasaranTD.Networking
             }
 
             for (int i = receivedTasks.Count - 1; i >= 0; i--) // Alle empfangenen Tasks durchgehen
-                if (networkHandler.Game.CurrentTick - receivedTasks[i].task.TickToPerform > 10000) //schauen ob diese vor mehr als 10000 Ticks ausgeführt wurden, um den Speicherverbrauch und die Geschwindigkeit begrenzt zu halten
+                if (networkHandler.Game.CurrentTick - receivedTasks[i].task.TickToPerform > 100000) //schauen ob diese vor mehr als 10000 Ticks ausgeführt wurden, um den Speicherverbrauch und die Geschwindigkeit begrenzt zu halten
                     receivedTasks.RemoveAt(i);
         }
     }
