@@ -171,7 +171,7 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 tower.Hitbox = new Rectangle(new Point(StaticEngine.MouseX, StaticEngine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
                 placingTowerDragDrop.Context = tower;
-                placingTowerDragDrop.Start(tower.Hitbox);                
+                placingTowerDragDrop.Start(tower.Hitbox);
             }
             // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
@@ -179,12 +179,6 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void Update()
         {
             if (!Visible) return;
-
-            if (placingTowerDragDrop.IsMoving)
-            {
-                TowerBuildMenu.Visible = false;
-            }
-
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
             PlayerListContainer.Update();

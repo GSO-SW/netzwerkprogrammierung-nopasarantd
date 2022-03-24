@@ -61,8 +61,6 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
-    <Compile Include="Visuals\Ingame\ChatContainer.cs" />
-    <Compile Include="Visuals\Ingame\ChatItem.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
@@ -96,7 +94,6 @@
     <Compile Include="Utilities\QuickDiagnostics.cs" />
     <Compile Include="Utilities\Vector2D.cs" />
     <Compile Include="Visuals\Main\GuiMainMenu.cs" />
-    <Compile Include="Visuals\Main\GUIStartMenü.cs" />
     <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
     <Compile Include="Visuals\Main\LobbyListScreen.cs" />
     <Compile Include="Visuals\Main\LobbyScreen.cs" />

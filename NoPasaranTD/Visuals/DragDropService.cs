@@ -93,7 +93,6 @@ namespace NoPasaranTD.Visuals
                     StopSuccessfully();
                 else if (ApplySetting == DragDropMode.MouseRightButtonUp && args.Button == MouseButtons.Right)
                     StopSuccessfully();
-                
             }
         }
     }
