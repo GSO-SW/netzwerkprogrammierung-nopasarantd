@@ -99,6 +99,7 @@ namespace NoPasaranTD.Networking
                 {
                     EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
                     handler(TaskQueue[i].Parameter); // Task ausführen
+                    Console.WriteLine(TaskQueue[i].Handler + "   " + Game.CurrentTick);
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
             }

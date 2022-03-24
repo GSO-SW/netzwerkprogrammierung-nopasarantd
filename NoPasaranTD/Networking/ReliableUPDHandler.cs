@@ -33,7 +33,7 @@ namespace NoPasaranTD.Networking
             long tickToPerform = networkHandler.Game.CurrentTick;
             if (command != "PlaceTower")
                 tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
-            sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, networkHandler.Game.CurrentTick + networkHandler.HighestPing), networkHandler.Game.CurrentTick));
+            sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, tickToPerform), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
             if (networkHandler.Participants.Count == 1) // Wenn der Spieler alleine ist wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
                 sendTasks.Clear();
