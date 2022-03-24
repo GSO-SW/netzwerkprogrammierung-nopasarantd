@@ -96,7 +96,7 @@ namespace NoPasaranTD.Networking
         {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
-                if (TaskQueue[i].TickToPerform == Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+                if (TaskQueue[i].TickToPerform == Game.CurrentTick || (TaskQueue[i].TickToPerform <= Game.CurrentTick && TaskQueue[i].Parameter.ToString() == "AddTower")) // Checken ob die Task bereits ausgeführt werden soll
                 {
                     EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
                     handler(TaskQueue[i].Parameter); // Task ausführen
@@ -105,7 +105,7 @@ namespace NoPasaranTD.Networking
                     
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
-                else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
+                else if (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Parameter.ToString() != "PingRequest")
                 {
                     Console.WriteLine("Desync detected");
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
@@ -154,7 +154,7 @@ namespace NoPasaranTD.Networking
 
             // Führe event im client aus
             if (!resend)
-                TaskQueue.Add(new NetworkTask(command, param, -1));
+                TaskQueue.Add(new NetworkTask(command, param, 0));
         }
 
         /// <summary>
