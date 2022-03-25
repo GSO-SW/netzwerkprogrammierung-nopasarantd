@@ -1,6 +1,8 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
+using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame
@@ -15,11 +17,27 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Hintergrund Farbe des Items
         /// </summary>
-        public Brush BackgroundBrush { get; set; } = Brushes.Thistle;
+        public Brush BackgroundBrush { get; set; } = new SolidBrush(Color.FromArgb(90, 112, 191));
+
+        private Tower dataContext;
         /// <summary>
         /// Model Item
         /// </summary>
-        public override Tower DataContext { get; set; }
+        public override Tower DataContext {
+            get
+            {
+                return dataContext;
+            }
+
+            set
+            {
+                dataContext = value;
+                DataContext.IsSelected = false;
+                DataContext.IsPlaced = true;
+                Size size = StaticInfo.GetTowerSize(dataContext.GetType());
+                DataContext.Hitbox = new Rectangle(new Point(-size.Width / 2, -size.Height / 2), size); // Größe des Turmes speichern
+            }
+        }
 
         /// <summary>
         /// Position des Item-Containers auf dem Screen
@@ -39,10 +57,7 @@ namespace NoPasaranTD.Visuals.Ingame
             set { Bounds = new Rectangle(Position, value); }
         }
 
-        /// <summary>
-        /// Content des Items
-        /// </summary>
-        public Image Content { get; set; }
+        private SizeF scaleFactor = new SizeF(1,1); // Faktor zum anpassen der angezeigten Türme
 
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.FromArgb(200, 14, 14, 14));
         #endregion
@@ -57,19 +72,23 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
-            // TODO: Ausehen auf Towerart spezialisieren
             if (Visible)
             {
-                if (IsMouseOver)
-                    g.FillRectangle(Brushes.Red, Bounds);
+                if (IsMouseOver) // Der Spieler Hovert mit der Maus über dem Container
+                    g.FillRectangle(Brushes.SlateGray, Bounds);
                 else
                     g.FillRectangle(BackgroundBrush, Bounds);
-                //try { g.DrawImage(Content, Bounds.X + 3, Bounds.Y + 3, Bounds.Width - 6, Bounds.Height - 6); }
-                //catch (Exception) { }
-
+                Matrix matrix = g.Transform;
+                g.TranslateTransform(Position.X + ItemSize.Width / 2,Position.Y + ItemSize.Height / 2); // Neuen Nullpunkt setzen
+                // Faktor zum skalieren berechnen
+                scaleFactor = new SizeF((float)Math.Min(dataContext.Hitbox.Width, ItemSize.Width) / Math.Max(dataContext.Hitbox.Width, ItemSize.Width), (float)Math.Min(dataContext.Hitbox.Width, ItemSize.Width) / Math.Max(dataContext.Hitbox.Width, ItemSize.Width));
+                g.ScaleTransform(scaleFactor.Width, scaleFactor.Height);
+                DataContext.Render(g);
+                g.Transform = matrix; // Transformation zurück wandeln
+                
                 // Die Größe des angezeigten Preises
-                Size priceSize = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font);
-                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString(), GuiComponent.StandartHeader2Font, Foreground, Bounds.X + Bounds.Width / 2 - priceSize.Width / 2, Bounds.Y + Bounds.Height - priceSize.Height - 5);
+                Size priceSize = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString() + " ₿", GuiComponent.StandartHeader2Font);
+                g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString() + " ₿", GuiComponent.StandartHeader2Font, Foreground, Bounds.X + Bounds.Width / 2 - priceSize.Width / 2, Bounds.Y + Bounds.Height - priceSize.Height - 5);
 
             }
         }
