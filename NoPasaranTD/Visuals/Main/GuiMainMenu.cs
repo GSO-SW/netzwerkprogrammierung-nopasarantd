@@ -134,7 +134,8 @@ namespace NoPasaranTD.Visuals.Main
             }
             Program.LoadGame("spentagon", new NetworkHandler(
                 DiscoveryClient.UdpClient, participants, LocalPlayer
-            ));
+            )
+            { Lobby = CurrentLobby});
         }
 
         private void UpdateInfo()

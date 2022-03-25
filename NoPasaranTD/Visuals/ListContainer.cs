@@ -107,6 +107,8 @@ namespace NoPasaranTD.Visuals
                 }                
             } 
         }
+
+        public object[] ListArgs { get; set; }
         
         #endregion      
         #region Public Methods
@@ -129,6 +131,7 @@ namespace NoPasaranTD.Visuals
                 item.ParentBounds = Bounds;
                 item.DataContext = Items[i];
                 item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
+                item.ListArgs = ListArgs;
 
                 item.Position = new Point(
                     Position.X + i*(ItemSize.Width + Margin)*factorX + Margin,
@@ -290,6 +293,18 @@ namespace NoPasaranTD.Visuals
         /// Wird bei einer Änderung der Liste ausgelöst
         /// </summary>
         public event NotifyOnListChanged CollectionChanged;
+
+        public NotifyCollection()
+        {
+
+        }
+
+        public NotifyCollection(List<T> items)
+        {
+            if (items != null)
+                arrayList.AddRange(items);
+        }
+            
 
         public int Count => arrayList.Count;
 

@@ -26,10 +26,16 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; } = StaticInfo.StartMoney;
 		public int HealthPoints { get; set; } = StaticInfo.StartHP;
-		public bool GodMode { get; set; } = false;
+		public bool GodMode { get; set; } = true;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
+		/// <summary>
+		/// Initialisiert ein neues Spiel
+		/// </summary>
+		/// <param name="map">Die Map die gespielt werden soll</param>
+		/// <param name="networkHandler">Der genutzte Networkhandler</param>
+		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
 		public Game(Map map, NetworkHandler networkHandler)
 		{
 			CurrentMap = map;
@@ -52,6 +58,10 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
+			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
+			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
+			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+			
 		}
 
 		private void InitBalloons()
@@ -192,8 +202,7 @@ namespace NoPasaranTD.Engine
 			if ((HealthPoints > 0 || GodMode) && e.KeyCode == Keys.Escape)
 			{ // Lade Pause Menü und pausiere das Spiel im Offline Modus
 			  // (Sofern Escape gedrückt wurde und der Spieler noch lebt oder sich im Gott Modus befindet)
-				Program.LoadScreen((Paused = !Paused) ?
-					new GuiPauseMenu(this) : null);
+				TogglePauseMenu();
 			}
 
 			// Abfrage ob das Spiel pausiert oder vorbei ist
@@ -427,6 +436,30 @@ namespace NoPasaranTD.Engine
 		public void DeleteTower(object t)
         {
 
+        }
+
+		public void StartRound(object t)
+        {
+			WaveManager.StartSpawn();
+        }
+
+		public void AccelerateGame(object t)
+        {
+			if (StaticEngine.TickAcceleration == 8)
+				StaticEngine.TickAcceleration = 1;
+			else
+				StaticEngine.TickAcceleration *= 2;
+		}
+
+		public void TogglePauseMenu()
+        {
+			Program.LoadScreen((Paused = !Paused) ?
+					new GuiPauseMenu(this) : null);
+		}
+
+		public void ToggelAutoStart(object t)
+        {
+			WaveManager.AutoStart = !WaveManager.AutoStart;
         }
 
 		/// <summary>

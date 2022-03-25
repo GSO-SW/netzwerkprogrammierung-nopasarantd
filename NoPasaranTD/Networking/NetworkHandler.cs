@@ -51,6 +51,8 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
 
+        public NetworkLobby Lobby { get; set; }
+
         public ReliableUPDHandler ReliableUPD { get; }
 
         #endregion

@@ -110,9 +110,9 @@ namespace NoPasaranTD.Visuals.Ingame
             closeButton = new ButtonContainer()
             {
                 Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + 5, 20, 20),
-                Content = "X",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Content = "⮿",
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -124,8 +124,8 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10,30),
                 Content = "Upgrade",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -137,8 +137,8 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 Bounds = new Rectangle(Bounds.X + Bounds.Width / 2 + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10, 30),
                 Content = "Sell",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -152,7 +152,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 ItemSize = new System.Drawing.Size(190, 25),
                 Position = new System.Drawing.Point(Bounds.X + 5, Bounds.Y + 150),
                 ContainerSize = new System.Drawing.Size(200, 130),
-                BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+                BackgroundColor = Brushes.Transparent,
             };
             TargetModesList.DefineItems();
             TargetModesList.SelectionChanged += TargetModesList_SelectionChanged;
