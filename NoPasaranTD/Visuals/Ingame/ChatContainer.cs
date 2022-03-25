@@ -48,11 +48,11 @@ namespace NoPasaranTD.Visuals.Ingame
 
             inputBox.Bounds = new Rectangle(Bounds.X + 3, Bounds.Y + Bounds.Height - 36, Bounds.Width - 6, 30);
             chatObjects.Bounds = new Rectangle(Bounds.X + 3, Bounds.Y + 30, Bounds.Width - 6, Bounds.Height - 75);
-            chatObjects.DefineItems();
         }
 
         #region Event Methodes
 
+        // Sobald die Liste der Nachrichten in der Game Instanz verändert wird, sollen die Items neu definiert werden
         private void Messages_CollectionChanged()
         {
             chatObjects.Items = currentGame.Messages;

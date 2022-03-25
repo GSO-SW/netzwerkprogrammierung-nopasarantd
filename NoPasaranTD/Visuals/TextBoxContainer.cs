@@ -8,11 +8,13 @@ namespace NoPasaranTD.Visuals
     {
         public string Text { get; set; } = "";
         public int Margin { get; set; }
+
         public SolidBrush HighlightedBorderBrush { get; set; } = new SolidBrush(Color.DodgerBlue);
         public SolidBrush BorderBrush { get; set; } = new SolidBrush(Color.Gray);
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.Black);
         public SolidBrush Background { get; set; } = new SolidBrush(Color.White);
         public Font TextFont { get; set; } = StandartText2Font;
+
 
         /// <summary>
         /// Die Position an dem das Caret stehen soll (Die Cursorposition in der Textbox)
