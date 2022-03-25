@@ -21,6 +21,7 @@ namespace NoPasaranTD.Engine
 		public Map CurrentMap { get; }
 		public List<Balloon>[] Balloons { get; }
 		public List<Tower> Towers { get; }
+		public List<Tower> VTowers { get; } // Speichert die Türme die noch nicht aktiv sind und nur angezeigt werden
 		public UILayout UILayout { get; }
 
 		public int Money { get; set; } = StaticInfo.StartMoney;
@@ -38,6 +39,7 @@ namespace NoPasaranTD.Engine
 
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			Towers = new List<Tower>();
+			VTowers = new List<Tower>();
 			UILayout = new UILayout(this);
 
 			InitNetworkHandler();
@@ -46,7 +48,7 @@ namespace NoPasaranTD.Engine
 
 		private void InitNetworkHandler()
 		{
-			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
+			NetworkHandler.EventHandlers.Add("AddTower", AddVTower);
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
@@ -96,10 +98,17 @@ namespace NoPasaranTD.Engine
 				}
 			}
 
-			// Aktualisiere Türme
-			for (int i = Towers.Count - 1; i >= 0; i--)
-                if (Towers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
-					Towers[i].Update(this);
+			// Kontrollieren der nicht aktiven Türme
+			for (int i = VTowers.Count - 1; i >= 0; i--)
+				if (VTowers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
+                {
+					AddTower(VTowers[i]);
+					VTowers.RemoveAt(i);
+                }
+
+            for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
+				Towers[i].Update(this);
+
 			UILayout.Update();
 			CurrentTick++;
 		}
@@ -159,6 +168,8 @@ namespace NoPasaranTD.Engine
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
+			for (int i = VTowers.Count - 1; i >= 0; i--)
+				VTowers[i].Render(g);
 			UILayout.Render(g);
 		}
 
@@ -228,6 +239,10 @@ namespace NoPasaranTD.Engine
 		{
 			for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
 				if (Towers[i].Hitbox.IntersectsWith(rect))
+					return false;
+
+			for (int i = VTowers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem noch nicht platzierten Turm gibt
+				if (VTowers[i].Hitbox.IntersectsWith(rect))
 					return false;
 
 			for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
@@ -320,17 +335,37 @@ namespace NoPasaranTD.Engine
 		/// <param name="t"></param>
 		private void AddTower(object t)
 		{
-            if (StaticInfo.GetTowerPrice(GetType()) <= Money) // Kontrollieren, dass der Spieler genug Geld hat
-            {
-                if (FindTowerID(t) == null) // Sicher gehen, dass der Turm nicht bereits platziert wurde und das Paket veraltet ist
-                {
+			Towers.Add((Tower)t);
+			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
+			if (!GodMode) // Im GodMode kein Geld abziehen
+				Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
+		}
+
+		/// <summary>
+		/// Fügt Türme in eine Liste ein wenn diese gezeichnet werden sollen aber noch inaktiv sind.
+		/// Kontrolliert, ob Türme beim platzieren kollidieren.
+		/// </summary>
+		/// <param name="t"></param>
+		private void AddVTower(object t)
+        {
+			if (StaticInfo.GetTowerPrice(GetType()) <= Money || GodMode) // Kontrollieren, dass der Spieler genug Geld hat
+			{
+				if (IsTowerValidPosition((t as Tower).Hitbox)) // Kontrollieren, dass der Turm an der Stelle platziert werden kann
+				{
 					(t as Tower).IsSelected = false; // Ist nicht mehr der ausgewählte Turm
 					(t as Tower).IsPlaced = true;
 
-					Towers.Add((Tower)t);
-					Towers[Towers.Count - 1].SearchSegments(CurrentMap);
-					if (!GodMode) // Im GodMode kein Geld abziehen
-						Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
+					VTowers.Add((Tower)t);
+				}
+                else
+                {
+					for (int i = VTowers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem noch nicht platzierten Turm gibt
+						if (VTowers[i].Hitbox.IntersectsWith((t as Tower).Hitbox)) // Turm finden mit dem der neu hinzugefügte kollidieren würde
+                            if (VTowers[i].ActivateAtTick > (t as Tower).ActivateAtTick) // Kontrollieren, welcher der beiden Türme zuerst platziert wird und damit zuerst gebaut wurde
+                            {
+								VTowers.RemoveAt(i); // Sollte der stehende Turm einfach vom Spieler platziert sein und es wird ein Paket erhalten welches vorher gesendet wurde wird das neu platzierte übernommen
+								VTowers.Add((Tower)t);
+							}
 				}
 			}
 		}
@@ -384,6 +419,15 @@ namespace NoPasaranTD.Engine
 					UILayout.TowerDetailsContainer.Context = tower;
 			}
 		}
+
+		/// <summary>
+		/// Falls ein zwei Spieler gleichzeitig Türme platziert haben soll kontrolliert werden, welcher der beiden Türme zuerst platziert war
+		/// </summary>
+		/// <param name="t"></param>
+		public void DeleteTower(object t)
+        {
+
+        }
 
 		/// <summary>
 		/// Findet den übergebenen Turm wenn dieser existiert 

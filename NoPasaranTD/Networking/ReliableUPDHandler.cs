@@ -31,11 +31,11 @@ namespace NoPasaranTD.Networking
         public void SendReliableUDP(string command, object param)
         {
             long tickToPerform = networkHandler.Game.CurrentTick;
-            if (command != "PlaceTower")
+            if (command != "AddTower")
                 tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, tickToPerform), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
-            if (!networkHandler.OfflineMode && networkHandler.Participants.Count == 1) // Wenn der Spieler alleine ist wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
+            if ((!networkHandler.OfflineMode && networkHandler.Participants.Count == 1) || networkHandler.OfflineMode) // Wenn der Spieler alleine ist bzw Offline, wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
                 sendTasks.Clear();
         }
 
@@ -58,7 +58,7 @@ namespace NoPasaranTD.Networking
             if (((NetworkTask)t).Handler == "AddTower") // Sollte ein Tower hinzugefügt werden
             {
                 Guid id = ((Tower)((NetworkTask)t).Parameter).ID;
-                foreach (var item in networkHandler.Game.Towers) // Alle bereits platzierten Türme durchgehen ob dieses Paket bereits ausgeführt wurde
+                foreach (var item in networkHandler.Game.VTowers) // Alle bereits platzierten Türme durchgehen ob dieses Paket bereits ausgeführt wurde
                 {
                     if (item.ID == id) // Checken ob der Tower der übergebenen ID entspricht
                     {
@@ -126,8 +126,9 @@ namespace NoPasaranTD.Networking
                     if (sendTasks[i].SendAtTick + (networkHandler.HighestPing / 2) < networkHandler.Game.CurrentTick)
                     {
                         sendTasks[i].SendAtTick = networkHandler.Game.CurrentTick; // Neues senden des Paketes abspeichern
-                        sendTasks[i].NetworkTask.TickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing; // Neuen Tick zum ausführen festlegen, da dieser verschoben werden muss
+                        sendTasks[i].NetworkTask.TickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing * 2; // Neuen Tick zum ausführen festlegen, da dieser verschoben werden muss
                         networkHandler.InvokeEvent("ReliableUDP", sendTasks[i].NetworkTask, true); // In diesem Falle das Paket erneut senden
+                        Console.WriteLine("Resend Package: " + sendTasks[i].NetworkTask.Handler);
                     }  
                 } 
                 catch (Exception e)

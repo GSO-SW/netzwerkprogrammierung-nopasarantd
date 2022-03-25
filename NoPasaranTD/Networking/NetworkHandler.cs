@@ -93,31 +93,38 @@ namespace NoPasaranTD.Networking
         /// Kontrolle, ob es Aufgaben gibt die in dem derzeitigen Tick erledigt werden müssen
         /// </summary>
         public void Update()
-        {
+         {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
-                if (TaskQueue[i].TickToPerform == Game.CurrentTick || (TaskQueue[i].TickToPerform <= Game.CurrentTick && TaskQueue[i].Parameter.ToString() == "AddTower")) // Checken ob die Task bereits ausgeführt werden soll
+                if (TaskQueue[i].Handler == "PingRequest")
                 {
                     EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
                     handler(TaskQueue[i].Parameter); // Task ausführen
-                    if (TaskQueue[i].Parameter.ToString() != "PingRequest")
-                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform + "   " + ((Tower)TaskQueue[i].Parameter).ActivateAtTick);
-                    
+                    TaskQueue.RemoveAt(i);
+                }
+                else if (TaskQueue[i].TickToPerform == Game.CurrentTick 
+                    || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower") 
+                    || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
+                    || OfflineMode) // Checken ob die Task bereits ausgeführt werden soll
+                {
+                    Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
+                    EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
+                    handler(TaskQueue[i].Parameter); // Task ausführen
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
-                else if (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Parameter.ToString() != "PingRequest")
+                else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
                 {
-                    Console.WriteLine("Desync detected");
+                    Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
             }
 
             if (!OfflineMode)
-            {
                 if (Game.CurrentTick % 500 == 0)
                     InvokeEvent("PingRequest", (long)Game.CurrentTick, false);
-                ReliableUPD.CheckPackageLifeTime();
-            }
+                
+
+            ReliableUPD.CheckPackageLifeTime();
             
         }
 
@@ -142,7 +149,6 @@ namespace NoPasaranTD.Networking
                     try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche Nachricht an Empfänger zu Senden
                     catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
-                //Console.WriteLine(command);
             }
 
             // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
@@ -154,7 +160,7 @@ namespace NoPasaranTD.Networking
 
             // Führe event im client aus
             if (!resend)
-                TaskQueue.Add(new NetworkTask(command, param, 0));
+                TaskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
         }
 
         /// <summary>
