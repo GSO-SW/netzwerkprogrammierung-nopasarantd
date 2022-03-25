@@ -82,6 +82,12 @@ namespace NoPasaranTD.Visuals.Ingame
             Foreground = Brushes.Black,
         };
 
+        public ChatContainer ChatContainer { get; set; } = new ChatContainer()
+        {           
+            Bounds = new Rectangle(300, 200, 200, 300),
+            Background = new SolidBrush(Color.FromArgb(230, 132, 140, 156)),
+        };
+
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
@@ -98,7 +104,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
             PlayerListContainer.Init(gameObj);
-            
+            ChatContainer.Init(gameObj);
             OptionsContainer.Init(gameObj);
 
             // Initialisiert alle Events
@@ -183,6 +189,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.Update();
             PlayerListContainer.Update();
             OptionsContainer.Update();
+            ChatContainer.Update();
         }
 
         public override void Render(Graphics g)
@@ -193,6 +200,7 @@ namespace NoPasaranTD.Visuals.Ingame
             HideBuildMenuContainer.Render(g);
             PlayerListContainer.Render(g);
             OptionsContainer.Render(g);
+            ChatContainer.Render(g);
 
             DrawGameStats(g);
 
@@ -229,6 +237,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (!Visible) return;
             TowerBuildMenu.KeyPress(e);
             HideBuildMenuContainer.KeyPress(e);
+            ChatContainer.KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
@@ -236,6 +245,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (!Visible) return;
             TowerBuildMenu.KeyDown(args);
             HideBuildMenuContainer.KeyDown(args);
+            ChatContainer.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -252,6 +262,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
             OptionsContainer.MouseDown(e);
+            ChatContainer.MouseDown(e);
 
             foreach (var item in game.Towers)
             {
@@ -273,12 +284,14 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             if (!Visible) return;
             TowerBuildMenu.MouseMove(e);
+            ChatContainer.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
             if (!Visible) return;
             TowerBuildMenu.MouseWheel(e);
+            ChatContainer.MouseWheel(e);
         }
 
         void DrawGameStats(Graphics g)

@@ -2,6 +2,7 @@
 using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
+using NoPasaranTD.Visuals;
 using NoPasaranTD.Visuals.Ingame;
 using NoPasaranTD.Visuals.Ingame.GameOver;
 using System;
@@ -29,7 +30,7 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
-		public List<string> Messages { get; set; } = new List<string>();
+		public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
 		
 		/// <summary>
 		/// Initialisiert ein neues Spiel
