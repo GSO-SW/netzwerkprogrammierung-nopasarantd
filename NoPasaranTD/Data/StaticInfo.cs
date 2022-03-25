@@ -3,6 +3,7 @@ using NoPasaranTD.Model.Towers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 
 namespace NoPasaranTD.Data
 {
@@ -182,6 +183,12 @@ namespace NoPasaranTD.Data
         {
             {typeof(TowerCanon),     6},
             {typeof(TowerArtillery), 3},
+        };
+        public static readonly List<Image> TowerCanonImages = new List<Image>()
+        {
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Body.png")),
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Head.png")),
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Barrel.png"))
         };
         #endregion // Dictionary für die Türme
 

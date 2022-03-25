@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
 using System.Drawing;
@@ -22,9 +23,6 @@ namespace NoPasaranTD.Model.Towers
 
         private float currentAngle = 0; // Derzeitiger Rotationswinkel des Geschützes der Kanone
         private float aimAngle = 0; // Nächster Rotationswinkel des Geschützes der Kanone
-        private Bitmap imgBody = null;  
-        private Bitmap imgHead = null;  
-        private Bitmap imgBarrel = null;    
 
         public TowerCanon()
         {
@@ -32,19 +30,6 @@ namespace NoPasaranTD.Model.Towers
             time = 0L; timeLastShot = 0L;
             justShotSomeUglyAss = false;
             lastBalloonPos = new Vector2D(0, 0);
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.Canon_Body.png"))
-            {
-                imgBody = new Bitmap(stream);   
-            }
-            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.Canon_Head.png"))
-            {
-                imgHead = new Bitmap(stream);
-            }
-            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.Canon_Barrel.png"))
-            {
-                imgBarrel = new Bitmap(stream);
-            }
         }
 
         public override void Render(Graphics g)
@@ -54,7 +39,7 @@ namespace NoPasaranTD.Model.Towers
       
             // Zeichnet die Hitbox des Towers
             if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
-                g.DrawImage(imgBody, Hitbox);
+                g.DrawImage(StaticInfo.TowerCanonImages[0], Hitbox);
             else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
                 g.FillRectangle(Brushes.Red, Hitbox);
 
@@ -78,11 +63,11 @@ namespace NoPasaranTD.Model.Towers
             g.RotateTransform(currentAngle);
 
             // Das Barrel wird gezeichnet
-            g.DrawImage(imgBarrel, barrel);
+            g.DrawImage(StaticInfo.TowerCanonImages[2], barrel);
 
             // Das innere Viereck wird gezeichnet
             
-            g.DrawImage(imgHead, -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
+            g.DrawImage(StaticInfo.TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
 
             if (justShotSomeUglyAss)
             {
