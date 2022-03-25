@@ -14,7 +14,7 @@ namespace NoPasaranTD.Engine
 {
 	public class Game : IDisposable
 	{
-		public uint CurrentTick { get; private set; }
+		public uint CurrentTick { get; set; }
 		public NetworkHandler NetworkHandler { get; }
 		public WaveManager WaveManager { get; }
 
@@ -61,10 +61,14 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
 			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+			NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
 			
 		}
 
-		private void InitBalloons()
+		/// <summary>
+		/// Initialisiert die Eigenschaft der Ballons und löscht damit vorhandene Werte
+		/// </summary>
+		public void InitBalloons()
 		{
 			for (int i = 0; i < Balloons.Length; i++)
 				Balloons[i] = new List<Balloon>();
@@ -80,7 +84,7 @@ namespace NoPasaranTD.Engine
         #region Game logic region
         public void Update()
 		{
-			if (Paused && NetworkHandler.OfflineMode) return; // Abfragen ob das Spiel legitim pausiert ist
+			if (Paused && (NetworkHandler.OfflineMode || NetworkHandler.Resyncing)) return; // Abfragen ob das Spiel legitim pausiert ist
 			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
 			NetworkHandler.Update();
 
@@ -102,25 +106,32 @@ namespace NoPasaranTD.Engine
 					}
 					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
 					{
+						Balloons[i][j].CurrentSegment++; // Erhöht das Pfadsegment des Ballons
 						Balloons[i + 1].Add(Balloons[i][j]); // Einfügen des Ballons in das nächste Pfadsegment
 						Balloons[i].RemoveAt(j); // Entfernen des Ballons aus dem letzten Pfadsegment
 					}
 				}
 			}
 
-			// Kontrollieren der nicht aktiven Türme
-			for (int i = VTowers.Count - 1; i >= 0; i--)
-				if (VTowers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
-                {
-					AddTower(VTowers[i]);
-					VTowers.RemoveAt(i);
-                }
-
-            for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
+			CheckVTower();
+			for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
 				Towers[i].Update(this);
 
 			UILayout.Update();
 			CurrentTick++;
+		}
+
+		/// <summary>
+		/// Kontrolliert alle nicht aktiven Türme, ob diese aktiviert werden müssen in dem Tick
+		/// </summary>
+		public void CheckVTower()
+        {
+			for (int i = VTowers.Count - 1; i >= 0; i--)
+				if (VTowers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
+				{
+					AddTower(VTowers[i]); // Turm neu abspeichern bei den aktiven Türmen
+					VTowers.RemoveAt(i);
+				}
 		}
 
 		public void Render(Graphics g)
@@ -429,13 +440,9 @@ namespace NoPasaranTD.Engine
 			}
 		}
 
-		/// <summary>
-		/// Falls ein zwei Spieler gleichzeitig Türme platziert haben soll kontrolliert werden, welcher der beiden Türme zuerst platziert war
-		/// </summary>
-		/// <param name="t"></param>
-		public void DeleteTower(object t)
+		private void AddBalloon(object t)
         {
-
+			Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
         }
 
 		public void StartRound(object t)

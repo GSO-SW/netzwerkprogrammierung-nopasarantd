@@ -51,6 +51,8 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
 
+        public bool Resyncing { get; private set; } = false;
+
         public NetworkLobby Lobby { get; set; }
 
         public ReliableUPDHandler ReliableUPD { get; }
@@ -61,6 +63,7 @@ namespace NoPasaranTD.Networking
         public readonly List<NetworkTask> TaskQueue;
         private readonly List<int> pings;
         public int HighestPing = 0;
+        private List<NetworkTask> resyncPackageL = new List<NetworkTask>();
 
         // Offlinemodus des Networkhandlers
         public NetworkHandler()
@@ -109,7 +112,8 @@ namespace NoPasaranTD.Networking
                 else if (TaskQueue[i].TickToPerform == Game.CurrentTick 
                     || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower") 
                     || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
-                    || OfflineMode) // Checken ob die Task bereits ausgeführt werden soll
+                    || TaskQueue[i].Handler == "AddBalloon"
+                    || OfflineMode) // Checken ob die Task ausgeführt werden soll
                 {
                     Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
                     EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
@@ -230,8 +234,8 @@ namespace NoPasaranTD.Networking
             {
                 HighestPing = 100; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
-                    if (HighestPing < item * 4) // Höchsten Ping suchen
-                        HighestPing = item * 4; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
+                    if (HighestPing < item * 4 * (int)StaticEngine.TickAcceleration) // Höchsten Ping suchen
+                        HighestPing = item * 4 * (int)StaticEngine.TickAcceleration; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
                 pings.Clear();
             }
         }
@@ -243,9 +247,23 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncRequest(object t)
         {
+            Resyncing = true;
+            Game.Paused = true;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
+                List<NetworkTask> tasks = new List<NetworkTask>();
+                uint currentTick = Game.CurrentTick;
+                tasks.Add(new NetworkTask("HPMoneyBlock", Game.HealthPoints, Game.Money)); // Übergibt die Leben und das Geld zur Zeit des zurücksetztens im Objekt und im TickToPerform
+                foreach (var item in Game.Towers) // Fügt alle bereits platzierten Türme hinzu
+                    tasks.Add(new NetworkTask("AddTower", item, currentTick));
+                foreach (var item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
+                    tasks.Add(new NetworkTask("AddTower", item, currentTick));
+                foreach (var item in Game.Balloons)
+                    tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
+                tasks.Insert(0, new NetworkTask("HEADER", tasks.Count, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete, ausgeschlossen Header, übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
 
+                foreach (var item in tasks)
+                    ReliableUPD.SendReliableUDP("ResyncReceive", item);
             }
         }
 
@@ -255,7 +273,42 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncReceive(object t)
         {
+            resyncPackageL.Add((NetworkTask)t);
+            if (((NetworkTask)t).Handler == "HEADER")
+            {
+                resyncPackageL.Insert(0, (NetworkTask)t); // Fügt den Header an die erste Stelle im Falle, dass die Pakete eine andere Reihenfolge haben
+                resyncPackageL.RemoveAt(resyncPackageL.Count - 1);
+            }
+            if (resyncPackageL[0].Handler == "HEADER") // Kontrollieren, dass der Header angekommen ist
+            {
+                if ((int)resyncPackageL[0].Parameter == resyncPackageL.Count) // Kontrollieren, dass alle Pakete angekommen sind
+                {
+                    Game.Towers.Clear(); // Entfernt alle Türme
+                    Game.InitBalloons(); // Entfernt alle Ballons
+                    Game.VTowers.Clear(); // Entfernt alle Türme die noch nicht vollkommen platziert sind
+                    Game.CurrentTick = (uint)resyncPackageL[0].TickToPerform;
+                    for (int i = resyncPackageL.Count - 1; i >= 0; i--)
+                    {
+                        if (resyncPackageL[i].Handler == "HPMoneyBlock") // Sucht nach dem Paket in dem die Leben und das Geld übertragen werden
+                        {
+                            resyncPackageL.Insert(1, resyncPackageL[i]);
+                            resyncPackageL.RemoveAt(i);
+                            Game.HealthPoints = (int)resyncPackageL[1].Parameter; // Leben setzten
+                            Game.Money = (int)resyncPackageL[1].TickToPerform; // Geld setzten
+                            break;
+                        }
+                    }
 
+                    for (int i = 2; i < resyncPackageL.Count; i++)
+                    {
+                        TaskQueue.Add(resyncPackageL[i]);
+                    }
+                    Update();
+                    Game.CheckVTower();
+                    Resyncing = false;
+                    Game.Paused = false;
+                }
+            }
         }
 
         public void Dispose() => Socket?.Dispose();
