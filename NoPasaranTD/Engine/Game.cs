@@ -62,6 +62,7 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
 			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
 			NetworkHandler.EventHandlers.Add("ReceiveServerTick", StaticDisplay.ReceiveServerTick);
+			NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
 		}
 
 		private void InitBalloons()
@@ -112,6 +113,20 @@ namespace NoPasaranTD.Engine
 			// Aktualisiere Türme
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
+
+			if (CurrentTick % 200 == 0)
+            {
+				if (NetworkHandler.LocalPlayer == null) return;
+
+				var networkPackage = new NetworkPackage_MousePosition();
+				networkPackage.pos = (StaticEngine.MouseX, StaticEngine.MouseY);
+
+				// TODO ergänzen: den Username mitschicken statt kennzeichen ding
+				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
+				
+
+				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
+            }
 
 
 			UILayout.Update();
@@ -174,6 +189,19 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);
 			UILayout.Render(g);
+
+			// zeichne die Maus Positionen von anderen wenn online
+			if (!NetworkHandler.OfflineMode)
+				for (int i = 0; i < usersMousePos.Count; i++)
+                {
+					g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
+						usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
+					g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
+				}
+					
+            
+
+
 		}
 
 		public void KeyUp(KeyEventArgs e)
@@ -402,6 +430,42 @@ namespace NoPasaranTD.Engine
 
 			throw new Exception("Tower not found");
 		}
+
+
+		[Serializable]
+		private class NetworkPackage_MousePosition
+		{
+			public (int X, int Y) pos = (0, 0);
+			public string Username = String.Empty;
+		}
+		private static List<(int X, int Y, int TTL)> usersMousePos = new List<(int X, int Y, int TTL)>();
+		private static List<string> usersMouseTag = new List<string>();
+		private void TransferMousePosition(object m)
+        {
+
+			int TTL = 2000; // in ms
+			var networkPackage = m as NetworkPackage_MousePosition;
+
+			bool hasFound = false;
+			for (int i = 0; i < usersMousePos.Count; i++)
+            {
+				if (usersMouseTag[i] == networkPackage.Username)
+                {
+					hasFound = true;
+					usersMousePos[i] = (networkPackage.pos.X, networkPackage.pos.Y, TTL + Environment.TickCount);
+				}
+				if (usersMousePos[i].TTL < Environment.TickCount)
+				{
+					usersMousePos.RemoveAt(i);
+					usersMouseTag.RemoveAt(i);
+				}
+			}
+			if (!hasFound && networkPackage.Username != NetworkHandler.LocalPlayer.Name)
+            {
+				usersMousePos.Add((networkPackage.pos.X, networkPackage.pos.Y, TTL + Environment.TickCount));
+				usersMouseTag.Add(networkPackage.Username);
+			}
+        }
 
     }
 }
