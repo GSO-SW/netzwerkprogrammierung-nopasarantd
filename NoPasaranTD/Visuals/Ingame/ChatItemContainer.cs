@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
@@ -17,7 +13,7 @@ namespace NoPasaranTD.Visuals.Ingame
         public override Point Position
         {
             get { return new Point(Bounds.X, Bounds.Y); }
-            set { Bounds = new Rectangle(value, ItemSize); PositionChanged(); }
+            set { Bounds = new Rectangle(value, Bounds.Size); PositionChanged(); }
         }
 
         /// <summary>
@@ -26,7 +22,12 @@ namespace NoPasaranTD.Visuals.Ingame
         public override Size ItemSize
         {
             get { return new Size(Bounds.Width, Bounds.Height); }
-            set { Bounds = new Rectangle(Position, value); }
+            set 
+            {
+                // Passt die Messagebox Höhe anhand der Textgröße an
+                Size textSize = TextRenderer.MeasureText(DataContext, StandartText3Font, new Size(value.Width, int.MaxValue), TextFormatFlags.WordBreak);
+                Bounds = new Rectangle(Position, new Size(value.Width,(textSize.Height + (textSize.Width/value.Width) * textSize.Height))); 
+            }
         }
 
         // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
@@ -40,7 +41,7 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void Render(Graphics g)
         {
             g.FillRectangle(Brushes.Beige, Bounds);
-            g.DrawString(DataContext, StandartText1Font, Brushes.Black, Bounds);
+            g.DrawString(DataContext, StandartText3Font, Brushes.Black, Bounds);
         }
     }
 }

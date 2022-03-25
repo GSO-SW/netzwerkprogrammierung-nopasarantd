@@ -87,10 +87,10 @@ namespace NoPasaranTD.Visuals.Ingame
             StringFont = StandartHeader2Font,
         };
 
-        // Button zum verlassen der Lobby
-        private readonly ButtonContainer homeButton = new ButtonContainer()
+        // Button zum öffnen des Chates
+        private readonly ButtonContainer chatButton = new ButtonContainer()
         {
-            Content = "⌂",
+            Content = "✉",
             Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
             BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
             Margin = 1,
@@ -116,7 +116,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 autoStartButton.Render(g);
                 playersButton.Render(g);
                 accelerationButton.Render(g);
-                homeButton.Render(g);
+                chatButton.Render(g);
             }          
             
             // Zeigt den ein- ausklappen Button ummer
@@ -138,7 +138,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 playersButton.Update();
                 accelerationButton.Update();
                 startButton.Update();
-                homeButton.Update();
+                chatButton.Update();
             }           
             expandButton.Update();
         }
@@ -151,7 +151,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 playersButton.MouseDown(e);
                 startButton.MouseDown(e);
                 accelerationButton.MouseDown(e);
-                homeButton.MouseDown(e);
+                chatButton.MouseDown(e);
             }            
             expandButton.MouseDown(e);
         }
@@ -171,7 +171,7 @@ namespace NoPasaranTD.Visuals.Ingame
             accelerationButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 2 + buttonWidth, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
             autoStartButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 3 + buttonWidth * 2, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
             playersButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 4 + buttonWidth * 3, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            homeButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 5 + buttonWidth * 4, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            chatButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 5 + buttonWidth * 4, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
             expandButton.Bounds = new Rectangle( Bounds.X + buttonMargin * 6 + buttonWidth * 5, Bounds.Y + buttonMargin, buttonWidth , buttonHeight);
 
             // Initilialisiert die Schriftfarben des Buttons
@@ -179,7 +179,7 @@ namespace NoPasaranTD.Visuals.Ingame
             autoStartButton.Foreground = Foreground;
             playersButton.Foreground = Foreground;
             expandButton.Foreground = Foreground;
-            homeButton.Foreground = Foreground;
+            chatButton.Foreground = Foreground;
             accelerationButton.Foreground = Foreground;
 
             // Initilisiert die Clickevents der Buttons
@@ -187,7 +187,7 @@ namespace NoPasaranTD.Visuals.Ingame
             autoStartButton.ButtonClicked += AutoStartButton_ButtonClicked;
             playersButton.ButtonClicked += PlayersButton_ButtonClicked; ;
             expandButton.ButtonClicked += ExpandButton_ButtonClicked;
-            homeButton.ButtonClicked += HomeButton_ButtonClicked;
+            chatButton.ButtonClicked += ChatButton_ButtonClicked;
             accelerationButton.ButtonClicked += AccelerationButton_ButtonClicked;
         }
         
@@ -217,8 +217,8 @@ namespace NoPasaranTD.Visuals.Ingame
         private void StartButton_ButtonClicked() =>
             currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0);
 
-        private void HomeButton_ButtonClicked() =>
-            currentGame.TogglePauseMenu();
+        private void ChatButton_ButtonClicked() =>
+            currentGame.UILayout.ChatContainer.Visible = !currentGame.UILayout.ChatContainer.Visible;
 
         private void AccelerationButton_ButtonClicked() =>
             currentGame.NetworkHandler.InvokeEvent("Accelerate", 0);

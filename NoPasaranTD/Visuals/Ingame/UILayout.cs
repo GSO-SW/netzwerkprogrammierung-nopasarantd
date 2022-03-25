@@ -84,7 +84,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public ChatContainer ChatContainer { get; set; } = new ChatContainer()
         {           
-            Bounds = new Rectangle(300, 200, 200, 300),
+            Visible = false,
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150, StaticEngine.RenderHeight/2 - 200, 300, 400),
             Background = new SolidBrush(Color.FromArgb(230, 132, 140, 156)),
         };
 
