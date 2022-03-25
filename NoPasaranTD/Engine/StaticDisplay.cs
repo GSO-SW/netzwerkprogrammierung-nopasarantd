@@ -47,7 +47,9 @@ namespace NoPasaranTD.Engine
             if (mapFile == null)
             {
                 currentGame = null; // Entlade Spiel
-                LoadScreen(new GuiMainMenu()); // Lade Hauptmenu
+                GuiStartMenü startMenü = new GuiStartMenü();
+                startMenü.Init();
+                LoadScreen(startMenü); // Lade Hauptmenu
             }
             else
             {
