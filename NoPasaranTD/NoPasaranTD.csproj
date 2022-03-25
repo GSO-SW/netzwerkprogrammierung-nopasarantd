@@ -61,6 +61,7 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
+    <Compile Include="Utilities\ResourceLoader.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
@@ -127,14 +128,20 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\spentagon.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
     <EmbeddedResource Include="Resources\gameoversound.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\house.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\pool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\spentagon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\factory.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Canon_Body.png" />
