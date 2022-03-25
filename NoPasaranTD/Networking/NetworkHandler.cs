@@ -81,6 +81,8 @@ namespace NoPasaranTD.Networking
             EventHandlers = new Dictionary<string, Action<object>>();
             ReliableUPD = new ReliableUPDHandler(this);
             EventHandlers.Add("PingRequest", PingRequest);
+            EventHandlers.Add("ResyncReceive", ResyncReceive);
+            EventHandlers.Add("ResyncReq", ResyncRequest);
             TaskQueue = new List<NetworkTask>();
             pings = new List<int>();
 
@@ -117,6 +119,7 @@ namespace NoPasaranTD.Networking
                 else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
                 {
                     Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
+                    ReliableUPD.SendReliableUDP("ResyncReq",0); // TODO Item festlegen welches an den Host gesendet werden soll
                     TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                 }
             }
@@ -231,6 +234,28 @@ namespace NoPasaranTD.Networking
                         HighestPing = item * 4; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
                 pings.Clear();
             }
+        }
+
+        /// <summary>
+        /// Sendet alle entscheidenden Daten, wenn ein anderer Client desynchronisiert wurde, um wieder zu synchronisieren.
+        /// Das senden geht nur vom Host aus.
+        /// </summary>
+        /// <param name="t"></param>
+        private void ResyncRequest(object t)
+        {
+            if (IsHost) // Nur der Host soll Synchronisierungspakete senden
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// Verwendet die Resync Nachrichten des Hosts um das Spiel wieder zu synchronisieren
+        /// </summary>
+        /// <param name="t"></param>
+        private void ResyncReceive(object t)
+        {
+
         }
 
         public void Dispose() => Socket?.Dispose();
