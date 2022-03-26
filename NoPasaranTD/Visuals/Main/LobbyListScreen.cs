@@ -13,7 +13,6 @@ namespace NoPasaranTD.Visuals.Main
 
         private readonly ListContainer<NetworkLobby, LobbyItemContainer> lobbyList;
         private readonly ButtonContainer btnUpdatePlayer;
-        private readonly ButtonContainer btnPlayLocalGame;
         private readonly ButtonContainer btnCreateLobby;
 
         private readonly GuiMainMenu parent;
@@ -41,20 +40,11 @@ namespace NoPasaranTD.Visuals.Main
 
             // Erstelle neue Lobby
             btnCreateLobby = GuiMainMenu.CreateButton("Create Lobby", new Rectangle(
-                lobbyList.Position.X + lobbyList.ContainerSize.Width - 305,
-                lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
-                150, 30
-            ));
-            btnCreateLobby.ButtonClicked += () => CreateLobby(parent.LocalPlayer);
-
-            // Lade privates Spiel
-            btnPlayLocalGame = GuiMainMenu.CreateButton("Play Local Game", new Rectangle(
                 lobbyList.Position.X + lobbyList.ContainerSize.Width - 150,
                 lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
                 150, 30
             ));
-
-            btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
+            btnCreateLobby.ButtonClicked += () => CreateLobby(parent.LocalPlayer);
         }
 
         /// <summary>
@@ -105,7 +95,6 @@ namespace NoPasaranTD.Visuals.Main
         public override void Render(Graphics g)
         {
             btnUpdatePlayer.Render(g);
-            btnPlayLocalGame.Render(g);
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
 
@@ -128,7 +117,6 @@ namespace NoPasaranTD.Visuals.Main
         public override void MouseDown(MouseEventArgs e)
         {
             btnUpdatePlayer.MouseDown(e);
-            btnPlayLocalGame.MouseDown(e);
             btnCreateLobby.MouseDown(e);
             lobbyList.MouseDown(e);
         }

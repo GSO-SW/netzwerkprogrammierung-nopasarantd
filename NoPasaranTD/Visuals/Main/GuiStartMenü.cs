@@ -3,6 +3,7 @@ using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
+using NoPasaranTD.Visuals.Ingame;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -196,28 +197,32 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
+        // Öffnet die Multiplayerfunktion des Spieles
+        private void MultiplayerButton_ButtonClicked() =>
+            currentDisplay.LoadScreen(new GuiMainMenu());
+
+        // Öffnet die Singleplayerfunktionen des Spieles
+        private void SingleplayerButton_ButtonClicked() =>
+            Program.LoadScreen(new GuiSelectMap());
+
+        // Schließt die Applikation
+        private void CloseButton_ButtonClicked() =>
+            currentDisplay.Close();
+
         private void CreditsButton_ButtonClicked()
         {
+            // TODO: Credits Screen
         }
 
         private void OptionsButton_ButtonClicked()
         {
+            // TODO: Options Screen
         }
 
         private void TutorialButton_ButtonClicked()
         {
+            // TODO: Tutorial Screen
         }
-
-        private void MultiplayerButton_ButtonClicked()
-        {
-            currentDisplay.LoadScreen(new GuiMainMenu());
-        }
-
-        private void SingleplayerButton_ButtonClicked()
-        {
-        }
-        private void CloseButton_ButtonClicked() =>
-            Environment.Exit(0);
 
         public override void Dispose() =>
             backgroundGame.Dispose();
