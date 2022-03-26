@@ -21,23 +21,22 @@ namespace NoPasaranTD.Utilities
                 return new Bitmap(stream);
             }
         }
+
         public static Dictionary<string, Map> LoadAllMaps()
         {
-            string Ressourcepath = "NoPasaranTD.Resources.Maps.";
+            string path = "NoPasaranTD.Resources.Maps.";
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            string[] Resourcenames = assembly.GetManifestResourceNames().Where(x => x.StartsWith(Ressourcepath) && x.EndsWith(".json")).ToArray();
+            string[] names = assembly.GetManifestResourceNames()
+                .Where(x => x.StartsWith(path) && x.EndsWith(".json")).ToArray();
+
             Dictionary<string, Map> maps = new Dictionary<string, Map>();
-
-            for (int i = 0; i < Resourcenames.Length; i++)
+            for (int i = 0; i < names.Length; i++)
             {
-                string Mapname = Resourcenames[i].Substring(Ressourcepath.Length, Resourcenames[i].Length - Ressourcepath.Length - ".json".Length);
-
-                maps[Mapname] = MapData.GetMapByFileName(Mapname);
-
+                string mapname = names[i].Substring(path.Length, names[i].Length - path.Length - ".json".Length);
+                maps[mapname] = MapData.GetMapByFileName(mapname);
             }
             return maps;
-
         }
     }
 }
