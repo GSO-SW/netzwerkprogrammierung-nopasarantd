@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -127,6 +126,9 @@ namespace NoPasaranTD.Networking
             foreach (IPEndPoint endpoint in endpoints)
                 await SendPacketAsync(packet, endpoint);
 
+            while (packetsSent.ContainsKey(localClient.SequenceID))
+                await Task.Delay(1); // Warte solange bis das Paket akzeptiert wurde
+
             localClient.SequenceID++;
         }
 
@@ -151,7 +153,6 @@ namespace NoPasaranTD.Networking
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
                         if (tick - info.TickCreated >= client.Ping)
                         {
-                            Console.WriteLine("Resending Package: " + Encoding.ASCII.GetString(info.Packet.Data));
                             await SendPacketAsync(info.Packet, info.Endpoints[j]);
                             info.TickCreated = Environment.TickCount;
                         }
@@ -235,7 +236,6 @@ namespace NoPasaranTD.Networking
         private async Task<RUdpPacketCombo> ReceivePacketAsync()
         {
             UdpReceiveResult result = await udpClient.ReceiveAsync();
-            Console.WriteLine("RECEIVED: " + result.Buffer.Length);
             return new RUdpPacketCombo(
                 RUdpPacket.Deserialize(result.Buffer),
                 result.RemoteEndPoint
