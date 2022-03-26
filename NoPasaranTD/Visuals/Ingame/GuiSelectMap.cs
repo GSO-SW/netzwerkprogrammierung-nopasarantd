@@ -1,6 +1,7 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
+using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,14 @@ namespace NoPasaranTD.Visuals.Ingame
         private readonly ButtonContainer btnPreviousMap;
         private readonly ButtonContainer btnStartGame;
 
-        public Dictionary<Map, string> mapList;
+        public Dictionary<string,Map> mapList;
         
         public int CurrentMap;
 
 
         public GuiSelectMap()
         {
-            GetMaps();
+            Resources.LoadAllMaps();
 
 
 
@@ -55,28 +56,9 @@ namespace NoPasaranTD.Visuals.Ingame
             };
 
 
-            btnStartGame.ButtonClicked += () => Program.LoadGame(mapList.Values.ElementAt(CurrentMap));
+            btnStartGame.ButtonClicked += () => Program.LoadGame(mapList.Keys.ElementAt(CurrentMap));
 
 
-
-        }
-
-        public void GetMaps()
-        {
-            string Ressourcepath = "NoPasaranTD.Resources.Maps.";
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            string[] Ressourcenames = assembly.GetManifestResourceNames().Where(x => x.StartsWith(Ressourcepath) && x.EndsWith(".json")).ToArray();
-            mapList = new Dictionary<Map, string>();
-
-            foreach (var item in Ressourcenames)
-            {
-                string Mapname = item.Substring(Ressourcepath.Length, item.Length - Ressourcepath.Length - ".json".Length);
-
-                mapList.Add(MapData.GetMapByFileName(Mapname), Mapname);
-
-            }
-            CurrentMap = 0;
 
         }
 
@@ -85,12 +67,12 @@ namespace NoPasaranTD.Visuals.Ingame
 
 
             
-                float scaledWidth = (float)StaticEngine.RenderWidth / mapList.Keys.ElementAt(CurrentMap).BackgroundImage.Width;
-                float scaledHeight = (float)StaticEngine.RenderHeight / mapList.Keys.ElementAt(CurrentMap).BackgroundImage.Height;
+                float scaledWidth = (float)StaticEngine.RenderWidth / mapList.Values.ElementAt(CurrentMap).BackgroundImage.Width;
+                float scaledHeight = (float)StaticEngine.RenderHeight / mapList.Values.ElementAt(CurrentMap).BackgroundImage.Height;
 
                 Matrix m = g.Transform;
                 g.ScaleTransform(scaledWidth, scaledHeight);
-                g.DrawImageUnscaled(mapList.Keys.ElementAt(CurrentMap).BackgroundImage, 0, 0);
+                g.DrawImageUnscaled(mapList.Values.ElementAt(CurrentMap).BackgroundImage, 0, 0);
                 g.Transform = m;
             
             btnNextMap.Render(g);
@@ -104,6 +86,8 @@ namespace NoPasaranTD.Visuals.Ingame
             btnPreviousMap.MouseDown(e);
             btnStartGame.MouseDown(e);
         }
+        
+        //TODO add Dispose methode
 
     }
 }
