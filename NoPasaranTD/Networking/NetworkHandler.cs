@@ -134,7 +134,6 @@ namespace NoPasaranTD.Networking
                 {
                     Console.WriteLine("The Package has been removed before reviewing: " + e.Message);
                 }
-                
             }
 
             if (!OfflineMode)
@@ -241,7 +240,7 @@ namespace NoPasaranTD.Networking
             pings.Add((int)(Game.CurrentTick - (long)t)); // Delay zwischen senden 
             if (pings.Count == Participants.Count) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
-                HighestPing = 100; // Ping erstmal wieder auf 0 als Basiswert setzen
+                HighestPing = 200; // Ping erstmal wieder auf 0 als Basiswert setzen
                 foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
                     if (HighestPing < item * 4 * (int)StaticEngine.TickAcceleration) // Höchsten Ping suchen
                         HighestPing = item * 4 * (int)StaticEngine.TickAcceleration; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
@@ -272,7 +271,7 @@ namespace NoPasaranTD.Networking
                     foreach (var item in Game.Balloons[i])
                         tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
                 tasks.Insert(0, new NetworkTask("HEADER", tasks.Count + 1, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
-
+                Console.WriteLine(tasks.Count + "");
                 foreach (var item in tasks)
                     ReliableUPD.SendReliableUDP("ResyncReceive", item);
                 Resyncing = false;
@@ -285,7 +284,8 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncReceive(object t)
         {
-            resyncPackageL.Add((NetworkTask)t);
+            if (!Resyncing) // Resync Pakete nur hinzufügen, wenn noch nicht alle Pakete angekommen sind
+                resyncPackageL.Add((NetworkTask)t);
             if (((NetworkTask)t).Handler == "HEADER")
             {
                 resyncPackageL.Insert(0, (NetworkTask)t); // Fügt den Header an die erste Stelle im Falle, dass die Pakete eine andere Reihenfolge haben
@@ -295,6 +295,7 @@ namespace NoPasaranTD.Networking
             {
                 if ((int)resyncPackageL[0].Parameter == resyncPackageL.Count) // Kontrollieren, dass alle Pakete angekommen sind
                 {
+                    Console.WriteLine(resyncPackageL.Count + "");
                     Resyncing = true; // Pausiert das Spiel, damit alle Aufgaben auf einmal passieren
                     Game.Towers.Clear(); // Entfernt alle Türme
                     Game.InitBalloons(); // Entfernt alle Ballons
@@ -308,17 +309,24 @@ namespace NoPasaranTD.Networking
                             resyncPackageL.RemoveAt(i + 1); // Entfernt die alte Variante die nun um 1 Platz verschoben ist
                             Game.HealthPoints = (int)resyncPackageL[1].Parameter; // Leben setzten
                             Game.Money = (int)resyncPackageL[1].TickToPerform; // Geld setzten
+                            Console.WriteLine("HPMoney Successful"); // TESTCODE
+                            break;
                         }
-                        else if (resyncPackageL[i].Handler == "SettingsBlock") // Sucht nach dem Paket mit den Spieleinstellungen Beschleunigung und Autostart
+                    }
+                    for (int i = resyncPackageL.Count - 1; i > 1; i--)
+                    {
+                        if (resyncPackageL[i].Handler == "SettingsBlock") // Sucht nach dem Paket mit den Spieleinstellungen Beschleunigung und Autostart
                         {
                             StaticEngine.TickAcceleration = (ulong)resyncPackageL[i].TickToPerform; // Geschwindigkeit setzten
                             Game.WaveManager.AutoStart = (bool)resyncPackageL[i].Parameter; // Autostart setzten
-                            resyncPackageL.Insert(resyncPackageL.Count, resyncPackageL[i]); // Das Paket an das Ende der Liste schreiben
+                            resyncPackageL.Insert(2, resyncPackageL[i]); // Das Paket an das Ende der Liste schreiben
                             resyncPackageL.RemoveAt(i); // Das andere Vorkommen löschen
+                            Console.WriteLine("Settings successful"); // TESTCODE
+                            break;
                         }
                     }
 
-                    for (int i = 3; i < resyncPackageL.Count - 1; i++)
+                    for (int i = 3; i < resyncPackageL.Count; i++)
                         TaskQueue.Add(resyncPackageL[i]);
                     resyncPackageL.Clear();
                     Update();

@@ -81,11 +81,20 @@ namespace NoPasaranTD.Engine
 			CurrentMap.Dispose();
         }
 
+		private bool first = true; // TESTCODE
+
         #region Game logic region
         public void Update()
 		{
 			if ((Paused && NetworkHandler.OfflineMode) || NetworkHandler.Resyncing) return; // Abfragen ob das Spiel legitim pausiert ist
 			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
+										   //TESTCODE
+										   //         if (Round == 3 && first && NetworkHandler.IsHost)
+										   //         {
+										   //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
+										   //	first = false;
+										   //}
+										   //TESTCODE
 			NetworkHandler.Update();
 
 			WaveManager.Update();
