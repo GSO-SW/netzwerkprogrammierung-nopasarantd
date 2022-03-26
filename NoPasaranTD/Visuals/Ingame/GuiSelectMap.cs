@@ -29,7 +29,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public GuiSelectMap()
         {
-            Resources.LoadAllMaps();
+            mapList= ResourceLoader.LoadAllMaps();
 
 
 

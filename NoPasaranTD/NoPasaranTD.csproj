@@ -62,7 +62,6 @@
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
     <Compile Include="Utilities\ResourceLoader.cs" />
-    <Compile Include="Utilities\Resources.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />

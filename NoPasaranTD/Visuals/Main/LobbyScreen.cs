@@ -29,7 +29,7 @@ namespace NoPasaranTD.Visuals.Main
 
         public LobbyScreen(GuiMainMenu parent)
         {
-            mapList = Resources.LoadAllMaps();
+            mapList = ResourceLoader.LoadAllMaps();
             this.parent = parent;
             textFormat = new StringFormat()
             {
