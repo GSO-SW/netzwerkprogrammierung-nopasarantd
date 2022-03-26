@@ -1,16 +1,19 @@
 ﻿using NoPasaranTD.Utilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NoPasaranTD.Networking
 {
-    struct RUdpPacket
+    internal struct RUdpPacket
     {
         public byte Type { get; }
         public ulong Sequence { get; }
@@ -27,8 +30,8 @@ namespace NoPasaranTD.Networking
             byte[] data = new byte[17 + packet.Data.Length];
 
             data[0] = packet.Type;
-            Binary.WriteBytes(packet.Sequence, data, 1);
-            Binary.WriteBytes(packet.Data.LongLength, data, 9);
+            BitConverter.GetBytes(packet.Sequence).CopyTo(data, 1);
+            BitConverter.GetBytes(packet.Data.LongLength).CopyTo(data, 9);
             Array.Copy(packet.Data, 0, data, 17, packet.Data.LongLength);
             return data;
         }
@@ -46,134 +49,196 @@ namespace NoPasaranTD.Networking
 
     }
 
-    struct RUdpReceiveResult
+    internal struct RUdpPacketCombo
     {
         public RUdpPacket Packet { get; }
         public IPEndPoint Endpoint { get; }
-        public RUdpReceiveResult(RUdpPacket packet, IPEndPoint ep)
+        public RUdpPacketCombo(RUdpPacket packet, IPEndPoint endpoint)
         {
             Packet = packet;
-            Endpoint = ep;
+            Endpoint = endpoint;
+        }
+    }
+
+    internal class RUdpPacketInfo
+    {
+        public int TickCreated { get; set; }
+
+        public RUdpPacket Packet { get; }
+        public List<IPEndPoint> Endpoints { get; } 
+        public RUdpPacketInfo(RUdpPacket packet, IPEndPoint[] endpoints)
+        {
+            Packet = packet;
+            Endpoints = new List<IPEndPoint>(endpoints);
+            TickCreated = Environment.TickCount;
+        }
+    }
+
+    internal class RUdpClientInfo
+    {
+        public uint Ping { get; set; }
+        public ulong SequenceID { get; set; }
+
+        public RUdpClientInfo()
+        {
+            Ping = 0;
+            SequenceID = 0;
         }
     }
 
     public class RUdpClient : IDisposable
     {
 
-        private const byte CODE_PKG = 0x00;
-        private const byte CODE_ACK = 0x01;
-        private const byte CODE_SYN = 0x02;
+        private const byte CODE_PKG = 0x01;
+        private const byte CODE_ACK = 0x02;
+        private const byte CODE_SYN = 0x03;
 
-        public int Ping { get; private set; } = 0;
+        private readonly RUdpClientInfo localClient;
+        private readonly Dictionary<IPEndPoint, RUdpClientInfo> remoteClients;
 
-        private ulong sequence = 0;
+        private readonly Dictionary<ulong, RUdpPacketInfo> packetsSent;
+        private readonly Queue<RUdpPacketCombo> packetsReceived;
 
         private readonly UdpClient udpClient;
-        private readonly Stopwatch pingStopwatch;
-        private readonly Dictionary<ulong, RUdpPacket> packetsSent;
-        private readonly Queue<RUdpReceiveResult> packetsReceived;
         public RUdpClient(UdpClient client)
         {
+            localClient = new RUdpClientInfo();
+            remoteClients = new Dictionary<IPEndPoint, RUdpClientInfo>();
+
+            packetsSent = new Dictionary<ulong, RUdpPacketInfo>();
+            packetsReceived = new Queue<RUdpPacketCombo>();
+
             udpClient = client;
-            pingStopwatch = new Stopwatch();
-            packetsSent = new Dictionary<ulong, RUdpPacket>();
-            packetsReceived = new Queue<RUdpReceiveResult>();
+            new Thread(BackgroundThread).Start();
         }
 
         public void Dispose()
         {
             udpClient?.Dispose();
+            remoteClients?.Clear();
             packetsReceived?.Clear();
             packetsSent?.Clear();
         }
 
-        private async Task SendPacketReliableAsync(RUdpPacket packet, IPEndPoint ep)
+        private readonly Stopwatch pingStopwatch = new Stopwatch();
+        public async Task SendAsync(byte[] data, params IPEndPoint[] endpoints)
         {
-            await SendPacketAsync(packet, ep);
+            RUdpPacket packet = new RUdpPacket(CODE_PKG, localClient.SequenceID, data);
 
-            while(true)
+            foreach(IPEndPoint endpoint in endpoints)
             {
-                // Warte bis eine Nachricht angekommen ist oder die zeit abgelaufen ist
-                int currTick = Environment.TickCount;
-                while (udpClient.Available == 0 && (Environment.TickCount - currTick) < Ping)
-                    await Task.Delay(1);
-
-                if(udpClient.Available > 0)
+                RUdpClientInfo endpointInfo = GetRemoteClient(endpoint);
                 {
-                    RUdpReceiveResult result = await ReceivePacketAsync();
-                    switch(result.Packet.Type)
-                    {
-                        case CODE_PKG: // Add to receive queue
-                            packetsReceived.Enqueue(result);
-                            break;
-                        case CODE_ACK: // Mark as acknowledged
-                            if (!packetsSent.Remove(result.Packet.Sequence))
-                                throw new IOException("Received an invalid Packet");
-                            break;
-                        case CODE_SYN: // Resend
-                            if (!packetsSent.TryGetValue(result.Packet.Sequence, out RUdpPacket cachedPacket))
-                                throw new IOException("Received an invalid Packet");
-                            await SendPacketReliableAsync(cachedPacket, result.Endpoint);
-                            break;
-                        default: throw new IOException("Received an invalid Packet");
-                    }
-
-                    if (!packetsSent.ContainsKey(result.Packet.Sequence))
-                        break;
+                    pingStopwatch.Restart();
+                    await SendPacketAsync(packet, endpoint);
+                    pingStopwatch.Stop();
                 }
-                else
-                {
-                    await SendPacketReliableAsync(packet, ep);
-                    break;
-                }
+                endpointInfo.Ping = (uint)pingStopwatch.ElapsedMilliseconds;
             }
-        }
 
-        public async Task SendAsync(byte[] data, /*TODO: REMOVE*/ int length, IPEndPoint ep)
-        {
-            RUdpPacket packet = packetsSent[sequence] = new RUdpPacket(CODE_PKG, sequence, data);
-
-            pingStopwatch.Restart();
-            await SendPacketReliableAsync(packet, ep);
-            pingStopwatch.Stop();
-
-            Ping = (int)pingStopwatch.ElapsedMilliseconds;
-            sequence++;
+            packetsSent[localClient.SequenceID] = new RUdpPacketInfo(packet, endpoints);
+            localClient.SequenceID++;
         }
 
         public async Task<UdpReceiveResult> ReceiveAsync()
         {
-            RUdpReceiveResult result = packetsReceived.Count > 0 ?
-                packetsReceived.Dequeue() : await ReceivePacketAsync();
-
-            if (result.Packet.Type != CODE_PKG)
-                throw new IOException("Received an invalid Packet");
-
-            if (result.Packet.Sequence > sequence)
-            {
-                await SendPacketAsync(new RUdpPacket(CODE_SYN, sequence, new byte[0]), result.Endpoint);
-                return await ReceiveAsync();
-            }
-            else if (result.Packet.Sequence < sequence)
-                return await ReceiveAsync();
-
-            await SendPacketAsync(new RUdpPacket(CODE_ACK, sequence, new byte[0]), result.Endpoint);
-            sequence++; // Inkrementiere die Sequenznummer
-
-            return new UdpReceiveResult(result.Packet.Data, result.Endpoint);
+            while (packetsReceived.Count == 0) await Task.Delay(1);
+            RUdpPacketCombo combo = packetsReceived.Dequeue();
+            return new UdpReceiveResult(combo.Packet.Data, combo.Endpoint);
         }
 
-        #region Utility methods
-        private async Task SendPacketAsync(RUdpPacket packet, IPEndPoint ep)
+        #region Implementation region
+        private async void BackgroundThread()
+        {
+            while (true)
+            {
+                int tick = Environment.TickCount;
+                for (int i = packetsSent.Count - 1; i >= 0; i--)
+                {
+                    RUdpPacketInfo info = packetsSent.Values.ElementAt(i);
+                    for (int j = info.Endpoints.Count - 1; j >= 0; j--)
+                    {
+                        RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
+                        if (tick - info.TickCreated >= client.Ping)
+                            await SendPacketAsync(info.Packet, info.Endpoints[i]);
+                    }
+                }
+
+                while (udpClient.Available > 0)
+                {
+                    RUdpPacketCombo combo = await ReceivePacketAsync();
+                    switch (combo.Packet.Type)
+                    {
+                        case CODE_PKG: await AcceptPKG(combo); break;
+                        case CODE_ACK: AcceptACK(combo); break;
+                        case CODE_SYN: await AcceptSYN(combo); break;
+                        default: throw new IOException("Invalid Packet received");
+                    }
+                }
+            }
+        }
+
+        private async Task AcceptPKG(RUdpPacketCombo combo)
+        {
+            RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
+            if (combo.Packet.Sequence < client.SequenceID)
+                return;
+            else if(combo.Packet.Sequence > client.SequenceID)
+            {
+                await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
+                return;
+            }
+
+            await SendPacketAsync(new RUdpPacket(CODE_ACK, client.SequenceID, new byte[0]), combo.Endpoint);
+            packetsReceived.Enqueue(combo);
+            client.SequenceID++;
+        }
+
+        private void AcceptACK(RUdpPacketCombo combo)
+        {
+            if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
+                throw new IOException("Packet was already acknowledged");
+
+            if (!info.Endpoints.Remove(combo.Endpoint))
+                throw new IOException("Packet was already acknowledged");
+
+            if(info.Endpoints.Count == 0)
+            {
+                if (!packetsSent.Remove(combo.Packet.Sequence))
+                    throw new IOException("How tf did this happen now?");
+            }
+        }
+
+        private async Task AcceptSYN(RUdpPacketCombo combo)
+        {
+            if(!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
+                throw new IOException("Packet was already acknowledged");
+
+            if(!info.Endpoints.Contains(combo.Endpoint))
+                throw new IOException("Packet was already acknowledged");
+
+            await SendPacketAsync(info.Packet, combo.Endpoint);
+        }
+        #endregion
+
+        #region Utility region
+        private RUdpClientInfo GetRemoteClient(IPEndPoint endpoint)
+        {
+            if (!remoteClients.TryGetValue(endpoint, out RUdpClientInfo client))
+                client = remoteClients[endpoint] = new RUdpClientInfo();
+            return client;
+        }
+
+        private async Task SendPacketAsync(RUdpPacket packet, IPEndPoint endpoint)
         {
             byte[] data = RUdpPacket.Serialize(packet);
-            await udpClient.SendAsync(data, data.Length, ep);
+            await udpClient.SendAsync(data, data.Length, endpoint);
         }
 
-        private async Task<RUdpReceiveResult> ReceivePacketAsync()
+        private async Task<RUdpPacketCombo> ReceivePacketAsync()
         {
             UdpReceiveResult result = await udpClient.ReceiveAsync();
-            return new RUdpReceiveResult(
+            return new RUdpPacketCombo(
                 RUdpPacket.Deserialize(result.Buffer),
                 result.RemoteEndPoint
             );

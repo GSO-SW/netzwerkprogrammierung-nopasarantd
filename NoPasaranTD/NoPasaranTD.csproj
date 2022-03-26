@@ -61,7 +61,6 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\RUdpClient.cs" />
-    <Compile Include="Utilities\Binary.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
