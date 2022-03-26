@@ -120,21 +120,12 @@ namespace NoPasaranTD.Networking
             packetsSent?.Clear();
         }
 
-        private readonly Stopwatch pingStopwatch = new Stopwatch();
         public async Task SendAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             RUdpPacket packet = new RUdpPacket(CODE_PKG, localClient.SequenceID, data);
 
             foreach(IPEndPoint endpoint in endpoints)
-            {
-                RUdpClientInfo endpointInfo = GetRemoteClient(endpoint);
-                {
-                    pingStopwatch.Restart();
-                    await SendPacketAsync(packet, endpoint);
-                    pingStopwatch.Stop();
-                }
-                endpointInfo.Ping = (uint)pingStopwatch.ElapsedMilliseconds;
-            }
+                await SendPacketAsync(packet, endpoint);
 
             packetsSent[localClient.SequenceID] = new RUdpPacketInfo(packet, endpoints);
             localClient.SequenceID++;
@@ -160,7 +151,10 @@ namespace NoPasaranTD.Networking
                     {
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
                         if (tick - info.TickCreated >= client.Ping)
-                            await SendPacketAsync(info.Packet, info.Endpoints[i]);
+                        {
+                            await SendPacketAsync(info.Packet, info.Endpoints[j]);
+                            info.TickCreated = Environment.TickCount;
+                        }
                     }
                 }
 
@@ -201,6 +195,8 @@ namespace NoPasaranTD.Networking
 
             if (!info.Endpoints.Remove(combo.Endpoint))
                 throw new IOException("Packet was already acknowledged");
+
+            GetRemoteClient(combo.Endpoint).Ping = (uint)(Environment.TickCount - info.TickCreated);
 
             if(info.Endpoints.Count == 0)
             {
