@@ -124,6 +124,7 @@ namespace NoPasaranTD.Networking
                 await SendPacketAsync(packet, endpoint);
 
             localClient.SequenceID++;
+
             while (packetsSent.ContainsKey(packet.Sequence))
                 await Task.Delay(1); // Warte solange bis das Paket akzeptiert wurde
         }
@@ -174,7 +175,7 @@ namespace NoPasaranTD.Networking
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
                 return;
-            else if(combo.Packet.Sequence > client.Seque-nceID)
+            else if(combo.Packet.Sequence > client.SequenceID)
             {
                 await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
                 return;
