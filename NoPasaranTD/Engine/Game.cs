@@ -29,6 +29,7 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 		private StaticDisplay StaticDisplay { get; } = null;
+		private int MouseSendInterval = 300;
 
 		/// <summary>
 		/// Initialisiert ein neues Spiel
@@ -114,19 +115,27 @@ namespace NoPasaranTD.Engine
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Update(this);
 
-			if (CurrentTick % 200 == 0)
+			if (CurrentTick % MouseSendInterval == 0)
             {
 				if (NetworkHandler.LocalPlayer == null) return;
 
 				var networkPackage = new NetworkPackage_MousePosition();
 				networkPackage.pos = (StaticEngine.MouseX, StaticEngine.MouseY);
+				networkPackage.currentTick = (int)CurrentTick;
 
-				// TODO ergänzen: den Username mitschicken statt kennzeichen ding
+				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
 				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
 				
+				//NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
 
-				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
-            }
+				if (CurrentTick % 1000 == 0)
+					for (int i = 0; i < usersMousePos.Count; i++)
+						if (usersMousePos[i].TTL < Environment.TickCount)
+						{
+							usersMousePos.RemoveAt(i);
+							usersMouseTag.RemoveAt(i);
+						}
+			}
 
 
 			UILayout.Update();
@@ -437,32 +446,31 @@ namespace NoPasaranTD.Engine
 		{
 			public (int X, int Y) pos = (0, 0);
 			public string Username = String.Empty;
+			public int currentTick = 0;
+			public int TTL = 2000; // wird nicht überschrieben und in ms
 		}
-		private static List<(int X, int Y, int TTL)> usersMousePos = new List<(int X, int Y, int TTL)>();
+		private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos
+			= new List<(int X, int Y, int TTL, int currentTick)>();
 		private static List<string> usersMouseTag = new List<string>();
 		private void TransferMousePosition(object m)
         {
-
-			int TTL = 2000; // in ms
 			var networkPackage = m as NetworkPackage_MousePosition;
+			if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
+				|| networkPackage.Username == NetworkHandler.LocalPlayer.Name) return;
 
 			bool hasFound = false;
 			for (int i = 0; i < usersMousePos.Count; i++)
-            {
 				if (usersMouseTag[i] == networkPackage.Username)
                 {
 					hasFound = true;
-					usersMousePos[i] = (networkPackage.pos.X, networkPackage.pos.Y, TTL + Environment.TickCount);
+					if (usersMousePos[i].currentTick < networkPackage.currentTick)
+						usersMousePos[i] =
+							(networkPackage.pos.X, networkPackage.pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick);
 				}
-				if (usersMousePos[i].TTL < Environment.TickCount)
-				{
-					usersMousePos.RemoveAt(i);
-					usersMouseTag.RemoveAt(i);
-				}
-			}
-			if (!hasFound && networkPackage.Username != NetworkHandler.LocalPlayer.Name)
+			if (!hasFound)
             {
-				usersMousePos.Add((networkPackage.pos.X, networkPackage.pos.Y, TTL + Environment.TickCount));
+				usersMousePos.Add(
+					(networkPackage.pos.X, networkPackage.pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick));
 				usersMouseTag.Add(networkPackage.Username);
 			}
         }

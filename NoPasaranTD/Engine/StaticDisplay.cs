@@ -189,33 +189,49 @@ namespace NoPasaranTD.Engine
             g.ResetTransform();
         }
 
-        int x;
+        int environTime = 0, tickswork = 0;
         private void tmrGameUpdate_Tick(object sender, EventArgs e)
         {
             StaticEngine.Update();
-            while (StaticEngine.ElapsedTicks > 0)
+            bool IsNetworkReady = currentGame != null
+                && currentGame.NetworkHandler != null;
+            bool IamHost = IsNetworkReady
+                && currentGame.NetworkHandler.IsHost
+                && !currentGame.NetworkHandler.OfflineMode;
+            if (IamHost) StaticEngine.Update();
+            if(IsNetworkReady && currentGame.NetworkHandler.LastUpdate+10 < Environment.TickCount) currentGame.NetworkHandler.Update();
+            while (IamHost && StaticEngine.ElapsedTicks > 0)
             {
-                x++; 
+                if (Environment.TickCount >= environTime)
+                {
+                    Console.WriteLine(tickswork);
+                    environTime = Environment.TickCount + 1000;
+                    tickswork = 0;
+                }
+                tickswork++;
+                currentGame.NetworkHandler.Update();
                 currentGame?.Update();
                 currentScreen?.Update();
                 StaticEngine.ElapsedTicks--;
             }
-            if (currentGame != null &&
-                currentGame.NetworkHandler != null &&
-                currentGame.NetworkHandler.IsHost
-                && !currentGame.NetworkHandler.OfflineMode
-                && currentGame.CurrentTick % 100 == 0)
+            while (!IamHost && IsNetworkReady && StaticEngine.ElapsedHostTicks > 0)
             {
-                var dataPackage = new StaticEngine.NetworkingPackage_ServerDataObj();
+                StaticEngine.ElapsedHostTicks--;
+                currentGame.NetworkHandler.Update();
+                currentGame?.Update();
+                currentScreen?.Update();
+            }
+
+
+            // if isHost dann jede X Ticks: sende Current Gametick an andere Teilnehmer
+            if (IamHost && currentGame.CurrentTick % 400 == 0)
+            {
+                var dataPackage = new StaticEngine.NetworkingPackage_ServerData();
                 dataPackage.gameTick = currentGame.CurrentTick;
                 dataPackage.currOsMs = Environment.TickCount;
-                dataPackage.mousePointer = (StaticEngine.MouseX, StaticEngine.MouseY);
                 dataPackage.tickAcceleration = StaticEngine.TickAcceleration;
 
-                Console.WriteLine("-§--§--§---------");
-                Console.WriteLine("Sending Data: gameTick: "+currentGame.CurrentTick.ToString());
-                Console.WriteLine("Ticks every send"+ x.ToString());
-                Console.WriteLine("-§--§--§---------");
+                Console.WriteLine("SERVER: Sending Data: gameTick: "+currentGame.CurrentTick.ToString());
                 
                 currentGame.NetworkHandler.InvokeEvent("ReceiveServerTick", dataPackage);
             }
@@ -228,16 +244,15 @@ namespace NoPasaranTD.Engine
 
             Refresh();
         }
-        private ulong[] serverTicks = new ulong[5] {0l,0l,0l,0l,0l};
+        private ulong[] serverTicks = new ulong[5] {0L,0L,0L,0L,0L};
         private int[] serverTickTimes = new int[5] { 0, 0, 0, 0, 0 };
         private int selector = 0;
         public void ReceiveServerTick(object s)
         {
-            Console.WriteLine("| Received event");
             if (currentGame == null ||
                 currentGame.NetworkHandler == null ||
                 currentGame.NetworkHandler.IsHost) return;
-            var dataPackage = s as StaticEngine.NetworkingPackage_ServerDataObj;
+            var dataPackage = s as StaticEngine.NetworkingPackage_ServerData;
             Console.WriteLine("| Received some ServerData: gametick: " + dataPackage.gameTick.ToString());
 
             float avgTickChange, avgTimeFrame;
@@ -248,10 +263,10 @@ namespace NoPasaranTD.Engine
                 // calculates the average difference between ticks   (with a bias. meaning that the most recent values should have a higher influence)
                 float biasExp = 2f; //  = 0 means no bias
                 float biasSum = 0; int sumTickChange = 0, sumTimeFrame = 0;
-                int forIEnd = serverTicks.Length;
-                for (int i = 1; i < forIEnd; i++)
+                int forloopIEnd = serverTicks.Length;
+                for (int i = 1; i < forloopIEnd; i++)
                 {
-                    float bias = (float)Math.Pow((forIEnd - i) / (float)forIEnd, biasExp);
+                    float bias = (float)Math.Pow((forloopIEnd - i) / (float)forloopIEnd, biasExp);
                     biasSum += bias-1;
                     sumTickChange += (int)(
                         (
@@ -269,6 +284,8 @@ namespace NoPasaranTD.Engine
                 avgTickChange = sumTickChange / (serverTicks.Length + biasSum);
                 avgTimeFrame = sumTimeFrame / (serverTicks.Length + biasSum);
 
+
+
                 // TODO noch zu machen
                 //  - schauen ob die ticks aus dem letzten angekommenen package
                 // bereits von der engine erreicht sind? wenn nicht ddann engine nachholen
@@ -276,6 +293,18 @@ namespace NoPasaranTD.Engine
                 // dass die Engine bei t=x y-viele ticks
                 // haben muss (durch if(x > ... && ticks < y) oder so)
                 // und wenn nicht dann soll sie direkt die prognostiziert fehlenden Ticks nachholen.
+
+
+                // berechnet und legt fest die minimale Schranke die erreicht sein sollte die AUF JEDEN FALL zum nachholen sind
+                //  [ es sind aber dann noch die Ticks die während der Lieferung des Packets vergangen sind nachzuholen,
+                //  weil die Daten immer veraltet sind muss prognostiziert werden ]
+                ulong deltaHostClientTick = 0;
+                if (dataPackage.gameTick > currentGame.CurrentTick);
+                    deltaHostClientTick = dataPackage.gameTick - currentGame.CurrentTick;
+                StaticEngine.ElapsedHostTicks += deltaHostClientTick; 
+
+
+
 
 
             }

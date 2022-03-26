@@ -17,6 +17,7 @@ namespace NoPasaranTD.Engine
 
         #region Engine region
         internal static ulong ElapsedTicks { get; set; }
+        internal static ulong ElapsedHostTicks { get; set; }
 
         /// <summary>
         /// Ein Wert um welchen die Tickinkrementierung beschleunigt werden soll
@@ -40,14 +41,12 @@ namespace NoPasaranTD.Engine
             int deltaTick = currTick - lastTick;
             ElapsedTicks += ((ulong)deltaTick)*TickAcceleration;
             lastTick = currTick;
-            
         }
         [Serializable]
-        public class NetworkingPackage_ServerDataObj
+        public class NetworkingPackage_ServerData
         {
             public uint gameTick = 0;
             public ulong tickAcceleration = 0;
-            public (int x, int y) mousePointer = (0,0);
             public int currOsMs = 0;
         }
         #endregion

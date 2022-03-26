@@ -49,6 +49,10 @@ namespace NoPasaranTD.Networking
         /// Gibt an ob der ausgeführte Client der host der Sitzung ist
         /// </summary>
         public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
+        /// <summary>
+        /// Gibt zurück den letzten Zeitpunkt wo Update durchgeführt wurde auf Basis von Environment.TickCount()
+        /// </summary>
+        public int LastUpdate { get; private set; }
 
         public NetworkLobby Lobby { get; set; }
 
@@ -91,6 +95,7 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void Update()
         {
+            LastUpdate = Environment.TickCount;
             for (int i = taskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
                 if (taskQueue[i].Handler == PingRequest) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
