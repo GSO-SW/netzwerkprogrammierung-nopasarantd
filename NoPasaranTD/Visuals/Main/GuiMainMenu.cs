@@ -102,6 +102,8 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
+            LobbyScreen?.Dispose();
+            LobbyListScreen?.Dispose();
             DiscoveryClient?.Dispose();
             backgroundGame?.Dispose();
         }
@@ -133,10 +135,9 @@ namespace NoPasaranTD.Visuals.Main
                 else 
                     participants.Add(LocalPlayer); // Wenn kein Host, einfach hinzufügen
             }
-            Program.LoadGame("spentagon", new NetworkHandler(
+            Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
                 DiscoveryClient.UdpClient, participants, LocalPlayer
-            )
-            { Lobby = CurrentLobby});
+            ) { Lobby = CurrentLobby });
         }
 
         private void UpdateInfo()

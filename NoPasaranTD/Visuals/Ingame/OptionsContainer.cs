@@ -32,7 +32,7 @@ namespace NoPasaranTD.Visuals.Ingame
         private int buttonMargin = 5;
 
         // Ist das Control ein- oder ausgeklappt
-        private bool isExpanded = true;
+        public bool IsExpanded = true;
 
         #endregion
         #region GUI Components
@@ -107,11 +107,11 @@ namespace NoPasaranTD.Visuals.Ingame
             g.FillRectangle(Background, Bounds);
 
             // Zeigt den Startbutton nur wenn die Runde pausuert ist
-            if (currentGame.WaveManager.IsRoundCompleted && isExpanded)
+            if (currentGame.WaveManager.IsRoundCompleted && IsExpanded)
                 startButton.Render(g);
 
             // Zeigt die anderen Buttons nur wenn das Menu expandiert ist
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Render(g);
                 playersButton.Render(g);
@@ -132,7 +132,7 @@ namespace NoPasaranTD.Visuals.Ingame
             else
                 autoStartButton.Content = "⭯";
 
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Update();
                 playersButton.Update();
@@ -145,7 +145,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.MouseDown(e);
                 playersButton.MouseDown(e);

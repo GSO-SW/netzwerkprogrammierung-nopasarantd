@@ -26,7 +26,7 @@ namespace NoPasaranTD.Data
         public static Map GetMapByFileName(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
+            string resourceName = "NoPasaranTD.Resources.Maps." + fileName + ".json";
 
             Map obj;
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
@@ -52,7 +52,7 @@ namespace NoPasaranTD.Data
         public static async Task<Map> GetMapByFileNameAsync(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
+            string resourceName = "NoPasaranTD.Resources.Maps." + fileName + ".json";
 
             Map obj;
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
