@@ -78,7 +78,7 @@ namespace NoPasaranTD.Visuals.Main
             randomText = list[random.Next(list.Count - 1)];
 
             memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
-            memeSlope = (float)1 / random.Next(-10, 10);
+            memeSlope = (float)1 / random.Next(-30, 30);
         }
 
         public void Init(StaticDisplay staticDisplay)
@@ -151,7 +151,7 @@ namespace NoPasaranTD.Visuals.Main
             g.TranslateTransform(memePositionX, memePositionY);
             g.RotateTransform(memeRotation);
 
-            g.DrawImage(memes[memeCounter], 0, 0,200,300);
+            g.DrawImage(memes[memeCounter], 0, 0,150,100);
 
             g.Transform = currentTransform;
 
@@ -221,17 +221,19 @@ namespace NoPasaranTD.Visuals.Main
             }
             memePositionX += memeVelocity;
             memePositionY += memeSlope;
+            memeRotation += 0.01f;
 
-            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY <= 0)
+            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
             {
-                memePositionY = random.Next(100,StaticEngine.RenderHeight-100);
-                memePositionX = 0;
-                memeSlope = (float)1/random.Next(-10,10);
-                memeRotation = random.Next(-40, 40);
                 memeCounter++;
-
                 if (memeCounter == 8)
                     memeCounter = 1;
+
+                memePositionY = random.Next(200,StaticEngine.RenderHeight-200);
+                memePositionX = -memes[memeCounter].Width;
+                memeSlope = (float)1 / random.Next(-30, 30);
+                memeRotation = random.Next(-40, 40);
+                
             }
         }
 
