@@ -1,12 +1,7 @@
 {
   "Name": "House",
   "Dimension": "400, 512",
-  "Obstacles": [
-    {
-      "ObstacleType": 3,
-      "Hitbox": "2, 2, 1, 1"
-    }
-  ],
+  "Obstacles": [],
   "BalloonPath": [
     {
       "X": 135.0,

@@ -20,16 +20,18 @@ namespace NoPasaranTD.Networking
             }
         }
 
+        public string MapName { get; set; }
         public string Name { get; set; }
 
-        public NetworkLobby(NetworkClient host, string name)
+        public NetworkLobby(NetworkClient host, string name,string mapname)
         {
             Players = new List<NetworkClient>();
             Name = name;
             Host = host;
+            MapName = mapname;
         }
 
-        public string GetInfo() => Name;
+        public string GetInfo() => Name+"#"+MapName;
 
         /// <summary>
         /// Sucht nach einem Spieler in dieser Lobby,
@@ -85,11 +87,15 @@ namespace NoPasaranTD.Networking
             string playerInfo = info.Substring(index + 1);
 
             string[] playerInfos = playerInfo.Split('|');
+            
             if (playerInfos.Length == 0 || string.IsNullOrEmpty(playerInfos[0]))
                 throw new Exception("Received an empty lobby");
 
             NetworkClient host = NetworkClient.Deserialize(playerInfos[0]);
-            NetworkLobby lobby = new NetworkLobby(host, lobbyInfo);
+            
+            string[] lobbyInfos = lobbyInfo.Split('#');
+            NetworkLobby lobby = new NetworkLobby(host, lobbyInfos[0], lobbyInfos[1]);
+            
 
             // int i = 1 aufgrund vom host, der schon definiert wird
             for (int i = 1; i < playerInfos.Length; i++)

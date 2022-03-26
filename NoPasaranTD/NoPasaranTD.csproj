@@ -61,6 +61,7 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
+    <Compile Include="Utilities\ResourceLoader.cs" />
     <Compile Include="Networking\ReliableUDPModel.cs" />
     <Compile Include="Networking\ReliableUPDHandler.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Visuals\Ingame\OptionsContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerItemContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerListContainer.cs" />
+    <Compile Include="Visuals\Ingame\GuiSelectMap.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
     <Compile Include="Model\TowerArtillery.cs" />
@@ -122,21 +124,36 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Resources\spentagon.json" />
-    <EmbeddedResource Include="Resources\house.json" />
+    <EmbeddedResource Include="Resources\Maps\spentagon.json" />
+    <EmbeddedResource Include="Resources\Maps\house.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\spentagon.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
     <EmbeddedResource Include="Resources\gameoversound.wav" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\house.jpg" />
+    <EmbeddedResource Include="Resources\Maps\house.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\pool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\spentagon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\factory.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Body.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Head.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Barrel.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
