@@ -74,7 +74,7 @@ namespace NoPasaranTD.Visuals.Ingame
             Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
             BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
             Margin = 1,
-            StringFont = StandartHeader2Font,          
+            StringFont = StandartHeader2Font,
         };
 
         // Button zum ein- ausklappen des Menüs
@@ -117,8 +117,8 @@ namespace NoPasaranTD.Visuals.Ingame
                 playersButton.Render(g);
                 accelerationButton.Render(g);
                 chatButton.Render(g);
-            }          
-            
+            }
+
             // Zeigt den ein- ausklappen Button ummer
             expandButton.Render(g);
         }
@@ -139,7 +139,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 accelerationButton.Update();
                 startButton.Update();
                 chatButton.Update();
-            }           
+            }
             expandButton.Update();
         }
 
@@ -152,7 +152,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 startButton.MouseDown(e);
                 accelerationButton.MouseDown(e);
                 chatButton.MouseDown(e);
-            }            
+            }
             expandButton.MouseDown(e);
         }
 
@@ -161,18 +161,18 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public void Init(Game gamer)
         {
-            int buttonWidth = (Bounds.Width - 7 * ButtonMargin)/6;
-            int buttonHeight = Bounds.Height - ButtonMargin*2;
+            int buttonWidth = (Bounds.Width - 7 * ButtonMargin) / 6;
+            int buttonHeight = Bounds.Height - ButtonMargin * 2;
 
             currentGame = gamer;
 
             // Initialisiert die Grenzen der Buttons
-            startButton.Bounds = new Rectangle( Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
-            accelerationButton.Bounds = new Rectangle( Bounds.X + ButtonMargin * 2 + buttonWidth, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
-            autoStartButton.Bounds = new Rectangle( Bounds.X + ButtonMargin * 3 + buttonWidth * 2, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
-            playersButton.Bounds = new Rectangle( Bounds.X + ButtonMargin * 4 + buttonWidth * 3, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
-            chatButton.Bounds = new Rectangle( Bounds.X + ButtonMargin * 5 + buttonWidth * 4, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
-            expandButton.Bounds = new Rectangle( Bounds.X + ButtonMargin * 6 + buttonWidth * 5, Bounds.Y + ButtonMargin, buttonWidth , buttonHeight);
+            startButton.Bounds = new Rectangle(Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            accelerationButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 2 + buttonWidth, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            autoStartButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 3 + buttonWidth * 2, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            playersButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 4 + buttonWidth * 3, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            chatButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 5 + buttonWidth * 4, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 6 + buttonWidth * 5, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
 
             // Initilialisiert die Schriftfarben des Buttons
             startButton.Foreground = Foreground;
@@ -190,7 +190,7 @@ namespace NoPasaranTD.Visuals.Ingame
             chatButton.ButtonClicked += ChatButton_ButtonClicked;
             accelerationButton.ButtonClicked += AccelerationButton_ButtonClicked;
         }
-        
+
         #endregion
         #region Event Methoden
 
@@ -201,7 +201,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Vergrößert oder verkleinert das Optionsmeu
         private async void ExpandButton_ButtonClicked()
         {
-            if(IsExpanded)
+            if (IsExpanded)
                 await ExpandCollapseAsync(false);
             else
                 await ExpandCollapseAsync(true);
@@ -209,7 +209,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
         private void AutoStartButton_ButtonClicked()
-        {           
+        {
             currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
         }
 
@@ -229,9 +229,9 @@ namespace NoPasaranTD.Visuals.Ingame
         public async Task ExpandCollapseAsync(bool expanding)
         {
             if (expanding)
-                await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 8);
+                await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 7);
             else
-                await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin * 8);
+                await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin * 3);
         }
 
         // Vergrößert das Fenster zur angegebenen Breite
@@ -239,14 +239,13 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             int startPos = Bounds.X;
             int startWidth = Bounds.Width;
-            IsExpanded = !IsExpanded;
+            IsExpanded = true;
             while (Bounds.Width <= aimSize)
             {
-                Bounds= new Rectangle(Bounds.X -10,Bounds.Y,Bounds.Width+20,Bounds.Height);
+                Bounds = new Rectangle(Bounds.X - 10, Bounds.Y, Bounds.Width + 20, Bounds.Height);
                 expandButton.Bounds = new Rectangle(expandButton.Bounds.X + 10, expandButton.Bounds.Y, expandButton.Bounds.Width, expandButton.Bounds.Height);
                 await Task.Delay(5);
             }
-            Bounds = new Rectangle(startPos + startWidth/2 - aimSize/2, Bounds.Y, aimSize, Bounds.Height);
             expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 6 + expandButton.Bounds.Width * 5, Bounds.Y + ButtonMargin, expandButton.Bounds.Width, expandButton.Bounds.Height);
         }
 
@@ -255,14 +254,13 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             int startPos = Bounds.X;
             int startWidth = Bounds.Width;
-            IsExpanded = !IsExpanded;
+            IsExpanded = false;
             while (Bounds.Width >= aimSize)
             {
                 Bounds = new Rectangle(Bounds.X + 10, Bounds.Y, Bounds.Width - 20, Bounds.Height);
                 expandButton.Bounds = new Rectangle(expandButton.Bounds.X - 10, expandButton.Bounds.Y, expandButton.Bounds.Width, expandButton.Bounds.Height);
                 await Task.Delay(5);
             }
-            Bounds = new Rectangle(startPos + startWidth / 2 - aimSize/2, Bounds.Y, aimSize, Bounds.Height);
             expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, expandButton.Bounds.Width, expandButton.Bounds.Height);
         }
 
