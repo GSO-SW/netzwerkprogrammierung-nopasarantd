@@ -25,6 +25,9 @@ namespace NoPasaranTD.Model
         public uint Strength { get => StaticInfo.GetTowerDamage(GetType()) * Level; }
         public uint Delay { get => StaticInfo.GetTowerDelay(GetType()) / (Level * 2); }
         public double Range { get => StaticInfo.GetTowerRange(GetType()) * Level * 0.3; }
+        public uint UpgradePrice { get => StaticInfo.GetTowerUpgradePrice(GetType()) * Level; }
+        public uint SellPrice { get => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1); }
+        public bool LevelCap { get => CheckLevelCap(); }
         public Guid ID { get; } = Guid.NewGuid();
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc 
@@ -40,6 +43,17 @@ namespace NoPasaranTD.Model
                     default: throw new Exception("TowerTargetMode not found");
                 }
             }
+        }
+
+        /// <summary>
+        /// Kontrolliert ob der Tower unter dem LevelCap ist
+        /// </summary>
+        /// <returns>Gibt true zurück, wenn das Level um 1 inkrementiert werden kann, ohne den LevelCap zu überschreiten</returns>
+        public bool CheckLevelCap()
+        {
+            if (StaticInfo.GetTowerLevelCap(GetType()) > Level)
+                return true;
+            return false;
         }
 
         public abstract void Render(Graphics g);

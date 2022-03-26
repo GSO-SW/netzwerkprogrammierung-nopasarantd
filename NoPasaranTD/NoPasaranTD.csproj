@@ -61,6 +61,7 @@
       <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Networking\NetworkTask.cs" />
+    <Compile Include="Utilities\ResourceLoader.cs" />
     <Compile Include="Utilities\Resources.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
@@ -69,6 +70,9 @@
     <Compile Include="Networking\NetworkHandler.cs" />
     <Compile Include="Networking\NetworkClient.cs" />
     <Compile Include="Utilities\Serializer.cs" />
+    <Compile Include="Visuals\Ingame\OptionsContainer.cs" />
+    <Compile Include="Visuals\Ingame\PlayerItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\PlayerListContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiSelectMap.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
@@ -126,14 +130,29 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Maps\spentagon.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
     <EmbeddedResource Include="Resources\gameoversound.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Maps\house.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\pool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\spentagon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\factory.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Body.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Head.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Canon_Barrel.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

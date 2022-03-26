@@ -4,6 +4,7 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -60,7 +61,6 @@ namespace NoPasaranTD.Visuals.Main
             backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
-                backgroundGame.UILayout.Active = false;
                 backgroundGame.UILayout.Visible = false;
                 backgroundGame.GodMode = true;
 
@@ -99,15 +99,43 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void Dispose() => DiscoveryClient?.Dispose();
+        public override void Dispose()
+        {
+            DiscoveryClient?.Dispose();
+            backgroundGame?.Dispose();
+        }
 
         #region Discovery event region
         private void StartGame()
         { // Befehl zum Starten des Spiels
             if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
-            Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
-                DiscoveryClient.UdpClient, DiscoveryClient.Clients
-            ));
+
+            List<NetworkClient> participants = new List<NetworkClient>();
+            { // Baue Mitspieler Liste auf (Host auf index 0)
+                string playerStr;
+                string hostStr = NetworkClient.Serialize(CurrentLobby.Host);
+                foreach(NetworkClient player in DiscoveryClient.Clients)
+                { // Alle Endpunkte (Außer lokaler Spieler)
+                    // Serialisiere den Spieler in ein String
+                    playerStr = NetworkClient.Serialize(player);
+
+                    if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                        participants.Insert(0, player);
+                    else // Wenn kein Host, einfach hinzufügen
+                        participants.Add(player);
+                }
+
+                // Lokaler Spieler
+                playerStr = NetworkClient.Serialize(LocalPlayer);
+                if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                    participants.Insert(0, LocalPlayer);
+                else 
+                    participants.Add(LocalPlayer); // Wenn kein Host, einfach hinzufügen
+            }
+            Program.LoadGame("spentagon", new NetworkHandler(
+                DiscoveryClient.UdpClient, participants, LocalPlayer
+            )
+            { Lobby = CurrentLobby});
         }
 
         private void UpdateInfo()

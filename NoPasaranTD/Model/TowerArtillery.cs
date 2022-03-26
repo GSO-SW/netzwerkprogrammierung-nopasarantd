@@ -63,17 +63,52 @@ namespace NoPasaranTD.Model
             RectangleF supportLeg2 = new RectangleF(
                 rectPipe.X + diameter / 2 - brickSizeX/2, leg2.Y,
                 brickSizeX, leg2.Height);
+
+            /*
+             *             // Zeichnet die Hitbox des Towers
+            if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
+                g.FillPolygon(Brushes.SlateGray, hitboxPolygonCorners);
+            else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
+                g.FillPolygon(Brushes.Red, hitboxPolygonCorners);
+            */
+
+            // Bei Hindernissen wird es rot gezeichnet
+
+            if (IsPositionValid || IsPlaced)
+            {
+                g.FillRectangle(Brushes.DarkGray, leg1);
+                g.FillRectangle(Brushes.DarkGray, leg2);
+                g.DrawRectangle(Pens.SlateGray, leg1.X, leg1.Y, leg1.Width, leg1.Height);
+                g.DrawRectangle(Pens.SlateGray, leg2.X, leg2.Y, leg2.Width, leg2.Height);
+                g.FillRectangle(Brushes.Orange, supportLeg1);
+                g.FillRectangle(Brushes.Orange, supportLeg2);
+            }
+            else if (!IsPlaced)
+            {
+                int lines = 40;
+                float lineStep = (Hitbox.Width + Hitbox.Height) / (float)lines;
+                for (int i = 1; i < lines + 1; i++)
+                    g.DrawLine(Pens.DarkRed,
+                       Math.Min(Hitbox.Left + lineStep * i, Hitbox.Right),
+                       Hitbox.Top + Math.Max(Hitbox.Left + lineStep * i - Hitbox.Right, 0),
+                       Hitbox.Left + Math.Max(Hitbox.Top + lineStep * i - Hitbox.Bottom, 0),
+                       Math.Min(Hitbox.Top + lineStep * i, Hitbox.Bottom)
+                       );
+                g.FillRectangle(new SolidBrush(Color.FromArgb(20, Color.Red)), Hitbox);
+
+                g.FillRectangle(Brushes.Red, leg1);
+                g.FillRectangle(Brushes.Red, leg2);
+                g.DrawRectangle(Pens.Red, leg1.X, leg1.Y, leg1.Width, leg1.Height);
+                g.DrawRectangle(Pens.Red, leg2.X, leg2.Y, leg2.Width, leg2.Height);
+                g.FillRectangle(Brushes.Red, supportLeg1);
+                g.FillRectangle(Brushes.Red, supportLeg2);
+            }
             
-            g.FillRectangle(Brushes.DarkGray, leg1);
-            g.FillRectangle(Brushes.DarkGray, leg2);
-            g.DrawRectangle(Pens.SlateGray, leg1.X, leg1.Y, leg1.Width, leg1.Height);
-            g.DrawRectangle(Pens.SlateGray, leg2.X, leg2.Y, leg2.Width, leg2.Height);
-            g.FillRectangle(Brushes.Orange, supportLeg1);
-            g.FillRectangle(Brushes.Orange, supportLeg2);
 
 
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - lTicks + tickReloadStart).ToString(), font, bruhBlack, Hitbox.Location);
+
 
             // attack radius
             if (IsSelected) g.DrawEllipse(RANGE_CIRCLE_PEN, Hitbox.X + (int)(Hitbox.Width / 2.0 - Range), Hitbox.Y + (int)(Hitbox.Height / 2 - Range), (int)Range * 2, (int)Range * 2);
@@ -112,14 +147,37 @@ namespace NoPasaranTD.Model
                     rectCircle3 = new RectangleF(
                         rectCircle2.X + rectCircle2.Width * 0.1f, rectCircle2.Y + rectCircle2.Height * 0.1f,
                         rectCircle2.Width * 0.8f, rectCircle2.Height * 0.8f);
-                    g.FillEllipse(Brushes.DarkGray, rectCircle1);
-                    g.DrawEllipse(Pens.SlateGray, rectCircle1);
-                    g.FillRectangle(Brushes.DarkGray, rectPipeTransformed);
-                    g.DrawLine(Pens.SlateGray, leftLineX, rectPipe.Y, rightLineX, rectPipe.Y);
-                    g.DrawLine(Pens.SlateGray, leftLineX, rectPipe.Bottom, rightLineX, rectPipe.Bottom);
-                    g.FillEllipse(Brushes.DarkGray, rectCircle2);
-                    g.FillEllipse(Brushes.Black, rectCircle3);
-                    g.DrawEllipse(Pens.SlateGray, rectCircle2);
+                    
+                    
+
+                    // Bei Hindernissen wird es rot gezeichnet
+                    if (IsPositionValid || IsPlaced)
+                    {
+                        g.FillEllipse(Brushes.DarkGray, rectCircle1);
+                        g.DrawEllipse(Pens.SlateGray, rectCircle1);
+                        g.FillRectangle(Brushes.DarkGray, rectPipeTransformed);
+                        g.DrawLine(Pens.SlateGray, leftLineX, rectPipe.Y, rightLineX, rectPipe.Y);
+                        g.DrawLine(Pens.SlateGray, leftLineX, rectPipe.Bottom, rightLineX, rectPipe.Bottom);
+                        g.FillEllipse(Brushes.DarkGray, rectCircle2);
+                        g.FillEllipse(Brushes.Black, rectCircle3);
+                        g.DrawEllipse(Pens.SlateGray, rectCircle2);
+                    }
+                    else if (!IsPlaced)
+                    {
+                        g.FillEllipse(Brushes.Red, rectCircle1);
+                        g.DrawEllipse(Pens.Red, rectCircle1);
+                        g.FillRectangle(Brushes.Red, rectPipeTransformed);
+                        g.DrawLine(Pens.Red, leftLineX, rectPipe.Y, rightLineX, rectPipe.Y);
+                        g.DrawLine(Pens.Red, leftLineX, rectPipe.Bottom, rightLineX, rectPipe.Bottom);
+                        g.FillEllipse(Brushes.Red, rectCircle2);
+                        g.FillEllipse(Brushes.Red, rectCircle3);
+                        g.DrawEllipse(Pens.Red, rectCircle2);
+                    }
+
+                    
+
+
+                    
 
                     centerCanon = new PointF(leftLineX,upperY + (lowerY-upperY)/2);
 
@@ -171,7 +229,7 @@ namespace NoPasaranTD.Model
 
                     if (phaseDown != 1 && ( !reloadOnlyAfterImpact || phaseDown != 2)) // [!phaseDown2] could be optional
                     {
-                        tickReloadStart = lTicks;// + tickLength_waitBetween;
+                        tickReloadStart = lTicks;
                         phaseUp = 1;
                     }
                     break;

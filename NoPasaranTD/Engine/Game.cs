@@ -4,13 +4,11 @@ using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using NoPasaranTD.Visuals.Ingame.GameOver;
-using NoPasaranTD.Visuals.Main;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace NoPasaranTD.Engine
 {
@@ -27,10 +25,16 @@ namespace NoPasaranTD.Engine
 
 		public int Money { get; set; } = StaticInfo.StartMoney;
 		public int HealthPoints { get; set; } = StaticInfo.StartHP;
-		public bool GodMode { get; set; } = false;
+		public bool GodMode { get; set; } = true;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 
+		/// <summary>
+		/// Initialisiert ein neues Spiel
+		/// </summary>
+		/// <param name="map">Die Map die gespielt werden soll</param>
+		/// <param name="networkHandler">Der genutzte Networkhandler</param>
+		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
 		public Game(Map map, NetworkHandler networkHandler)
 		{
 			CurrentMap = map;
@@ -52,6 +56,10 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
 			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
 			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
+			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
+			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
+			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+			
 		}
 
 		private void InitBalloons()
@@ -64,12 +72,14 @@ namespace NoPasaranTD.Engine
         {
             UILayout.Dispose();
             NetworkHandler.Dispose();
+			CurrentMap.Dispose();
         }
 
         #region Game logic region
         public void Update()
 		{
-			if (Paused && NetworkHandler.OfflineMode) return;
+			if (Paused && NetworkHandler.OfflineMode) return; // Abfragen ob das Spiel legitim pausiert ist
+			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
 			NetworkHandler.Update();
 
 			WaveManager.Update();
@@ -83,7 +93,8 @@ namespace NoPasaranTD.Engine
 						if (!GodMode)
 						{
 							HealthPoints -= (int)Balloons[i][j].Strength;
-							if (HealthPoints <= 0) GameOver();
+							if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
+								Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
 						}
 
 						Balloons[i].RemoveAt(j);
@@ -148,7 +159,7 @@ namespace NoPasaranTD.Engine
 
 			foreach (var item in CurrentMap.Obstacles)
 			{ // Hindernisse rendern
-				g.FillRectangle(Brushes.Red, 
+				g.DrawImage(item.Image, 
 					(float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
 					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
 					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
@@ -163,13 +174,15 @@ namespace NoPasaranTD.Engine
 
 		public void KeyUp(KeyEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyUp(e);
 		}
 
 		public void KeyPress(KeyPressEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyPress(e);
 		}
 
@@ -178,44 +191,42 @@ namespace NoPasaranTD.Engine
 			if ((HealthPoints > 0 || GodMode) && e.KeyCode == Keys.Escape)
 			{ // Lade Pause Menü und pausiere das Spiel im Offline Modus
 			  // (Sofern Escape gedrückt wurde und der Spieler noch lebt oder sich im Gott Modus befindet)
-				Program.LoadScreen((Paused = !Paused) ?
-					new GuiPauseMenu(this) : null);
+				TogglePauseMenu();
 			}
 
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.KeyDown(e);
 		}
 
 		public void MouseUp(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseUp(e);
 		}
 
 		public void MouseDown(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseDown(e);
 		}
 
 		public void MouseMove(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseMove(e);
 		}
 
 		public void MouseWheel(MouseEventArgs e)
 		{
-			if (Paused) return;
+			// Abfrage ob das Spiel pausiert oder vorbei ist
+			if (Paused || HealthPoints <= 0) return;
 			UILayout.MouseWheel(e);
 		}
 		#endregion
-
-		private void GameOver()
-		{
-			Paused = true;
-			Program.LoadScreen(new GuiGameOver());
-		}
 
 		/// <summary>
 		/// Kontrolliert, ob das Rechteck mit einem Hindernis, Turm oder dem Pfad kollidiert.
@@ -330,16 +341,18 @@ namespace NoPasaranTD.Engine
 			Tower selectedTower = UILayout.TowerDetailsContainer.Context;
 			if (selectedTower != null && selectedTower.ID == targetTower.ID)
 				UILayout.TowerDetailsContainer.Visible = false;
-
+			Money += (int)targetTower.SellPrice;
 			Towers.Remove(targetTower);
 		}
 
 		public void UpgradeTower(object t)
         {
 			Tower tower = FindTowerID(t);
+			if (!GodMode)
+				Money -= (int)tower.UpgradePrice;
 			tower.Level++;
 			tower.SearchSegments(CurrentMap);
-        }
+		}
 
 		public void ModeChangeTower(object t)
         {
@@ -350,6 +363,30 @@ namespace NoPasaranTD.Engine
 			if (selectedTower != null && selectedTower.ID == targetTower.ID)
 				UILayout.TowerDetailsContainer.Context = targetTower;
 		}
+
+		public void StartRound(object t)
+        {
+			WaveManager.StartSpawn();
+        }
+
+		public void AccelerateGame(object t)
+        {
+			if (StaticEngine.TickAcceleration == 8)
+				StaticEngine.TickAcceleration = 1;
+			else
+				StaticEngine.TickAcceleration *= 2;
+		}
+
+		public void TogglePauseMenu()
+        {
+			Program.LoadScreen((Paused = !Paused) ?
+					new GuiPauseMenu(this) : null);
+		}
+
+		public void ToggelAutoStart(object t)
+        {
+			WaveManager.AutoStart = !WaveManager.AutoStart;
+        }
 
 		private Tower FindTowerID(object t)
         {
