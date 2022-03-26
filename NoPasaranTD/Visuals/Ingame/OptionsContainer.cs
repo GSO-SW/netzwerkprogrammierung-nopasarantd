@@ -200,11 +200,11 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Vergrößert oder verkleinert das Optionsmeu
         private async void ExpandButton_ButtonClicked()
-        {           
-            if (!IsExpanded)
-                await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 7);
+        {
+            if(IsExpanded)
+                await ExpandCollapseAsync(false);
             else
-                await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin *2);           
+                await ExpandCollapseAsync(true);
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
@@ -225,6 +225,14 @@ namespace NoPasaranTD.Visuals.Ingame
 
         #endregion
         #region Async Methoden
+
+        public async Task ExpandCollapseAsync(bool expanding)
+        {
+            if (expanding)
+                await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 8);
+            else
+                await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin * 8);
+        }
 
         // Vergrößert das Fenster zur angegebenen Breite
         public async Task ExpandToAsync(int aimSize)
