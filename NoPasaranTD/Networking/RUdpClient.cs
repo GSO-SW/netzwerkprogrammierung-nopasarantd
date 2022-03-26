@@ -151,6 +151,7 @@ namespace NoPasaranTD.Networking
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
                         if (tick - info.TickCreated >= 1000)
                         {
+                            Console.WriteLine("Resending Package: " + Encoding.ASCII.GetString(info.Packet.Data));
                             await SendPacketAsync(info.Packet, info.Endpoints[j]);
                             info.TickCreated = Environment.TickCount;
                         }
@@ -173,6 +174,7 @@ namespace NoPasaranTD.Networking
 
         private async Task AcceptPKG(RUdpPacketCombo combo)
         {
+            Console.WriteLine("APKGING");
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
                 return;
@@ -189,6 +191,7 @@ namespace NoPasaranTD.Networking
 
         private void AcceptACK(RUdpPacketCombo combo)
         {
+            Console.WriteLine("ACKING");
             if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
                 throw new IOException("Packet was already acknowledged");
 
@@ -207,6 +210,7 @@ namespace NoPasaranTD.Networking
 
         private async Task AcceptSYN(RUdpPacketCombo combo)
         {
+            Console.WriteLine("SYNING");
             if(!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
                 throw new IOException("Packet was already acknowledged");
 
@@ -229,11 +233,13 @@ namespace NoPasaranTD.Networking
         {
             byte[] data = RUdpPacket.Serialize(packet);
             await udpClient.SendAsync(data, data.Length, endpoint);
+            Console.WriteLine("SENDING " + Encoding.ASCII.GetString(packet.Data));
         }
 
         private async Task<RUdpPacketCombo> ReceivePacketAsync()
         {
             UdpReceiveResult result = await udpClient.ReceiveAsync();
+            Console.WriteLine("RECEIVING");
             return new RUdpPacketCombo(
                 RUdpPacket.Deserialize(result.Buffer),
                 result.RemoteEndPoint
