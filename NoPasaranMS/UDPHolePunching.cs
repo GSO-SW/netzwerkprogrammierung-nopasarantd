@@ -10,6 +10,9 @@ namespace NoPasaranMS
 {
     internal static class UDPHolePunching
     {
+        /// <summary>
+        /// Vermittelt jedem Spieler die UDP-Endpunkte um UDP-Hole-Punching zu ermöglichen
+        /// </summary>
         public static void Connect(List<Player> players, int port)
         {
             try

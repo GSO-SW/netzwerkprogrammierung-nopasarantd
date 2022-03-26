@@ -8,8 +8,9 @@ namespace NoPasaranMS
 {
     public class Lobby
     {
-        public string Info;
-        public List<Player> Players = new List<Player>();
+        public string Info { get; set; }
+
+        public readonly List<Player> Players = new List<Player>();
         public Lobby(string info)
         {
             Info = info;
@@ -20,15 +21,19 @@ namespace NoPasaranMS
             Info = info;
             Players.Add(host);
         }
-        public string FullInfo => new StringBuilder(Info + '|').AppendJoin('|', Players.Select(p => p.Info)).ToString();
 
+        /// <summary>
+        /// Generiert eine Zeichenkette mit allen Informationen, die die Lobby zur verfügung hat
+        /// </summary>
+        public string FullInfo => new StringBuilder(Info + '|').AppendJoin('|', Players.Select(p => p.Info)).ToString();
     }
 
     public class Player
     {
-        public string Info;
-        public Socket Socket;
-        public StreamWriter Writer;
+        public string Info { get; set; }
+
+        public readonly Socket Socket;
+        public readonly StreamWriter Writer;
         public Player(string info, Socket socket, StreamWriter writer)
         {
             Info = info;

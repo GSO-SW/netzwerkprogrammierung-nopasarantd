@@ -22,6 +22,10 @@ namespace NoPasaranMS
             Lobbies.Add(new Lobby("FreePlayers"));
         }
 
+        /// <summary>
+        /// Startet den Vermittlungsserver.
+        /// Hier wird nach Verbindungen gewartet und dann behandelt.
+        /// </summary>
         public void Run()
         {
             IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, Port);
@@ -35,6 +39,11 @@ namespace NoPasaranMS
             }
         }
 
+        /// <summary>
+        /// Behandelt eine bestimmte Tcp-Verbindung.
+        /// Hier werden dann alle vom client gesendeten Befehle und seinen Verbindungsabbau behandelt
+        /// </summary>
+        /// <param name="clientSocket">Der Socket der zu verarbeiten ist</param>
         private void Receive(Socket clientSocket)
         {
             EndPoint endpoint = clientSocket.RemoteEndPoint;
@@ -47,11 +56,12 @@ namespace NoPasaranMS
                 using (StreamWriter writer = new StreamWriter(networkStream))
                 using (StreamReader reader = new StreamReader(networkStream))
                 {
+                    // Warte auf einloggen des Spielers
                     string playerInfo = reader.ReadLine();
                     Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] added player {playerInfo}");
                     p = new Player(playerInfo, clientSocket, writer);
                     Lobbies[0].Players.Add(p);
-                    SendUpdates();
+                    SendUpdates(); // Teile jeden die Information des neuen Spielers mit
 
                     while (true)
                     {
@@ -80,6 +90,11 @@ namespace NoPasaranMS
             }
         }
 
+        /// <summary>
+        /// Behandelt die eingehende Nachricht eines Spielers.
+        /// </summary>
+        /// <param name="sender">Der Spieler der das Kommando gibt</param>
+        /// <param name="message">Das Kommando selbst</param>
         private void HandleMessage(Player sender, string message)
         {
             try
@@ -90,36 +105,36 @@ namespace NoPasaranMS
                 Lobby lobby = Lobbies.Where(l => l.Players.Contains(sender)).FirstOrDefault();
                 switch (type)
                 {
-                    case "SetUserInfo":
+                    case "SetUserInfo": // Aktualisiere die Spielerinformation
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} send new user info '{content}'");
                         sender.Info = content;
                         break;
-                    case "SetLobbyInfo":
+                    case "SetLobbyInfo": // Aktualisiere die Lobbyinformation
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} send new lobby info for {lobby.Info} -> '{content}'");
                         lobby.Info = content;
                         break;
-                    case "StartGame":
+                    case "StartGame": // Starte das Spiel und führe das Event aus
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} started game for lobby {lobby.Info}");
                         Lobbies.Remove(lobby);
                         GroupFoundCallback(lobby.Players.ToList());
                         break;
-                    case "Join":
+                    case "Join": // Füge den Spieler in die Lobby hinzu
                         Lobbies.Find(l => l.Info == content).Players.Add(sender);
                         RemovePlayerFromLobby(sender);
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} joined {content}");
                         break;
-                    case "Leave":
+                    case "Leave": // Entferne den Spieler von der Lobby
                         RemovePlayerFromLobby(sender);
                         Lobbies[0].Players.Add(sender);
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} left {content}");
                         break;
-                    case "NewLobby":
+                    case "NewLobby": // Erstelle eine neue Lobby
                         Lobbies.Add(new Lobby(content, sender));
                         RemovePlayerFromLobby(sender);
                         Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] {sender.Info} created lobby {content}");
                         break;
                 }
-                SendUpdates();
+                SendUpdates(); // Teile die Änderung mit
             }
             catch (Exception)
             {
@@ -127,6 +142,9 @@ namespace NoPasaranMS
             }
         }
 
+        /// <summary>
+        /// Sendet an jede Verbindung den aktuellen Stand des Servers
+        /// </summary>
         private void SendUpdates()
         {
             Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] sending updates -> {FullInfo()}");
@@ -150,6 +168,11 @@ namespace NoPasaranMS
             }
         }
 
+        /// <summary>
+        /// Entfernt einen Spieler von seiner aktuellen Lobby.
+        /// Fügt ihn dann zu der Haupt-Lobby hinzu
+        /// </summary>
+        /// <param name="p"></param>
         private void RemovePlayerFromLobby(Player p)
         {
             int i = Lobbies.FindIndex(l => l.Players.Contains(p));
@@ -166,6 +189,10 @@ namespace NoPasaranMS
             }
         }
 
+        /// <summary>
+        /// Erstelle einen Infostring des ganzen Stand des Vermittlungsservers
+        /// </summary>
+        /// <returns></returns>
         private string FullInfo()
         {
             return new StringBuilder().AppendJoin('\t', Lobbies.Select(l => l.FullInfo)).ToString();
