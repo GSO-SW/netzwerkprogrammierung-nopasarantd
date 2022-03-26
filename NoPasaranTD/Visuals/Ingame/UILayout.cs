@@ -160,7 +160,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
                 TowerBuildMenu.Visible = true;
-                await OptionsContainer.ExpandCollapseAsync(true);
+                await OptionsContainer.ExpandToAsync(OptionsContainer.expandButton.Bounds.Width * 6 + OptionsContainer.ButtonMargin * 7);
                 tower.Hitbox = args.MovedObject;
                 game.NetworkHandler.InvokeEvent("AddTower", tower);
             }
@@ -193,7 +193,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 TowerDetailsContainer.Visible = false;
                 TowerBuildMenu.Visible = false;
                 HideBuildMenuContainer.Content = "→";
-                await OptionsContainer.ExpandCollapseAsync(false);
+                await OptionsContainer.CollapseToAsync(OptionsContainer.expandButton.Bounds.Width + OptionsContainer.ButtonMargin * 2);
             }
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
