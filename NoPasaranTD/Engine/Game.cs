@@ -297,7 +297,7 @@ namespace NoPasaranTD.Engine
 							foundBalloon = true;
 						}
 						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
-						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
+						else if (foundBalloon && tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
 							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
 								currentSelectedBalloon = (item, i);
 					}
