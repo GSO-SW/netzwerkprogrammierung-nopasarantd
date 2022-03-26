@@ -154,5 +154,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Canon_Barrel.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\dichter_und_denker.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

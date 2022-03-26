@@ -246,7 +246,7 @@ namespace NoPasaranTD.Data
             "Ich habe extra Möhren mitgebracht um das beste Klausurfeeling für Sie zu erzeugen",
             "Wenn du stirbst bist du Tod!",
             "Ballons tun dir Weh!",
-            "Wenn du Obdachloss bist, kauf dir doch einfach ein Haus!",
+            "Wenn du Obdachlos bist, kauf dir doch einfach ein Haus!",
             "Geringverdiener!",
             "Der Mark(t) regelt!. Ausser Benzinpreise natürlich!",
             "Mission 5 Points!",
@@ -257,8 +257,14 @@ namespace NoPasaranTD.Data
             "Kaffee durch die Maske trinken. Das nennt man Genuss!",
             "Man sollte den Wohnwagen in die Luft sprengen!",
             "Sei bloß vorsichtig!",
-            "Man darf Alex nur ärgern, wenn man im Chemieuntericht mitgemacht hat!",
-            "Warum haben sie ein blaues Auge? Joa, wurde vom Zahnarzt verprügelt, weil ich den Mund nicht weit genug geöffnet habe",
+            "Man darf Alex nur ärgern, wenn man im Chemieuntericht mitgearbeitet hat!",
+            "Warum haben Sie ein blaues Auge? Joa, wurde vom Zahnarzt verprügelt, weil ich den Mund nicht weit genug geöffnet habe",
+            "Reliable UDP ist für nen Müll!",
+            "Ejakulation = Massenmord?",
+            "Steroanlagennippel",
+            "P A E T O A L - Wir lernen unseren Nachnamen zu Buchstabieren",
+            "Pavla Violana, Paola Viola und Giuseppe Viola - Das Dreigestirn",
+            "Ejakulant = Wichser = Massenmörder",
         };
 
         #endregion
