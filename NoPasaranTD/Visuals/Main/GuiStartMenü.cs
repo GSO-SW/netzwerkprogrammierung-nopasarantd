@@ -210,8 +210,7 @@ namespace NoPasaranTD.Visuals.Main
 
         private void MultiplayerButton_ButtonClicked()
         {
-            GuiMainMenu guiMainMenu = new GuiMainMenu();
-            currentDisplay.LoadScreen(guiMainMenu);
+            currentDisplay.LoadScreen(new GuiMainMenu());
         }
 
         private void SingleplayerButton_ButtonClicked()
