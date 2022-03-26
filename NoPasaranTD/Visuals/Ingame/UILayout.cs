@@ -92,8 +92,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
         private DragDropService placingTowerDragDrop = new DragDropService();
-        
-        private Tower selectedTower = null;
+
+        private Tower selectedTower;
         /// <summary>
         /// Der Ausgweählte Tower. Wird beim draufklicken zugewiesen
         /// </summary>
@@ -167,11 +167,11 @@ namespace NoPasaranTD.Visuals.Ingame
             }
         }
 
-        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args)
-        {
+        // Wird beim Abbrechen des Drag Drop Vorgang ausgelöst
+        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args) =>
             await OptionsContainer.ExpandCollapseAsync(true);
-        }
 
+        // Wird Ausgelöst sobald ein neues Element im Baumenü ausgewählt
         private void TowerBuildMenu_SelectionChanged()
         {
             Tower tower = null;
@@ -220,10 +220,6 @@ namespace NoPasaranTD.Visuals.Ingame
 
             DrawGameStats(g);
 
-            // TODO: Testcode, ausgewählter Tower soll gerendert werden
-            // unabhängig davon ob er bewegt wird oder nicht!
-            // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
-            // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
             if (placingTowerDragDrop.Context != null)
             {
                 if (placingTowerDragDrop.IsMoving)
