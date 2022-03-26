@@ -48,7 +48,7 @@ namespace NoPasaranTD.Engine
             {
                 currentGame = null; // Entlade Spiel
                 GuiStartMenü startMenü = new GuiStartMenü();
-                startMenü.Init();
+                startMenü.Init(this);
                 LoadScreen(startMenü); // Lade Hauptmenu
             }
             else
