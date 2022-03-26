@@ -247,10 +247,9 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncRequest(object t)
         {
-            Resyncing = true;
-            Game.Paused = true;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
+                Resyncing = true;
                 List<NetworkTask> tasks = new List<NetworkTask>();
                 uint currentTick = Game.CurrentTick;
                 tasks.Add(new NetworkTask("HPMoneyBlock", Game.HealthPoints, Game.Money)); // Übergibt die Leben und das Geld zur Zeit des zurücksetztens im Objekt und im TickToPerform
@@ -258,12 +257,14 @@ namespace NoPasaranTD.Networking
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
                 foreach (var item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
-                foreach (var item in Game.Balloons)
-                    tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
+                for (int i = 0; i < Game.Balloons.Length; i++)
+                    foreach (var item in Game.Balloons[i])
+                        tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
                 tasks.Insert(0, new NetworkTask("HEADER", tasks.Count, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete, ausgeschlossen Header, übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
 
                 foreach (var item in tasks)
                     ReliableUPD.SendReliableUDP("ResyncReceive", item);
+                Resyncing = false;
             }
         }
 
@@ -283,11 +284,12 @@ namespace NoPasaranTD.Networking
             {
                 if ((int)resyncPackageL[0].Parameter == resyncPackageL.Count) // Kontrollieren, dass alle Pakete angekommen sind
                 {
+                    Resyncing = true; // Pausiert das Spiel, damit alle Aufgaben auf einmal passieren
                     Game.Towers.Clear(); // Entfernt alle Türme
                     Game.InitBalloons(); // Entfernt alle Ballons
                     Game.VTowers.Clear(); // Entfernt alle Türme die noch nicht vollkommen platziert sind
                     Game.CurrentTick = (uint)resyncPackageL[0].TickToPerform;
-                    for (int i = resyncPackageL.Count - 1; i >= 0; i--)
+                    for (int i = resyncPackageL.Count - 1; i > 0; i--)
                     {
                         if (resyncPackageL[i].Handler == "HPMoneyBlock") // Sucht nach dem Paket in dem die Leben und das Geld übertragen werden
                         {
@@ -300,13 +302,10 @@ namespace NoPasaranTD.Networking
                     }
 
                     for (int i = 2; i < resyncPackageL.Count; i++)
-                    {
                         TaskQueue.Add(resyncPackageL[i]);
-                    }
                     Update();
                     Game.CheckVTower();
-                    Resyncing = false;
-                    Game.Paused = false;
+                    Resyncing = false; // Führt das Spiel vom gesendeten Tick aus weiter
                 }
             }
         }

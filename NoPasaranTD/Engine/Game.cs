@@ -84,7 +84,7 @@ namespace NoPasaranTD.Engine
         #region Game logic region
         public void Update()
 		{
-			if (Paused && (NetworkHandler.OfflineMode || NetworkHandler.Resyncing)) return; // Abfragen ob das Spiel legitim pausiert ist
+			if ((Paused && NetworkHandler.OfflineMode) || NetworkHandler.Resyncing) return; // Abfragen ob das Spiel legitim pausiert ist
 			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
 			NetworkHandler.Update();
 
@@ -357,7 +357,7 @@ namespace NoPasaranTD.Engine
 		{
 			Towers.Add((Tower)t);
 			Towers[Towers.Count - 1].SearchSegments(CurrentMap);
-			if (!GodMode) // Im GodMode kein Geld abziehen
+			if (!GodMode && !NetworkHandler.Resyncing) // Im GodMode kein Geld abziehen // Beim resynchronisieren auch kein Geld abziehen
 				Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
 		}
 
@@ -442,7 +442,7 @@ namespace NoPasaranTD.Engine
 
 		private void AddBalloon(object t)
         {
-			Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
+			//Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
         }
 
 		public void StartRound(object t)
