@@ -442,7 +442,7 @@ namespace NoPasaranTD.Engine
 
 		private void AddBalloon(object t)
         {
-			//Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
+			Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
         }
 
 		public void StartRound(object t)

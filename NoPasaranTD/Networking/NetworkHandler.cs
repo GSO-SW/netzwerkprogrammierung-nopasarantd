@@ -103,29 +103,38 @@ namespace NoPasaranTD.Networking
          {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
-                if (TaskQueue[i].Handler == "PingRequest")
+                try
                 {
-                    EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
-                    handler(TaskQueue[i].Parameter); // Task ausführen
-                    TaskQueue.RemoveAt(i);
+                    if (TaskQueue[i].Handler == "PingRequest")
+                    {
+                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
+                        handler(TaskQueue[i].Parameter); // Task ausführen
+                        TaskQueue.RemoveAt(i);
+                    }
+                    else if (TaskQueue[i].TickToPerform == Game.CurrentTick
+                        || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower")
+                        || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
+                        || TaskQueue[i].Handler == "AddBalloon"
+                        || OfflineMode) // Checken ob die Task ausgeführt werden soll
+                    {
+                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
+                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
+                        handler(TaskQueue[i].Parameter); // Task ausführen
+                        if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                            TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                    }
+                    else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
+                    {
+                        Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
+                        ReliableUPD.SendReliableUDP("ResyncReq", 0);
+                        TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                    }
                 }
-                else if (TaskQueue[i].TickToPerform == Game.CurrentTick 
-                    || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower") 
-                    || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
-                    || TaskQueue[i].Handler == "AddBalloon"
-                    || OfflineMode) // Checken ob die Task ausgeführt werden soll
+                catch (Exception e)
                 {
-                    Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
-                    EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
-                    handler(TaskQueue[i].Parameter); // Task ausführen
-                    TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                    Console.WriteLine("The Package has been removed before reviewing: " + e.Message);
                 }
-                else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
-                {
-                    Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
-                    ReliableUPD.SendReliableUDP("ResyncReq",0); // TODO Item festlegen welches an den Host gesendet werden soll
-                    TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
-                }
+                
             }
 
             if (!OfflineMode)
@@ -254,6 +263,7 @@ namespace NoPasaranTD.Networking
                 List<NetworkTask> tasks = new List<NetworkTask>();
                 uint currentTick = Game.CurrentTick;
                 tasks.Add(new NetworkTask("HPMoneyBlock", Game.HealthPoints, Game.Money)); // Übergibt die Leben und das Geld zur Zeit des zurücksetztens im Objekt und im TickToPerform
+                tasks.Add(new NetworkTask("SettingsBlock", Game.WaveManager.AutoStart, (long)StaticEngine.TickAcceleration)); // Übergibt ein bool, ob der Autostart aktiv ist und die Geschwindigkeit des Spiels
                 foreach (var item in Game.Towers) // Fügt alle bereits platzierten Türme hinzu
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
                 foreach (var item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
@@ -261,7 +271,7 @@ namespace NoPasaranTD.Networking
                 for (int i = 0; i < Game.Balloons.Length; i++)
                     foreach (var item in Game.Balloons[i])
                         tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
-                tasks.Insert(0, new NetworkTask("HEADER", tasks.Count, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete, ausgeschlossen Header, übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
+                tasks.Insert(0, new NetworkTask("HEADER", tasks.Count + 1, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
 
                 foreach (var item in tasks)
                     ReliableUPD.SendReliableUDP("ResyncReceive", item);
@@ -298,12 +308,19 @@ namespace NoPasaranTD.Networking
                             resyncPackageL.RemoveAt(i + 1); // Entfernt die alte Variante die nun um 1 Platz verschoben ist
                             Game.HealthPoints = (int)resyncPackageL[1].Parameter; // Leben setzten
                             Game.Money = (int)resyncPackageL[1].TickToPerform; // Geld setzten
-                            break;
+                        }
+                        else if (resyncPackageL[i].Handler == "SettingsBlock") // Sucht nach dem Paket mit den Spieleinstellungen Beschleunigung und Autostart
+                        {
+                            StaticEngine.TickAcceleration = (ulong)resyncPackageL[i].TickToPerform; // Geschwindigkeit setzten
+                            Game.WaveManager.AutoStart = (bool)resyncPackageL[i].Parameter; // Autostart setzten
+                            resyncPackageL.Insert(resyncPackageL.Count, resyncPackageL[i]); // Das Paket an das Ende der Liste schreiben
+                            resyncPackageL.RemoveAt(i); // Das andere Vorkommen löschen
                         }
                     }
 
-                    for (int i = 2; i < resyncPackageL.Count; i++)
+                    for (int i = 3; i < resyncPackageL.Count - 1; i++)
                         TaskQueue.Add(resyncPackageL[i]);
+                    resyncPackageL.Clear();
                     Update();
                     Game.CheckVTower();
                     Resyncing = false; // Führt das Spiel vom gesendeten Tick aus weiter
