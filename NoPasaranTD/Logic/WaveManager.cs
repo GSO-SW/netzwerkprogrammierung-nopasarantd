@@ -25,12 +25,12 @@ namespace NoPasaranTD.Engine
         /// </summary>
         public bool AutoStart { get; set; } = false;
 
-        public WaveManager(Game game, int numberBallon)
+        public WaveManager(Game game, int numberBalloon)
         {
             CurrentGame = game;
 
-            currentWave = GetNextBallonWave(numberBallon);
-            currentWavePackage = GetNewBallonPackage(currentWave);
+            currentWave = GetNextBalloonWave(numberBalloon);
+            currentWavePackage = GetNewBalloonPackage();
         }
 
         /// <summary>
@@ -46,26 +46,26 @@ namespace NoPasaranTD.Engine
         private List<Balloon> currentWavePackage;
 
         // Die Anzahl an genutzten Ballons eines Paketes
-        private int currentBallonOfPackage = 0;
+        private int currentBalloonOfPackage = 0;
 
         // Die derzeitigen Ballons der Welle
         private List<Balloon> currentWave;
 
         // Die derzeitige Anzahl an genutzten Ballons der Welle
-        private int currentBallonOfWave = 0;
+        private int currentBalloonOfWave = 0;
 
         // Wellen-Parameter
         private readonly double waveSensitivity = 0.0015; // Die Sensitivität der Wellen
-        private readonly double ballonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
+        private readonly double balloonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
         private readonly uint waveSensitivityExponent = 2; // Der Exponent der den Spawn-Grad verändern kann
 
-        private bool isCompleted = false;
+        private bool completed = false;
         public bool IsCompleted
         {
-            get => isCompleted;
+            get => completed;
             set
             {
-                isCompleted = value;
+                completed = value;
                 if (value)
                 {
                     CurrentGame.Round++;
@@ -73,24 +73,12 @@ namespace NoPasaranTD.Engine
             }
         }
 
-        public bool IsRoundCompleted
+        public bool IsRoundCompleted => completed && CheckIsBalloonsEmpty();
+
+        private List<Balloon> GetNextBalloonWave(int numberBalloons)
         {
-            get
-            {
-                if (isCompleted && CheckIsBallonsEmpty())
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-        private List<Balloon> GetNextBallonWave(int numberBallons)
-        {
-            int currentBallons = 0;
-            Balloon[] ballons = new Balloon[numberBallons];
+            int currentBalloons = 0;
+            Balloon[] balloons = new Balloon[numberBalloons];
 
             // Häufigkeiten eines Ballontypes
             (BalloonType, double)[] probabilities = new (BalloonType, double)[Enum.GetNames(typeof(BalloonType)).Length];
@@ -119,58 +107,57 @@ namespace NoPasaranTD.Engine
             // Fügt die Ballons hinzu
             for (int i = 0; i < probabilities.Length; i++)
             {
-                for (int j = 0; j < (int)(probabilities[i].Item2 * numberBallons); j++)
+                for (int j = 0; j < (int)(probabilities[i].Item2 * numberBalloons); j++)
                 {
-                    ballons[currentBallons] = new Balloon(probabilities[i].Item1);
-                    currentBallons++;
+                    balloons[currentBalloons] = new Balloon(probabilities[i].Item1);
+                    currentBalloons++;
                 }
             }
 
-            List<Balloon> ballonsList = new List<Balloon>(ballons);
-            ballonsList.RemoveAll(x => x == null);
-
-            return ballonsList;
+            List<Balloon> balloonList = new List<Balloon>(balloons);
+            balloonList.RemoveAll(x => x == null);
+            return balloonList;
         }
 
         // Berechnet die Häufigkeit eines Ballontypes innerhalb einer Welle
         private double CalcProberbility(BalloonType type)
         {
             // Funktion: e^(-0.05(x-a-5)*(x-a+5)-1.25) | a=x-Wert an dem nur dieser Ballontyp spawnt
-            uint peek = StaticInfo.GetBallonPeek(type);
+            uint peek = StaticInfo.GetBalloonPeek(type);
             return Math.Exp(-0.05 * (CurrentGame.Round - peek - 5) * (CurrentGame.Round - peek + 5) - 1.25);
         }
 
         // Erstellt ein neues Paket an Ballons innerhalb einer Welle
-        private List<Balloon> GetNewBallonPackage(List<Balloon> ballons)
+        private List<Balloon> GetNewBalloonPackage()
         {
             List<Balloon> newWave = new List<Balloon>(); // Die neue Paket Welle
 
             // Errechnet einen neuen Wert zwischen 0 und 1 welches dann der Anteil der gesamten Welle ist und erstellt diese Menge an Ballons dann
-            double part = -0.25 * Math.Sin(-0.4 * Math.Log(Math.Pow((CurrentGame.Round + currentBallonOfWave / currentWave.Count), Math.Cos(CurrentGame.Round + currentBallonOfWave / currentWave.Count)))) + 0.4;
-            if (currentBallonOfWave + currentWave.Count * part < currentWave.Count)
+            double part = -0.25 * Math.Sin(-0.4 * Math.Log(Math.Pow((CurrentGame.Round + currentBalloonOfWave / currentWave.Count), Math.Cos(CurrentGame.Round + currentBalloonOfWave / currentWave.Count)))) + 0.4;
+            if (currentBalloonOfWave + currentWave.Count * part < currentWave.Count)
             {
-                newWave = currentWave.GetRange(currentBallonOfWave + 1, (int)(currentWave.Count * part));
-                currentBallonOfPackage = 0;
+                newWave = currentWave.GetRange(currentBalloonOfWave + 1, (int)(currentWave.Count * part));
+                currentBalloonOfPackage = 0;
             }
-            else if (currentBallonOfWave + currentWave.Count * part > currentWave.Count)
+            else if (currentBalloonOfWave + currentWave.Count * part > currentWave.Count)
             {
-                newWave = currentWave.GetRange(currentBallonOfWave + 1, currentWave.Count - currentBallonOfWave - 1);
-                currentBallonOfPackage = 0;
+                newWave = currentWave.GetRange(currentBalloonOfWave + 1, currentWave.Count - currentBalloonOfWave - 1);
+                currentBalloonOfPackage = 0;
             }
             return newWave;
         }
 
-        // Übergiebt die neue Anzahl an Ballons in einer Runde in Abhängigkeit der Runde, dem Startwert, der Intensitivität und dem Exponenten
-        private int GetBallonNumberInRound()
+        // Übergibt die neue Anzahl an Ballons in einer Runde in Abhängigkeit der Runde, dem Startwert, der Intensitivität und dem Exponenten
+        private int GetBalloonCountInRound()
         {
-            return (int)(ballonStartValue * (waveSensitivity * Math.Pow(CurrentGame.Round, waveSensitivityExponent) + 1));
+            return (int)(balloonStartValue * (waveSensitivity * Math.Pow(CurrentGame.Round, waveSensitivityExponent) + 1));
         }
 
         /// <summary>
         /// Checkt ob im laufenden Spiel noch Balloons vorhanden sind
         /// </summary>
         /// <returns></returns>
-        private bool CheckIsBallonsEmpty()
+        private bool CheckIsBalloonsEmpty()
         {
             for (int i = 0; i < CurrentGame.Balloons.Length; i++)
             {
@@ -190,7 +177,7 @@ namespace NoPasaranTD.Engine
         {
             int currentWaitTime;
 
-            if (currentBallonOfPackage == 0)
+            if (currentBalloonOfPackage == 0)
             {
                 currentWaitTime = 2800;
             }
@@ -200,33 +187,33 @@ namespace NoPasaranTD.Engine
             }
 
             // Setzt eine neue Welle falls die derzeitige bereits vorüber ist
-            if (currentWave.Count - 1 == currentBallonOfWave)
+            if (currentWave.Count - 1 == currentBalloonOfWave)
             {
-                currentWave = GetNextBallonWave(GetBallonNumberInRound());
-                currentBallonOfWave = 0;
-                currentBallonOfPackage = 0;
-                currentWavePackage = GetNewBallonPackage(currentWave);
+                currentWave = GetNextBalloonWave(GetBalloonCountInRound());
+                currentBalloonOfWave = 0;
+                currentBalloonOfPackage = 0;
+                currentWavePackage = GetNewBalloonPackage();
                 IsCompleted = true;
             }
 
             if (!IsCompleted)
             {
                 // Setzt ein neues Paket an Ballons falls das derzeitige bereits genutzt wurde
-                if (currentBallonOfPackage == currentWavePackage.Count - 1)
+                if (currentBalloonOfPackage == currentWavePackage.Count - 1)
                 {
-                    currentWavePackage = GetNewBallonPackage(currentWave);
-                    currentBallonOfPackage = 0;
+                    currentWavePackage = GetNewBalloonPackage();
+                    currentBalloonOfPackage = 0;
                 }
 
                 // Setzt einen Ballon an den Spawnpoint
                 if (CurrentGame.CurrentTick % currentWaitTime == 0)
                 {
-                    CurrentGame.Balloons[0].Add(currentWavePackage[currentBallonOfPackage]);
-                    currentBallonOfPackage++;
-                    currentBallonOfWave++;
+                    CurrentGame.Balloons[0].Add(currentWavePackage[currentBalloonOfPackage]);
+                    currentBalloonOfPackage++;
+                    currentBalloonOfWave++;
                 }
             }
-            else if (CheckIsBallonsEmpty())
+            else if (CheckIsBalloonsEmpty())
             {
                 WaveCompleted?.Invoke();
                 if (AutoStart)
@@ -252,9 +239,9 @@ namespace NoPasaranTD.Engine
         /// </summary>
         public void StopSpawn()
         {
-            if (isCompleted == false)
+            if (completed == false)
             {
-                isCompleted = true;
+                completed = true;
             }
         }
     }

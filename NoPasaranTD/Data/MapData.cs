@@ -16,13 +16,13 @@ namespace NoPasaranTD.Data
     public class MapData
     {
         /// <summary>
-        /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
-        /// Die Methode erlaubt keine parallele zugriffe und läuft synchron!
+        /// Übergibt ein Map Objekt mithilfe von Angabe eines Dateipfades.</br>
+        /// Die Methode erlaubt keine parallelen zugriffe und läuft synchron!
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
-        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        /// <returns>Die deserialisierte Map</returns>
+        /// <exception cref="Exception">Wenn die Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn die Datei nicht gefunden wird</exception>
         public static Map GetMapByFileName(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -42,13 +42,13 @@ namespace NoPasaranTD.Data
         }
 
         /// <summary>
-        /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
-        /// Die Methode erlaubt keine parallele zugriffe und läuft asynchron!
+        /// Übergibt ein Map Objekt mithilfe von Angabe eines Dateipfades.</br>
+        /// Die Methode erlaubt keine parallelen zugriffe und läuft synchron!
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
-        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        /// <returns>Die deserialisierte Map</returns>
+        /// <exception cref="Exception">Wenn die Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn die Datei nicht gefunden wird</exception>
         public static async Task<Map> GetMapByFileNameAsync(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();

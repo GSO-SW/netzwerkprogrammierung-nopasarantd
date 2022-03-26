@@ -139,7 +139,7 @@ namespace NoPasaranTD.Networking
                 }
             }
 
-            // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+            // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
             if (!EventHandlers.TryGetValue(command, out Action<object> handler))
             {
                 Console.WriteLine("Cannot find such a command: " + command);
@@ -189,7 +189,7 @@ namespace NoPasaranTD.Networking
                     string tickToPerform = message.Substring(firstIndexColon + 1, firstIndexBracket - firstIndexColon - 1); // Der Tick in dem das Ereignis ausgeführt werden soll
                     string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1); // Die Weiteren Daten die übertragen wurden
 
-                    // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+                    // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
                     if (!EventHandlers.TryGetValue(command, out Action<object> handler))
                     {
                         Console.WriteLine("Cannot find such a command: " + command);

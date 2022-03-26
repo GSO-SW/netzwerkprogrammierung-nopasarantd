@@ -191,7 +191,7 @@ namespace NoPasaranTD.Data
 
         #region Wellenwerte
 
-        private static readonly Dictionary<BalloonType, uint> PeekRoundBallon = new Dictionary<BalloonType, uint>()
+        private static readonly Dictionary<BalloonType, uint> PeekRoundBalloon = new Dictionary<BalloonType, uint>()
         {
             {BalloonType.Red,0},
             {BalloonType.Green,10},
@@ -201,9 +201,9 @@ namespace NoPasaranTD.Data
             {BalloonType.Gold,50 },
         };
 
-        public static uint GetBallonPeek(BalloonType type)
+        public static uint GetBalloonPeek(BalloonType type)
         {
-            PeekRoundBallon.TryGetValue(type, out uint result);
+            PeekRoundBalloon.TryGetValue(type, out uint result);
             return result;
         }
 

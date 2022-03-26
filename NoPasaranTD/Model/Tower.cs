@@ -36,10 +36,10 @@ namespace NoPasaranTD.Model
             {
                 switch (TargetMode)
                 {
-                    case TowerTargetMode.Farthest: return FarthestBallonCheck;
-                    case TowerTargetMode.FarthestBack: return FarthestBackBallonCheck;
-                    case TowerTargetMode.Strongest: return StrongestBallonCheck;
-                    case TowerTargetMode.Weakest: return WeakestBallonCheck;
+                    case TowerTargetMode.Farthest: return FarthestBalloonCheck;
+                    case TowerTargetMode.FarthestBack: return FarthestBackBalloonCheck;
+                    case TowerTargetMode.Strongest: return StrongestBalloonCheck;
+                    case TowerTargetMode.Weakest: return WeakestBalloonCheck;
                     default: throw new Exception("TowerTargetMode not found");
                 }
             }
@@ -69,22 +69,22 @@ namespace NoPasaranTD.Model
         /// <param name="bCheck">Zu kontrollierender Ballon</param>
         /// <param name="bCurrent">Derzeitiger Ballon</param>
         /// <returns>True wenn der Ballon Check weiter ist als der Ballon bCurrent</returns>
-        public bool FarthestBallonCheck(Balloon bCheck, Balloon bCurrent)
+        public bool FarthestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
             return bCheck.PathPosition > bCurrent.PathPosition;
         }
 
-        public bool FarthestBackBallonCheck(Balloon bCheck, Balloon bCurrent)
+        public bool FarthestBackBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
             return bCheck.PathPosition < bCurrent.PathPosition;
         }
 
-        public bool StrongestBallonCheck(Balloon bCheck, Balloon bCurrent)
+        public bool StrongestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
             return bCheck.Strength > bCurrent.Strength;
         }
 
-        public bool WeakestBallonCheck(Balloon bCheck, Balloon bCurrent)
+        public bool WeakestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
             return bCheck.Strength < bCurrent.Strength;
         }
