@@ -89,14 +89,14 @@ namespace NoPasaranTD.Networking
     public class RUdpClient : IDisposable
     {
 
-        private const byte CODE_PKG = 0x01;
-        private const byte CODE_ACK = 0x02;
-        private const byte CODE_SYN = 0x03;
+        internal const byte CODE_PKG = 0x01;
+        internal const byte CODE_ACK = 0x02;
+        internal const byte CODE_SYN = 0x03;
 
         private readonly RUdpClientInfo localClient;
-        private readonly ConcurrentDictionary<IPEndPoint, RUdpClientInfo> remoteClients;
+        private readonly Dictionary<IPEndPoint, RUdpClientInfo> remoteClients;
 
-        private readonly ConcurrentDictionary<ulong, RUdpPacketInfo> packetsSent;
+        private readonly Dictionary<ulong, RUdpPacketInfo> packetsSent;
         private readonly Queue<RUdpPacketCombo> packetsReceived;
 
         private readonly UdpClient udpClient;
@@ -104,9 +104,9 @@ namespace NoPasaranTD.Networking
         {
             udpClient = client;
             localClient = new RUdpClientInfo();
-            remoteClients = new ConcurrentDictionary<IPEndPoint, RUdpClientInfo>();
+            remoteClients = new Dictionary<IPEndPoint, RUdpClientInfo>();
 
-            packetsSent = new ConcurrentDictionary<ulong, RUdpPacketInfo>();
+            packetsSent = new Dictionary<ulong, RUdpPacketInfo>();
             packetsReceived = new Queue<RUdpPacketCombo>();
             new Thread(BackgroundThread).Start();
         }
@@ -122,11 +122,11 @@ namespace NoPasaranTD.Networking
         public async Task SendAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             RUdpPacket packet = new RUdpPacket(CODE_PKG, localClient.SequenceID, data);
+            packetsSent[localClient.SequenceID] = new RUdpPacketInfo(packet, endpoints);
 
-            foreach(IPEndPoint endpoint in endpoints)
+            foreach (IPEndPoint endpoint in endpoints)
                 await SendPacketAsync(packet, endpoint);
 
-            packetsSent[localClient.SequenceID] = new RUdpPacketInfo(packet, endpoints);
             localClient.SequenceID++;
         }
 
@@ -149,7 +149,7 @@ namespace NoPasaranTD.Networking
                     for (int j = info.Endpoints.Count - 1; j >= 0; j--)
                     {
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
-                        if (tick - info.TickCreated >= 1000)
+                        if (tick - info.TickCreated >= client.Ping)
                         {
                             Console.WriteLine("Resending Package: " + Encoding.ASCII.GetString(info.Packet.Data));
                             await SendPacketAsync(info.Packet, info.Endpoints[j]);
@@ -174,7 +174,6 @@ namespace NoPasaranTD.Networking
 
         private async Task AcceptPKG(RUdpPacketCombo combo)
         {
-            Console.WriteLine("APKGING");
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
                 return;
@@ -191,7 +190,6 @@ namespace NoPasaranTD.Networking
 
         private void AcceptACK(RUdpPacketCombo combo)
         {
-            Console.WriteLine("ACKING");
             if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
                 throw new IOException("Packet was already acknowledged");
 
@@ -203,14 +201,13 @@ namespace NoPasaranTD.Networking
 
             if(info.Endpoints.Count == 0)
             {
-                if (!packetsSent.TryRemove(combo.Packet.Sequence, out RUdpPacketInfo dummy))
+                if (!packetsSent.Remove(combo.Packet.Sequence))
                     throw new IOException("How tf did this happen now?");
             }
         }
 
         private async Task AcceptSYN(RUdpPacketCombo combo)
         {
-            Console.WriteLine("SYNING");
             if(!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
                 throw new IOException("Packet was already acknowledged");
 
@@ -233,13 +230,12 @@ namespace NoPasaranTD.Networking
         {
             byte[] data = RUdpPacket.Serialize(packet);
             await udpClient.SendAsync(data, data.Length, endpoint);
-            Console.WriteLine("SENDING " + Encoding.ASCII.GetString(packet.Data));
         }
 
         private async Task<RUdpPacketCombo> ReceivePacketAsync()
         {
             UdpReceiveResult result = await udpClient.ReceiveAsync();
-            Console.WriteLine("RECEIVING");
+            Console.WriteLine("RECEIVED: " + result.Buffer.Length);
             return new RUdpPacketCombo(
                 RUdpPacket.Deserialize(result.Buffer),
                 result.RemoteEndPoint

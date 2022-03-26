@@ -80,7 +80,6 @@ namespace NoPasaranTD.Engine
 		{
 			if (Paused && NetworkHandler.OfflineMode) return; // Abfragen ob das Spiel legitim pausiert ist
 			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
-			NetworkHandler.Update();
 
 			WaveManager.Update();
 			for (int i = 0; i < Balloons.Length; i++)
