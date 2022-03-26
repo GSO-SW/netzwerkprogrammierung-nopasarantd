@@ -39,5 +39,31 @@ namespace NoPasaranTD.Utilities
             return maps;
 
         }
+
+        /// <summary>
+        /// Lädt alle Zitate aus der Dichter und Denker Datei
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> DichterUndDenker()
+        {
+            string rawData = "";
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.dichter_und_denker.txt"))
+            {
+                using (StreamReader reader = new StreamReader(stream))
+                    rawData = reader.ReadToEnd();
+            }
+
+            return new List<string>(rawData.Split('\n'));
+        }
+
+        public static List<Image> LoadMemes()
+        {
+            List<Image> images = new List<Image>();
+
+            for (int i = 1; i <= 8; i++)
+                images.Add(LoadBitmapResource("NoPasaranTD.Resources.Meme.meme_TD_" + i + ".jpg"));
+
+            return images;
+        }
     }
 }

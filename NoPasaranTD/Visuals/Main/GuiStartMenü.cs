@@ -3,8 +3,10 @@ using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
+using NoPasaranTD.Utilities;
 using NoPasaranTD.Visuals.Ingame;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Reflection;
@@ -37,6 +39,15 @@ namespace NoPasaranTD.Visuals.Main
         private float scaleVelocity = 0.001f; // Die Skaliergeschwindigkeit
         private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
 
+        private int memeCounter = 1;
+        private float memePositionX= 0;
+        private float memePositionY= 0;
+        private float memeVelocity = 0.1f;
+        private float memeRotation = -10;
+        private float memeSlope = 0;
+
+        private Random random;
+        private List<Image> memes = ResourceLoader.LoadMemes();
         private StaticDisplay currentDisplay;
         #endregion
 
@@ -62,8 +73,12 @@ namespace NoPasaranTD.Visuals.Main
 
         public GuiStartMenü()
         {
-            Random rnd = new Random();
-            randomText = StaticInfo.DichterUndDenker[rnd.Next(StaticInfo.DichterUndDenker.Count - 1)];
+            random = new Random();
+            List<string> list = ResourceLoader.DichterUndDenker();
+            randomText = list[random.Next(list.Count - 1)];
+
+            memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
+            memeSlope = (float)1 / random.Next(-10, 10);
         }
 
         public void Init(StaticDisplay staticDisplay)
@@ -123,12 +138,22 @@ namespace NoPasaranTD.Visuals.Main
       
         public override void Render(Graphics g)
         {
+            
             // Der Titel
             string title = "No Pasaran! TD";
             Size titleSize = TextRenderer.MeasureText(title, StandartTitle1Font);            
             
             // Rendert das Hintergrundspiel
             backgroundGame.Render(g);
+            
+            Matrix currentTransform = g.Transform;
+
+            g.TranslateTransform(memePositionX, memePositionY);
+            g.RotateTransform(memeRotation);
+
+            g.DrawImage(memes[memeCounter], 0, 0,200,300);
+
+            g.Transform = currentTransform;
 
             // Zeichnet das Transparency Layer
             g.FillRectangle(new SolidBrush(Color.FromArgb(150, 150, 150, 150)), transparancyLayer);
@@ -146,8 +171,7 @@ namespace NoPasaranTD.Visuals.Main
 
             closeButton.Render(g);
 
-            Matrix currentTransform = g.Transform;
-
+          
             g.TranslateTransform(randomTextRegion.X + randomTextRegion.Width / 2, randomTextRegion.Y + randomTextRegion.Height / 2);
             g.RotateTransform(-25);
             g.ScaleTransform(scaleFactor, scaleFactor);
@@ -194,6 +218,20 @@ namespace NoPasaranTD.Visuals.Main
                 scaleFactor += scaleVelocity;
                 if (scaleFactor >= 1)
                     currentDirection = 0;
+            }
+            memePositionX += memeVelocity;
+            memePositionY += memeSlope;
+
+            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY <= 0)
+            {
+                memePositionY = random.Next(100,StaticEngine.RenderHeight-100);
+                memePositionX = 0;
+                memeSlope = (float)1/random.Next(-10,10);
+                memeRotation = random.Next(-40, 40);
+                memeCounter++;
+
+                if (memeCounter == 8)
+                    memeCounter = 1;
             }
         }
 

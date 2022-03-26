@@ -157,5 +157,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\dichter_und_denker.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Meme\meme_TD_1.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_2.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_3.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_4.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_5.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_6.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_7.jpg" />
+    <EmbeddedResource Include="Resources\Meme\meme_TD_8.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
