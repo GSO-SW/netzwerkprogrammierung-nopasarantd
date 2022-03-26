@@ -94,21 +94,20 @@ namespace NoPasaranTD.Networking
         private const byte CODE_SYN = 0x03;
 
         private readonly RUdpClientInfo localClient;
-        private readonly Dictionary<IPEndPoint, RUdpClientInfo> remoteClients;
+        private readonly ConcurrentDictionary<IPEndPoint, RUdpClientInfo> remoteClients;
 
-        private readonly Dictionary<ulong, RUdpPacketInfo> packetsSent;
+        private readonly ConcurrentDictionary<ulong, RUdpPacketInfo> packetsSent;
         private readonly Queue<RUdpPacketCombo> packetsReceived;
 
         private readonly UdpClient udpClient;
         public RUdpClient(UdpClient client)
         {
-            localClient = new RUdpClientInfo();
-            remoteClients = new Dictionary<IPEndPoint, RUdpClientInfo>();
-
-            packetsSent = new Dictionary<ulong, RUdpPacketInfo>();
-            packetsReceived = new Queue<RUdpPacketCombo>();
-
             udpClient = client;
+            localClient = new RUdpClientInfo();
+            remoteClients = new ConcurrentDictionary<IPEndPoint, RUdpClientInfo>();
+
+            packetsSent = new ConcurrentDictionary<ulong, RUdpPacketInfo>();
+            packetsReceived = new Queue<RUdpPacketCombo>();
             new Thread(BackgroundThread).Start();
         }
 
@@ -150,7 +149,7 @@ namespace NoPasaranTD.Networking
                     for (int j = info.Endpoints.Count - 1; j >= 0; j--)
                     {
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
-                        if (tick - info.TickCreated >= client.Ping)
+                        if (tick - info.TickCreated >= 1000)
                         {
                             await SendPacketAsync(info.Packet, info.Endpoints[j]);
                             info.TickCreated = Environment.TickCount;
@@ -196,11 +195,12 @@ namespace NoPasaranTD.Networking
             if (!info.Endpoints.Remove(combo.Endpoint))
                 throw new IOException("Packet was already acknowledged");
 
-            GetRemoteClient(combo.Endpoint).Ping = (uint)(Environment.TickCount - info.TickCreated);
+            RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
+            client.Ping = (uint)(Environment.TickCount - info.TickCreated);
 
             if(info.Endpoints.Count == 0)
             {
-                if (!packetsSent.Remove(combo.Packet.Sequence))
+                if (!packetsSent.TryRemove(combo.Packet.Sequence, out RUdpPacketInfo dummy))
                     throw new IOException("How tf did this happen now?");
             }
         }
