@@ -72,7 +72,7 @@
     <Compile Include="Visuals\Ingame\OptionsContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerItemContainer.cs" />
     <Compile Include="Visuals\Ingame\PlayerListContainer.cs" />
-    <Compile Include="Visuals\Ingame\GuiSelectMap.cs" />
+    <Compile Include="Visuals\Main\GuiSelectMap.cs" />
     <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
     <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
     <Compile Include="Model\TowerArtillery.cs" />

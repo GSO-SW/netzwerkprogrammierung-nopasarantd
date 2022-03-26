@@ -54,7 +54,7 @@ namespace NoPasaranTD.Visuals.Main
                 150, 30
             ));
 
-            btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
+            //btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
         }
 
         /// <summary>
@@ -89,7 +89,9 @@ namespace NoPasaranTD.Visuals.Main
         { // Befehl zum erstellen einer neuen lobby
             // TODO: Ändern vom Lobbynamen via Textbox
             if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
-            parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(host, "Lobby Name (By textbox)" + Environment.TickCount, "spentagon"));
+            parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
+                host, "Lobby Name (By textbox)" + Environment.TickCount, "spentagon"
+            ));
         }
 
         private void JoinLobby()
