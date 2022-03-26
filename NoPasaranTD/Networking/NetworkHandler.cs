@@ -249,6 +249,7 @@ namespace NoPasaranTD.Networking
         {
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
+                TaskQueue.Clear(); // Alle Tasks sollen beendet werden wenn ein desync festgestellt wurde
                 Resyncing = true;
                 List<NetworkTask> tasks = new List<NetworkTask>();
                 uint currentTick = Game.CurrentTick;
@@ -294,7 +295,7 @@ namespace NoPasaranTD.Networking
                         if (resyncPackageL[i].Handler == "HPMoneyBlock") // Sucht nach dem Paket in dem die Leben und das Geld übertragen werden
                         {
                             resyncPackageL.Insert(1, resyncPackageL[i]);
-                            resyncPackageL.RemoveAt(i);
+                            resyncPackageL.RemoveAt(i + 1); // Entfernt die alte Variante die nun um 1 Platz verschoben ist
                             Game.HealthPoints = (int)resyncPackageL[1].Parameter; // Leben setzten
                             Game.Money = (int)resyncPackageL[1].TickToPerform; // Geld setzten
                             break;
