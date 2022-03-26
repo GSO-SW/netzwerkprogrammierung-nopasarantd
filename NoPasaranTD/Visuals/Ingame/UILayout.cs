@@ -111,6 +111,7 @@ namespace NoPasaranTD.Visuals.Ingame
             // Initialisiert alle Events
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinishAsync;
+            placingTowerDragDrop.DragDropLeft += PlacingTowerDragDrop_DragDropLeft;
             HideBuildMenuContainer.ButtonClicked += HideBuildMenueButton_ButtonClicked;
 
             // Verweist alle GUI Components
@@ -118,7 +119,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             game = gameObj;
         }
-
+      
         private async void HideBuildMenueButton_ButtonClicked()
         {
             // Animation zum einklappen des Buildmenüs
@@ -164,6 +165,11 @@ namespace NoPasaranTD.Visuals.Ingame
                 tower.Hitbox = args.MovedObject;
                 game.NetworkHandler.InvokeEvent("AddTower", tower);
             }
+        }
+
+        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args)
+        {
+            await OptionsContainer.ExpandCollapseAsync(true);
         }
 
         private void TowerBuildMenu_SelectionChanged()

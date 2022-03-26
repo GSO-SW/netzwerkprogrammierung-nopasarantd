@@ -208,10 +208,8 @@ namespace NoPasaranTD.Visuals.Ingame
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
-        private void AutoStartButton_ButtonClicked()
-        {
+        private void AutoStartButton_ButtonClicked() =>
             currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
-        }
 
         // Startet das Spawning der Ballons beim betätigen des Buttons
         private void StartButton_ButtonClicked() =>
@@ -239,7 +237,9 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             int startPos = Bounds.X;
             int startWidth = Bounds.Width;
+
             IsExpanded = true;
+
             while (Bounds.Width <= aimSize)
             {
                 Bounds = new Rectangle(Bounds.X - 10, Bounds.Y, Bounds.Width + 20, Bounds.Height);
