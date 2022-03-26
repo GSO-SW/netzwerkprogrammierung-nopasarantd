@@ -101,6 +101,8 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
+            LobbyScreen?.Dispose();
+            LobbyListScreen?.Dispose();
             DiscoveryClient?.Dispose();
             backgroundGame?.Dispose();
         }

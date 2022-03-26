@@ -2,11 +2,9 @@
 using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
-using NoPasaranTD.Visuals.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -25,7 +23,8 @@ namespace NoPasaranTD.Visuals.Main
         private readonly ButtonContainer btnStartGame;
         private readonly ButtonContainer btnNextMap;
         private readonly ButtonContainer btnPreviousMap;
-        private Dictionary<string, Map> mapList;
+
+        private readonly Dictionary<string, Map> mapList;
 
         private readonly GuiMainMenu parent;
         public LobbyScreen(GuiMainMenu parent)
@@ -76,6 +75,13 @@ namespace NoPasaranTD.Visuals.Main
                 Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
             };
+        }
+
+        public override void Dispose()
+        {
+            foreach (Map map in mapList?.Values)
+                map.Dispose();
+            mapList?.Clear();
         }
 
         #region Event region

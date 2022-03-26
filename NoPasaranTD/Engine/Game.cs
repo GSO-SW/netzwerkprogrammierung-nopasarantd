@@ -116,15 +116,10 @@ namespace NoPasaranTD.Engine
 
 		public void Render(Graphics g)
 		{
-			{ // Zeichne Karte
-				float scaledWidth = (float)StaticEngine.RenderWidth / CurrentMap.BackgroundImage.Width;
-				float scaledHeight = (float)StaticEngine.RenderHeight / CurrentMap.BackgroundImage.Height;
-
-				Matrix m = g.Transform;
-				g.ScaleTransform(scaledWidth, scaledHeight);
-				g.DrawImageUnscaled(CurrentMap.BackgroundImage, 0, 0);
-				g.Transform = m;
-			}
+			// Zeichne Karte
+			g.DrawImage(CurrentMap.BackgroundImage, 
+				0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
+			);
 
 			foreach (var item in Balloons)
 			{

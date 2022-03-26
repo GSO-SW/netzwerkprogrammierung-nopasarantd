@@ -54,7 +54,7 @@ namespace NoPasaranTD.Visuals.Main
                 150, 30
             ));
 
-            //btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
+            btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
         }
 
         /// <summary>
