@@ -1,8 +1,5 @@
-﻿using NoPasaranTD.Utilities;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -121,15 +118,14 @@ namespace NoPasaranTD.Networking
         public async Task SendAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             RUdpPacket packet = new RUdpPacket(CODE_PKG, localClient.SequenceID, data);
-            packetsSent[localClient.SequenceID] = new RUdpPacketInfo(packet, endpoints);
+            packetsSent[packet.Sequence] = new RUdpPacketInfo(packet, endpoints);
 
             foreach (IPEndPoint endpoint in endpoints)
                 await SendPacketAsync(packet, endpoint);
 
-            while (packetsSent.ContainsKey(localClient.SequenceID))
-                await Task.Delay(1); // Warte solange bis das Paket akzeptiert wurde
-
             localClient.SequenceID++;
+            while (packetsSent.ContainsKey(packet.Sequence))
+                await Task.Delay(1); // Warte solange bis das Paket akzeptiert wurde
         }
 
         public async Task<UdpReceiveResult> ReceiveAsync()
@@ -178,7 +174,7 @@ namespace NoPasaranTD.Networking
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
                 return;
-            else if(combo.Packet.Sequence > client.SequenceID)
+            else if(combo.Packet.Sequence > client.Seque-nceID)
             {
                 await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
                 return;
