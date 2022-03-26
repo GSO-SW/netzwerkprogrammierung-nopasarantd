@@ -32,7 +32,7 @@ namespace NoPasaranTD.Visuals.Ingame
         private int buttonMargin = 5;
 
         // Ist das Control ein- oder ausgeklappt
-        private bool isExpanded = true;
+        public bool IsExpanded = true;
 
         #endregion
         #region GUI Components
@@ -107,11 +107,11 @@ namespace NoPasaranTD.Visuals.Ingame
             g.FillRectangle(Background, Bounds);
 
             // Zeigt den Startbutton nur wenn die Runde pausuert ist
-            if (currentGame.WaveManager.IsRoundCompleted && isExpanded)
+            if (currentGame.WaveManager.IsRoundCompleted && IsExpanded)
                 startButton.Render(g);
 
             // Zeigt die anderen Buttons nur wenn das Menu expandiert ist
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Render(g);
                 playersButton.Render(g);
@@ -132,7 +132,7 @@ namespace NoPasaranTD.Visuals.Ingame
             else
                 autoStartButton.Content = "⭯";
 
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Update();
                 playersButton.Update();
@@ -145,7 +145,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.MouseDown(e);
                 playersButton.MouseDown(e);
@@ -200,11 +200,24 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Vergrößert oder verkleinert das Optionsmeu
         private async void ExpandButton_ButtonClicked()
-        {           
-            if (!isExpanded)
+        {
+            if (IsExpanded)
+                await ExpandCollapseAsync(false);
+            else
+                await ExpandCollapseAsync(true);
+        }
+
+        /// <summary>
+        /// Vergrößert oder verkleinert das Optionsmenü
+        /// </summary>
+        /// <param name="expanding">True zum vergrößern und False zum verkleinern</param>
+        /// <returns></returns>
+        public async Task ExpandCollapseAsync(bool expanding)
+        {
+            if (expanding)
                 await ExpandToAsync(expandButton.Bounds.Width * 6 + buttonMargin * 8);
             else
-                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*8);           
+                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin * 8);
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
@@ -229,7 +242,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Vergrößert das Fenster zur angegebenen Breite
         private async Task ExpandToAsync(int aimSize)
         {
-            isExpanded = !isExpanded;
+           IsExpanded = true;
             while (Bounds.Width <= aimSize)
             {
                 Bounds= new Rectangle(Bounds.X -10,Bounds.Y,Bounds.Width+20,Bounds.Height);
@@ -241,7 +254,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Verkleinert das Fenster zur angegebenen Breite
         private async Task CollapseToAsync(int aimSize)
         {
-            isExpanded = !isExpanded;
+            IsExpanded = false;
             while (Bounds.Width >= aimSize)
             {
                 Bounds = new Rectangle(Bounds.X + 10, Bounds.Y, Bounds.Width - 20, Bounds.Height);

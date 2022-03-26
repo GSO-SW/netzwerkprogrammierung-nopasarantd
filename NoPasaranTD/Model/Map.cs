@@ -36,7 +36,7 @@ namespace NoPasaranTD.Model
                 backgroundPath = value;
 
                 Assembly assembly = Assembly.GetExecutingAssembly();
-                string resourceName = "NoPasaranTD.Resources." + value;
+                string resourceName = "NoPasaranTD.Resources.Maps." + value;
                 using(Stream stream = assembly.GetManifestResourceStream(resourceName))
                 {
                     BackgroundImage = new Bitmap(stream);

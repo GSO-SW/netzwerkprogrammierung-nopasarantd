@@ -49,16 +49,10 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
 
         public override void Render(Graphics g)
         {
-            { // Zeichne GameOverScreen
-                float scaledWidth = (float)StaticEngine.RenderWidth / GameOverScreen.Width;
-                float scaledHeight = (float)StaticEngine.RenderHeight / GameOverScreen.Height;
-
-                Matrix m = g.Transform;
-                g.ScaleTransform(scaledWidth, scaledHeight);
-                g.DrawImageUnscaled(GameOverScreen, 0, 0);
-                g.Transform = m;
-            }
-         
+            // Zeichne GameOverScreen
+            g.DrawImage(GameOverScreen, 
+                0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
+            );
             btnReturnLobby.Render(g);
         }
         

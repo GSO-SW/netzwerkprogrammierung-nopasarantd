@@ -1,8 +1,10 @@
 ﻿using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
+using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 
 namespace NoPasaranTD.Data
 {
@@ -15,16 +17,10 @@ namespace NoPasaranTD.Data
         #endregion
 
         #region GetObstacle Methoden
-        public static Bitmap GetObstacleImage(Type type)
+        public static Bitmap GetObstacleImage(ObstacleType type)
         {
             ObstacleImage.TryGetValue(type, out Bitmap obstacleimg);
             return obstacleimg;
-        }
-
-        public static Size GetObstacleSize(Type type)
-        {
-            ObstacleSize.TryGetValue(type, out Size obstaclesize);
-            return obstaclesize;
         }
         #endregion
 
@@ -101,9 +97,11 @@ namespace NoPasaranTD.Data
         #endregion
 
         #region Obstacle
-        private static readonly Dictionary<Type, Bitmap> ObstacleImage = new Dictionary<Type, Bitmap>() { };
-
-        private static readonly Dictionary<Type, Size> ObstacleSize = new Dictionary<Type, Size>() { };
+        private static readonly Dictionary<ObstacleType, Bitmap> ObstacleImage = new Dictionary<ObstacleType, Bitmap>()
+        {
+            {ObstacleType.Pool, ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.pool.png") },
+            {ObstacleType.Factory, ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.factory.png" )}
+        };
         #endregion
 
         #region Ballon
@@ -182,6 +180,12 @@ namespace NoPasaranTD.Data
         {
             {typeof(TowerCanon),     6},
             {typeof(TowerArtillery), 3},
+        };
+        public static readonly List<Image> TowerCanonImages = new List<Image>()
+        {
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Body.png")),
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Head.png")),
+            new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.Canon_Barrel.png"))
         };
         #endregion // Dictionary für die Türme
 

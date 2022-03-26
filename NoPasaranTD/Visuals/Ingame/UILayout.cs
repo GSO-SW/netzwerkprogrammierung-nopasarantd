@@ -103,8 +103,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
             // Initialisiert alle Events
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
-            placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinish;
-            HideBuildMenuContainer.ButtonClicked += HideBuildMenüButton_ButtonClicked;
+            placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinishAsync;
+            HideBuildMenuContainer.ButtonClicked += HideBuildMenueButton_ButtonClicked;
 
             // Verweist alle GUI Components
             GetGUIComponents(this,typeof(UILayout));
@@ -112,7 +112,7 @@ namespace NoPasaranTD.Visuals.Ingame
             game = gameObj;
         }
 
-        private async void HideBuildMenüButton_ButtonClicked()
+        private async void HideBuildMenueButton_ButtonClicked()
         {
             // Animation zum einklappen des Buildmenüs
             if (TowerBuildMenu.Visible)
@@ -135,16 +135,15 @@ namespace NoPasaranTD.Visuals.Ingame
                     TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, TowerBuildMenu.Bounds.Width + 130, TowerBuildMenu.Bounds.Height);
                     await Task.Delay(1);
                 }
-                
                 TowerBuildMenu.Bounds = new Rectangle(TowerBuildMenu.Bounds.X, TowerBuildMenu.Bounds.Y, StaticEngine.RenderWidth - 140, TowerBuildMenu.Bounds.Height);
-                
             }
         }
 
         // Wird beim abschließen des DragDrop Vorganges ausgelöst
-        private void PlacingTowerDragDrop_DragDropFinish(DragDropArgs args)
+        private async void PlacingTowerDragDrop_DragDropFinishAsync(DragDropArgs args)
         {
-            if (TowerBuildMenu.Bounds.IntersectsWith(args.MovedObject)) return;
+            if (HideBuildMenuContainer.Bounds.IntersectsWith(args.MovedObject)) return;
+            if (OptionsContainer.Bounds.IntersectsWith(args.MovedObject)) return;
             if (!game.IsTowerValidPosition(args.MovedObject)) return;
 
             Tower tower = null;
@@ -153,6 +152,8 @@ namespace NoPasaranTD.Visuals.Ingame
             // TODO: Towers Spezifizeiren
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
+                TowerBuildMenu.Visible = true;
+                await OptionsContainer.ExpandCollapseAsync(true);
                 tower.Hitbox = args.MovedObject;
                 game.NetworkHandler.InvokeEvent("AddTower", tower);
             }
@@ -176,9 +177,17 @@ namespace NoPasaranTD.Visuals.Ingame
             // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
 
-        public override void Update()
+        public async override void Update()
         {
             if (!Visible) return;
+
+            if (placingTowerDragDrop.IsMoving)
+            {
+                TowerDetailsContainer.Visible = false;
+                TowerBuildMenu.Visible = false;
+                HideBuildMenuContainer.Content = "→";
+                await OptionsContainer.ExpandCollapseAsync(false);
+            }
             placingTowerDragDrop.Update();
             TowerBuildMenu.Update();
             PlayerListContainer.Update();

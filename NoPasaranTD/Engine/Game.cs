@@ -144,15 +144,10 @@ namespace NoPasaranTD.Engine
 
 		public void Render(Graphics g)
 		{
-			{ // Zeichne Karte
-				float scaledWidth = (float)StaticEngine.RenderWidth / CurrentMap.BackgroundImage.Width;
-				float scaledHeight = (float)StaticEngine.RenderHeight / CurrentMap.BackgroundImage.Height;
-
-				Matrix m = g.Transform;
-				g.ScaleTransform(scaledWidth, scaledHeight);
-				g.DrawImageUnscaled(CurrentMap.BackgroundImage, 0, 0);
-				g.Transform = m;
-			}
+			// Zeichne Karte
+			g.DrawImage(CurrentMap.BackgroundImage, 
+				0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
+			);
 
 			foreach (var item in Balloons)
 			{
@@ -187,7 +182,7 @@ namespace NoPasaranTD.Engine
 
 			foreach (var item in CurrentMap.Obstacles)
 			{ // Hindernisse rendern
-				g.FillRectangle(Brushes.Red, 
+				g.DrawImage(item.Image, 
 					(float)item.Hitbox.X / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
 					(float)item.Hitbox.Y / CurrentMap.Dimension.Height * StaticEngine.RenderHeight,
 					(float)item.Hitbox.Width / CurrentMap.Dimension.Width * StaticEngine.RenderWidth,
@@ -338,7 +333,7 @@ namespace NoPasaranTD.Engine
 							foundBalloon = true;
 						}
 						// Checken, ob der neue Ballon weiter ist als der bisher weiteste
-						else if (tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
+						else if (foundBalloon && tower.GetBalloonFunc(Balloons[item][i], Balloons[currentSelectedBalloon.segment][currentSelectedBalloon.index]))
 							if (CheckBalloonIfHiddenPos(Balloons[item][i].PathPosition, tower))
 								currentSelectedBalloon = (item, i);
 					}
