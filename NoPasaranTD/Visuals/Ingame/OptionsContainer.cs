@@ -168,12 +168,16 @@ namespace NoPasaranTD.Visuals.Ingame
         #endregion
         #region Init
 
-        public void Init(Game gamer)
+        /// <summary>
+        /// Initialisiert alle Komponenten
+        /// </summary>
+        /// <param name="game">Eine Spielinstanz in der diese Komponente laufen soll</param>
+        public void Init(Game game)
         {
             int buttonWidth = (Bounds.Width - 7 * buttonMargin) / 6;
             int buttonHeight = Bounds.Height - buttonMargin * 2;
 
-            currentGame = gamer;
+            currentGame = game;
 
             // Initialisiert die Grenzen der Buttons
             startButton.Bounds = new Rectangle(Bounds.X + buttonMargin, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);

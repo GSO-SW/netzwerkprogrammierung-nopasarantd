@@ -58,7 +58,6 @@ namespace NoPasaranTD.Engine
             NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
             NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
             NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-
         }
 
         private void InitBalloons()
@@ -79,20 +78,14 @@ namespace NoPasaranTD.Engine
         #region Game logic region
         public void Update()
         {
-            if (Paused && NetworkHandler.OfflineMode)
+            if (Paused && NetworkHandler.OfflineMode || HealthPoints <= 0)
             {
-                return; // Abfragen ob das Spiel legitim pausiert ist
+                return; // Abfragen ob das Spiel legitim pausiert ist oder das Spiel vorbei ist
             }
-
-            if (HealthPoints <= 0)
-            {
-                return; // Abfragen ob das Spiel vorbei ist
-            }
-
             NetworkHandler.Update();
 
             WaveManager.Update();
-            for (int i = 0; i < Balloons.Length; i++)
+            for (int i = Balloons.Length - 1; i >= 0; i--)
             {
                 for (int j = Balloons[i].Count - 1; j >= 0; j--)
                 { // Aktualisiere Ballons

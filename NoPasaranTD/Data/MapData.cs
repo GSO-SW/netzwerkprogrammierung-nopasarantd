@@ -43,7 +43,7 @@ namespace NoPasaranTD.Data
 
         /// <summary>
         /// Übergibt ein Map Objekt mithilfe von Angabe eines Dateipfades.</br>
-        /// Die Methode erlaubt keine parallelen zugriffe und läuft synchron!
+        /// Die Methode erlaubt keine parallelen zugriffe und läuft asynchron!
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
         /// <returns>Die deserialisierte Map</returns>
@@ -77,16 +77,11 @@ namespace NoPasaranTD.Data
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
-            FileStream fileStream;
-            // Prüft ob die Datei bereits existiert
-            if (!File.Exists(savePath))
-            {
-                fileStream = File.Create(savePath);
-            }
-            else
-            {
-                fileStream = new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite);
-            }
+            // Wenn die Datei existiert, öffne einen Stream.
+            // Andernfalls erstelle sie und öffne dann den Stream
+            FileStream fileStream = File.Exists(savePath) ? 
+                new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite) :
+                File.Create(savePath);
 
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
@@ -96,9 +91,9 @@ namespace NoPasaranTD.Data
         }
 
         /// <summary>
-        /// Erstellt aus einem JObject dynamisch eine Map
+        /// Erstellt aus einem dynamischen JsonObject eine Map
         /// </summary>
-        /// <param name="rawData"></param>
+        /// <param name="rawData">Das dynamische JsonObject</param>
         /// <returns>Die ausgelesene Map</returns>
         private static Map GetMapFromJson(object rawData)
         {
@@ -111,7 +106,7 @@ namespace NoPasaranTD.Data
                 Name = dataMap.Name,
                 Dimension = dataMap.Dimension,
                 Obstacles = new List<Obstacle>(),
-                PathWidth = dataMap.PathWidth,
+                PathRadius = dataMap.PathRadius,
                 BackgroundPath = dataMap.BackgroundPath,
                 BalloonPath = new Vector2D[dataMap.BalloonPath.Count]
             };

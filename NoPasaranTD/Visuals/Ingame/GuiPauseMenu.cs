@@ -9,14 +9,14 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private static readonly Brush BACKGROUND_COLOR = new SolidBrush(Color.FromArgb(150, Color.Black));
         private static readonly StringFormat TEXT_FORMAT = new StringFormat()
-        {
+        { // Zeichenformat für den Titelstring
             Alignment = StringAlignment.Center,
             LineAlignment = StringAlignment.Far,
         };
 
+        private readonly Game game;
         private readonly ButtonContainer btnBackToGame;
         private readonly ButtonContainer btnLeaveGame;
-        private readonly Game game;
         public GuiPauseMenu(Game game)
         {
             this.game = game;
@@ -32,7 +32,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 StaticEngine.RenderHeight / 2 + 5,
                 300, 35
             ));
-            btnLeaveGame.ButtonClicked += () => Program.LoadGame(null);
+            btnLeaveGame.ButtonClicked += () => Program.LoadGame(null); // Entlade das Spiel (Kehrt automatisch zum Hauptmenü zurück)
         }
 
         private void BackToGame()
@@ -43,6 +43,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
+            // Verdunkelt das Spiel im Hintergrund
             g.FillRectangle(BACKGROUND_COLOR, 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
 
             // Zeichne "Game Paused" über den "Back to Game"-Button

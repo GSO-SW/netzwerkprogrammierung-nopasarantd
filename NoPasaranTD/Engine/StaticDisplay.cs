@@ -32,7 +32,9 @@ namespace NoPasaranTD.Engine
         }
 
         /// <summary>
-        /// Lade Spielinstanz im Offlinemodus
+        /// Lade Spielinstanz im Offlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
         public void LoadGame(string mapFile)
@@ -41,7 +43,9 @@ namespace NoPasaranTD.Engine
         }
 
         /// <summary>
-        /// Lade Spielinstanz im Onlinemodus
+        /// Lade Spielinstanz im Onlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
         /// <param name="handler">Dementsprechender Netzwerkmanager</param>
@@ -63,6 +67,12 @@ namespace NoPasaranTD.Engine
             }
         }
 
+        /// <summary>
+        /// Lade einen überlappenden Screen<br/>
+        /// Achtung: Das Spiel wird dabei nicht automatisch gestoppt, 
+        /// sondern läuft im Hintergrund weiter!
+        /// </summary>
+        /// <param name="screen">Der zu ladende Screen</param>
         public void LoadScreen(GuiComponent screen)
         {
             currentScreen?.Dispose();

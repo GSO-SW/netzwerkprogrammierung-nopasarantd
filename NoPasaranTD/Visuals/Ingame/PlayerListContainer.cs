@@ -7,7 +7,7 @@ namespace NoPasaranTD.Visuals.Ingame
 {
     public class PlayerListContainer : GuiComponent
     {
-        public ListContainer<Networking.NetworkClient, PlayerItemContainer> PlayersContainer { get; set; }
+        public ListContainer<NetworkClient, PlayerItemContainer> PlayersContainer { get; set; }
 
         /// <summary>
         /// Die Hintergrundfarbe des Containers
@@ -42,9 +42,9 @@ namespace NoPasaranTD.Visuals.Ingame
                 Items = new NotifyCollection<NetworkClient>(currentGame.NetworkHandler.Participants),
                 Margin = 3,
                 Orientation = Orientation.Vertical,
-                ItemSize = new System.Drawing.Size(Bounds.Width - 12, 25),
-                Position = new System.Drawing.Point(Bounds.X + 3, Bounds.Y + 30),
-                ContainerSize = new System.Drawing.Size(Bounds.Width - 6, Bounds.Height - 36),
+                ItemSize = new Size(Bounds.Width - 12, 25),
+                Position = new Point(Bounds.X + 3, Bounds.Y + 30),
+                ContainerSize = new Size(Bounds.Width - 6, Bounds.Height - 36),
                 BackgroundColor = Background,
             };
 

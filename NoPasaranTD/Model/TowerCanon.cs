@@ -2,6 +2,7 @@
 using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -10,7 +11,13 @@ namespace NoPasaranTD.Model.Towers
     [Serializable]
     public class TowerCanon : Tower
     {
-        private const float HITBOX_CORNER_MARGIN = 10; // Größe der Polygoneckenabstände zur tatäschlichen Hitbox Ecke
+        private static readonly List<Image> TowerCanonImages = new List<Image>()
+        {
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_body.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_head.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_barrel.png")
+        };
+
         private const double SHOT_ANIMATION_LENGTH = 0.2d; // in percent of delay   E[0;1]
         private static readonly Pen RANGE_CIRCLE_PEN = new Pen(Color.Purple, 2.3f);
 
@@ -38,7 +45,7 @@ namespace NoPasaranTD.Model.Towers
             // Zeichnet die Hitbox des Towers
             if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
             {
-                g.DrawImage(StaticInfo.TowerCanonImages[0], Hitbox);
+                g.DrawImage(TowerCanonImages[0], Hitbox);
             }
             else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
             {
@@ -67,11 +74,11 @@ namespace NoPasaranTD.Model.Towers
             g.RotateTransform(currentAngle);
 
             // Das Barrel wird gezeichnet
-            g.DrawImage(StaticInfo.TowerCanonImages[2], barrel);
+            g.DrawImage(TowerCanonImages[2], barrel);
 
             // Das innere Viereck wird gezeichnet
 
-            g.DrawImage(StaticInfo.TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
+            g.DrawImage(TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
 
             if (justShotSomeUglyAss)
             {

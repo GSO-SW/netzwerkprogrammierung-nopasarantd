@@ -36,6 +36,8 @@ namespace NoPasaranTD.Visuals
         public virtual void MouseMove(MouseEventArgs e) { }
         public virtual void MouseWheel(MouseEventArgs e) { }
 
+        public virtual void Dispose() { }
+
         /// <summary>
         /// Überprüft ob irgendein Rechteck mit einem UI Element Collidiert eines GUI Components
         /// </summary>
@@ -88,8 +90,6 @@ namespace NoPasaranTD.Visuals
                 }
             }
         }
-
-        public virtual void Dispose() { }
 
         public static Font StandartIconFont = new Font("Arial", 40);
         public static Font StandartHeader1Font = new Font("Arial", 24);

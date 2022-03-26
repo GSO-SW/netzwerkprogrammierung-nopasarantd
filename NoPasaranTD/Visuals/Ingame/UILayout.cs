@@ -41,12 +41,12 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public TowerDetailsContainer TowerDetailsContainer { get; set; } = new TowerDetailsContainer()
         {
-            Bounds = new System.Drawing.Rectangle(StaticEngine.RenderWidth - 250, 5, 240, 450),
+            Bounds = new Rectangle(StaticEngine.RenderWidth - 250, 5, 240, 450),
             Background = new SolidBrush(Color.FromArgb(240, 132, 140, 156)),
-            ButtonFont = GuiComponent.StandartText1Font,
+            ButtonFont = StandartText1Font,
             Visible = false,
             Foreground = Brushes.Black,
-            TextFont = GuiComponent.StandartText1Font,
+            TextFont = StandartText1Font,
         };
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace NoPasaranTD.Visuals.Ingame
         public ButtonContainer HideBuildMenuContainer { get; set; } = new ButtonContainer()
         {
             Bounds = new Rectangle(20, StaticEngine.RenderHeight - 150, 80, 130),
-            StringFont = GuiComponent.StandartIconFont,
+            StringFont = StandartIconFont,
             Foreground = Brushes.Black,
             Content = "←",
             BorderBrush = new SolidBrush(Color.FromArgb(230, 128, 138, 189)),

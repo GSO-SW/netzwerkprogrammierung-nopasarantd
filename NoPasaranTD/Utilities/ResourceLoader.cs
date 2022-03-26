@@ -10,6 +10,11 @@ namespace NoPasaranTD.Utilities
 {
     public static class ResourceLoader
     {
+        /// <summary>
+        /// Lädt eine eingebettete Ressource und interpretiert sie als Bitmap
+        /// </summary>
+        /// <param name="name">Name der Ressource</param>
+        /// <returns>Eine Bitmap von der eingebetteten Ressource</returns>
         public static Bitmap LoadBitmapResource(string name)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -19,6 +24,10 @@ namespace NoPasaranTD.Utilities
             }
         }
 
+        /// <summary>
+        /// Sucht nach Maps im jeweiligen Verzeichnis und lädt diese
+        /// </summary>
+        /// <returns>Ein Dictionary was den Mapnamen und die Mapinstanz für jeden Eintrag speichert</returns>
         public static Dictionary<string, Map> LoadAllMaps()
         {
             string path = "NoPasaranTD.Resources.Maps.";

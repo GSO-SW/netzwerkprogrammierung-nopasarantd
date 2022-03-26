@@ -7,7 +7,7 @@ namespace NoPasaranTD.Visuals.Ingame
     /// <summary>
     /// Itemcontainer für einen Spieler in einer Spielerliste
     /// </summary>
-    public class PlayerItemContainer : ItemContainer<Networking.NetworkClient>
+    public class PlayerItemContainer : ItemContainer<NetworkClient>
     {
         /// <summary>
         /// Der Networkclient als Context

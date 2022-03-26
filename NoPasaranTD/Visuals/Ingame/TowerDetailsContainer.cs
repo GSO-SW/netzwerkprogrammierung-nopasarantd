@@ -58,13 +58,7 @@ namespace NoPasaranTD.Visuals.Ingame
         #endregion
 
         private Game currentGame;
-        public ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
-
-
-        public TowerDetailsContainer()
-        {
-
-        }
+        private ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
 
         public override void Render(Graphics g)
         {
@@ -173,7 +167,7 @@ namespace NoPasaranTD.Visuals.Ingame
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            if ((currentGame.Money >= Context.UpgradePrice && Context.LevelCap) || currentGame.GodMode)
+            if ((currentGame.Money >= Context.UpgradePrice && Context.CanLevelUp()) || currentGame.GodMode)
             {
                 currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context);
             }

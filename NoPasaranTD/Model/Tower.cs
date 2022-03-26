@@ -11,7 +11,7 @@ namespace NoPasaranTD.Model
     public abstract class Tower
     {
         public TowerTargetMode TargetMode { get; set; } = TowerTargetMode.Farthest;
-        public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
+        public Rectangle Hitbox { get; set; }
         public uint Level { get; set; } = 1;
 
         public ulong NumberKills { get; set; }
@@ -27,7 +27,6 @@ namespace NoPasaranTD.Model
         public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.3;
         public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level;
         public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
-        public bool LevelCap => CheckLevelCap();
         public Guid ID { get; } = Guid.NewGuid();
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc
@@ -43,20 +42,6 @@ namespace NoPasaranTD.Model
                     default: throw new Exception("TowerTargetMode not found");
                 }
             }
-        }
-
-        /// <summary>
-        /// Kontrolliert ob der Tower unter dem LevelCap ist
-        /// </summary>
-        /// <returns>Gibt true zurück, wenn das Level um 1 inkrementiert werden kann, ohne den LevelCap zu überschreiten</returns>
-        public bool CheckLevelCap()
-        {
-            if (StaticInfo.GetTowerLevelCap(GetType()) > Level)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public abstract void Render(Graphics g);
@@ -89,6 +74,15 @@ namespace NoPasaranTD.Model
             return bCheck.Strength < bCurrent.Strength;
         }
         #endregion
+
+        /// <summary>
+        /// Kontrolliert ob der Tower unter dem LevelCap ist
+        /// </summary>
+        /// <returns>Gibt true zurück, wenn das Level um 1 inkrementiert werden kann, ohne den LevelCap zu überschreiten</returns>
+        public bool CanLevelUp()
+        {
+            return Level < StaticInfo.GetTowerLevelCap(GetType());
+        }
 
         /// <summary>
         /// Bestimmt alle Pfadeigenschaften für den Turm abhängig, von der Reichweite, also welche Segmente in Reichweite sind und welche Teile durch ein Hinderniss verdeckt sind

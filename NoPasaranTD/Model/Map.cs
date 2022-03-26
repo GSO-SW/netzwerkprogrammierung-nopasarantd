@@ -8,15 +8,31 @@ using System.Reflection;
 
 namespace NoPasaranTD.Model
 {
+    /// <summary>
+    /// Eine Verbindung von Pfadpunkt zu Pfadpunkt
+    /// </summary>
     internal struct Fragment
     {
         public Fragment(int sv, double sl, double el)
         {
-            (StartVector, StartLength, EndLength) = (sv, sl, el);
+            StartVector = sv;
+            StartLength = sl;
+            EndLength = el;
         }
 
+        /// <summary>
+        /// Index vom Anfang des Richtungsvektors
+        /// </summary>
         public int StartVector { get; }
+
+        /// <summary>
+        /// Die Länge des Pfades an dem der Richtungsvektor startet
+        /// </summary>
         public double StartLength { get; }
+
+        /// <summary>
+        /// Die Länge des Pfades an dem der Richtungsvektor endet
+        /// </summary>
         public double EndLength { get; }
     }
 
@@ -27,7 +43,7 @@ namespace NoPasaranTD.Model
         public Size Dimension { get; set; }
         public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
-        public float PathWidth { get; set; }
+        public float PathRadius { get; set; }
 
         private string backgroundPath;
         public string BackgroundPath
@@ -36,13 +52,7 @@ namespace NoPasaranTD.Model
             set
             {
                 backgroundPath = value;
-
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                string resourceName = "NoPasaranTD.Resources.Maps." + value;
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                {
-                    BackgroundImage = new Bitmap(stream);
-                }
+                BackgroundImage = ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Maps." + value);
             }
         }
 
@@ -200,7 +210,7 @@ namespace NoPasaranTD.Model
                         closestPointDistance = 1;
                     }
 
-                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathWidth) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathRadius) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
                     {
                         return false;
                     }
@@ -310,7 +320,7 @@ namespace NoPasaranTD.Model
                     // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
                     Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
                     // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
-                    double multiplicatorD = Math.Sqrt((PathWidth * PathWidth) / (directionV.X * directionV.X + directionV.Y * directionV.Y));
+                    double multiplicatorD = Math.Sqrt((PathRadius * PathRadius) / (directionV.X * directionV.X + directionV.Y * directionV.Y));
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
                     // In beide Richungen orthogonal vom Vektor aus schauen 

@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Utilities;
 using System.Drawing;
 using System.IO;
 using System.Media;
@@ -16,14 +17,12 @@ namespace NoPasaranTD.Visuals.Ingame.GameOver
 
         public GuiGameOver()
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoverscreen.jpg"))
-            { // GameOverScreen wird aus Resourceordner geladen 
-                GameOverScreen = new Bitmap(stream);
-            }
+            // GameOverScreen wird aus Resourceordner geladen
+            GameOverScreen = ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.gameoverscreen.jpg");
 
-            //Gameoversound wird aus resourceordner geladen
-            GameOverSound = new SoundPlayer(assembly.GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
+            //Gameoversound wird aus resourceordner geladen, aber nicht geschlossen (Dies wird in der Dispose-Methode getan)
+            GameOverSound = new SoundPlayer(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("NoPasaranTD.Resources.gameoversound.wav"));
 
             btnReturnLobby = new ButtonContainer
             {
