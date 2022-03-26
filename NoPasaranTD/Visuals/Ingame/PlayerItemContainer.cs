@@ -26,20 +26,30 @@ namespace NoPasaranTD.Visuals.Ingame
         public override void Render(Graphics g)
         {
             if (IsMouseOver)
+            {
                 g.FillRectangle(HighlightBackground, Bounds);
+            }
             else
+            {
                 g.FillRectangle(Background, Bounds);
-           
-            Size nameSize = TextRenderer.MeasureText(DataContext.Name,ForegroundFont);
+            }
+
+            Size nameSize = TextRenderer.MeasureText(DataContext.Name, ForegroundFont);
             if (ListArgs.Length > 1)
             {
                 if (DataContext.Name == (ListArgs[1] as NetworkClient).Name)
+                {
                     g.DrawString("♛  " + DataContext.Name, ForegroundFont, Foreground, new Point(Bounds.X + 5, Bounds.Y + (Bounds.Height / 2) - nameSize.Height / 2));
+                }
                 else
+                {
                     g.DrawString(DataContext.Name, ForegroundFont, Foreground, new Point(Bounds.X + 5, Bounds.Y + (Bounds.Height / 2) - nameSize.Height / 2));
-            }           
+                }
+            }
             else
+            {
                 g.DrawString(DataContext.Name, ForegroundFont, Foreground, new Point(Bounds.X + 5, Bounds.Y + (Bounds.Height / 2) - nameSize.Height / 2));
+            }
         }
     }
 }

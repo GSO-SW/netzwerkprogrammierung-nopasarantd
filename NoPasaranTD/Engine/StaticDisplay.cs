@@ -16,7 +16,9 @@ namespace NoPasaranTD.Engine
         private Game currentGame;
 
         public StaticDisplay()
-            => InitializeComponent();
+        {
+            InitializeComponent();
+        }
 
         private void Display_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -33,7 +35,10 @@ namespace NoPasaranTD.Engine
         /// Lade Spielinstanz im Offlinemodus
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
-        public void LoadGame(string mapFile) => LoadGame(mapFile, mapFile == null ? null : new NetworkHandler());
+        public void LoadGame(string mapFile)
+        {
+            LoadGame(mapFile, mapFile == null ? null : new NetworkHandler());
+        }
 
         /// <summary>
         /// Lade Spielinstanz im Onlinemodus
@@ -198,7 +203,9 @@ namespace NoPasaranTD.Engine
             { // Framerate aktualisieren (falls geändert)
                 int fps = Math.Max(1, 1000 / StaticEngine.Framerate);
                 if (tmrGameUpdate.Interval != fps)
+                {
                     tmrGameUpdate.Interval = fps;
+                }
             }
 
             Refresh();

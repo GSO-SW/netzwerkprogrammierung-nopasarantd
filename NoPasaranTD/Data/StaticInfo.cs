@@ -36,7 +36,7 @@ namespace NoPasaranTD.Data
 
         public static uint GetTowerDamage(Type type)
         {
-            TowerDamage.TryGetValue(type, out uint damage);           
+            TowerDamage.TryGetValue(type, out uint damage);
             return damage;
         }
 
@@ -52,7 +52,7 @@ namespace NoPasaranTD.Data
             return size;
         }
 
-        public static uint GetTowerDelay(Type type) 
+        public static uint GetTowerDelay(Type type)
         {
             TowerDelay.TryGetValue(type, out uint delay);
             return delay;
@@ -191,7 +191,7 @@ namespace NoPasaranTD.Data
 
         #region Wellenwerte
 
-        private static Dictionary<BalloonType, uint> PeekRoundBallon = new Dictionary<BalloonType, uint>()
+        private static readonly Dictionary<BalloonType, uint> PeekRoundBallon = new Dictionary<BalloonType, uint>()
         {
             {BalloonType.Red,0},
             {BalloonType.Green,10},

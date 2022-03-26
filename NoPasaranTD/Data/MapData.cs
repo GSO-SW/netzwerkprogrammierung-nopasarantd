@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.IO;
-using System.Collections.Generic;
-using System.Drawing;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace NoPasaranTD.Data
 {
@@ -80,9 +80,13 @@ namespace NoPasaranTD.Data
             FileStream fileStream;
             // Prüft ob die Datei bereits existiert
             if (!File.Exists(savePath))
+            {
                 fileStream = File.Create(savePath);
+            }
             else
+            {
                 fileStream = new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite);
+            }
 
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
@@ -126,9 +130,9 @@ namespace NoPasaranTD.Data
             {
                 float x = dataMap.BalloonPath[i].X;
                 float y = dataMap.BalloonPath[i].Y;
-                mapObj.BalloonPath[i] = new Vector2D(x,y);
+                mapObj.BalloonPath[i] = new Vector2D(x, y);
             }
             return mapObj;
         }
-    }  
+    }
 }

@@ -46,8 +46,8 @@ namespace NoPasaranTD.Visuals.Ingame
             g.FillRectangle(BACKGROUND_COLOR, 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
 
             // Zeichne "Game Paused" über den "Back to Game"-Button
-            g.DrawString("Game Paused", StandartHeader1Font, Brushes.White, 
-                StaticEngine.RenderWidth / 2, 
+            g.DrawString("Game Paused", StandartHeader1Font, Brushes.White,
+                StaticEngine.RenderWidth / 2,
                 btnBackToGame.Bounds.Y - 5,
                 TEXT_FORMAT
             );

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Utilities
 {
-    
+
     public static class QuickDiagnostics
     {
         private static bool isInitialised = false;
@@ -17,16 +13,22 @@ namespace NoPasaranTD.Utilities
         private static Stopwatch sw;
         private static void Initialise()
         {
-            if (isInitialised) return;
+            if (isInitialised)
+            {
+                return;
+            }
+
             isInitialised = true;
-            
+
             counters = new uint[100];
             timeCollectors = new long[100];
 
             timeCollectorsStart = new long[timeCollectors.Length];
             for (int i = 0; i < timeCollectorsStart.Length; i++)
+            {
                 timeCollectorsStart[i] = -1;
-            
+            }
+
             sw = new Stopwatch();
             sw.Start();
         }
@@ -42,19 +44,30 @@ namespace NoPasaranTD.Utilities
         public static void CounterOut(int counterId, bool doReset)
         {
             Initialise();
-            Console.WriteLine("<|> COUNTER "+counterId.ToString()+"   has value   "+counters[counterId].ToString());
-            if (doReset) counters[counterId] = 0;
+            Console.WriteLine("<|> COUNTER " + counterId.ToString() + "   has value   " + counters[counterId].ToString());
+            if (doReset)
+            {
+                counters[counterId] = 0;
+            }
         }
         public static void TimeCollectorStart(int tCId)
         {
             Initialise();
-            if (timeCollectorsStart[tCId] != -1) return;
+            if (timeCollectorsStart[tCId] != -1)
+            {
+                return;
+            }
+
             timeCollectorsStart[tCId] = sw.ElapsedMilliseconds;
         }
         public static void TimeCollectorStop(int tCId)
         {
             Initialise();
-            if (timeCollectorsStart[tCId] == -1) return;
+            if (timeCollectorsStart[tCId] == -1)
+            {
+                return;
+            }
+
             timeCollectors[tCId] += sw.ElapsedMilliseconds - timeCollectorsStart[tCId];
             timeCollectorsStart[tCId] = -1;
         }

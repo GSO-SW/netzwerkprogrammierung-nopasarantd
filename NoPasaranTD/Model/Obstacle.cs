@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NoPasaranTD.Data;
+using System.Drawing;
 
 namespace NoPasaranTD.Model
 {
@@ -22,7 +17,7 @@ namespace NoPasaranTD.Model
         public Rectangle Hitbox { get; set; } // Maybe change to RectangleF
 
         [JsonIgnore]
-        public Bitmap Image { get => StaticInfo.GetObstacleImage(ObstacleType); } // TODO: Link with static class
+        public Bitmap Image => StaticInfo.GetObstacleImage(ObstacleType);  // TODO: Link with static class
     }
 
     public enum ObstacleType

@@ -7,7 +7,7 @@ namespace NoPasaranTD.Visuals.Ingame
 {
     public class PlayerListContainer : GuiComponent
     {
-        public ListContainer<Networking.NetworkClient,PlayerItemContainer> PlayersContainer { get; set; }
+        public ListContainer<Networking.NetworkClient, PlayerItemContainer> PlayersContainer { get; set; }
 
         /// <summary>
         /// Die Hintergrundfarbe des Containers
@@ -50,23 +50,29 @@ namespace NoPasaranTD.Visuals.Ingame
 
             // Übergibt den Items den derzeitigen Host des Spieles
             if (currentGame.NetworkHandler.Lobby != null)
+            {
                 PlayersContainer.ListArgs = new object[] { currentGame.NetworkHandler.LocalPlayer, currentGame.NetworkHandler.Lobby.Host };
+            }
 
             if (currentGame.NetworkHandler.Participants != null)
-                PlayersContainer.DefineItems();          
+            {
+                PlayersContainer.DefineItems();
+            }
         }
 
         public override void Render(Graphics g)
         {
             if (Visible)
-            {               
+            {
                 g.FillRectangle(Background, Bounds);
                 PlayersContainer.Render(g);
                 g.DrawString("Players: ", StandartText1Font, Brushes.Black, Bounds.X + 5, Bounds.Y + 5);
-            }        
+            }
         }
 
-        public override void Update() =>
+        public override void Update()
+        {
             PlayersContainer.Update();
+        }
     }
 }

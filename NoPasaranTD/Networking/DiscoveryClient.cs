@@ -158,7 +158,7 @@ namespace NoPasaranTD.Networking
 
             Task.Run(() =>
             { // Stelle sicher, dass der Vermittlungsserver die Nachricht erreicht
-                while(!GameStarted)
+                while (!GameStarted)
                 { // TODO: Auf Reliable UDP umsteigen
                     // Sende auf Serverendpunkt die gegebene ID
                     byte[] data = Encoding.ASCII.GetBytes(id.ToString());
@@ -170,7 +170,7 @@ namespace NoPasaranTD.Networking
             Clients = new List<NetworkClient>();
 
             string connectionStr = TcpReader.ReadLine();
-            if(!string.IsNullOrEmpty(connectionStr))
+            if (!string.IsNullOrEmpty(connectionStr))
             { // Wenn es Endpunkte gibt
                 string[] connectionArgs = connectionStr.Split('|');
                 for (int i = 0; i < connectionArgs.Length; i += 2)
@@ -195,7 +195,10 @@ namespace NoPasaranTD.Networking
             string[] lobbyInfos = infoStr.Split('\t');
             // int i = 1, aufgrund der Fake-Lobby
             for (int i = 1; i < lobbyInfos.Length; i++)
+            {
                 Lobbies.Add(NetworkLobby.Deserialize(lobbyInfos[i]));
+            }
+
             LoggedIn = true;
 
             // Rufe handler auf
@@ -210,7 +213,10 @@ namespace NoPasaranTD.Networking
                 {
                     // Warte auf Kommando vom Server
                     string message = TcpReader.ReadLine();
-                    if (message == null) throw new IOException("Stream was closed");
+                    if (message == null)
+                    {
+                        throw new IOException("Stream was closed");
+                    }
 
                     int index = message.IndexOf('#');
                     if (index == -1)
@@ -235,7 +241,7 @@ namespace NoPasaranTD.Networking
                     }
                 }
             }
-            catch(Exception e) 
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
