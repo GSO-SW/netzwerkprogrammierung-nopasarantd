@@ -170,14 +170,20 @@ namespace NoPasaranTD.Networking
             packetsSent[packet.Sequence] = new RUdpPacketInfo(packet, endpoints);
 
             foreach (IPEndPoint endpoint in endpoints)
+            {
                 await SendPacketAsync(packet, endpoint);
+            }
 
             localClient.SequenceID++;
         }
 
         public async Task<UdpReceiveResult> ReceiveAsync()
         {
-            while (packetsReceived.Count == 0) await Task.Delay(1);
+            while (packetsReceived.Count == 0)
+            {
+                await Task.Delay(1);
+            }
+
             RUdpPacketCombo combo = packetsReceived.Dequeue();
             return new UdpReceiveResult(combo.Packet.Data, combo.Endpoint);
         }
@@ -217,7 +223,7 @@ namespace NoPasaranTD.Networking
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -227,8 +233,10 @@ namespace NoPasaranTD.Networking
         {
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
+            {
                 return; // Server hinkt hinterher, ignoriere diese Nachricht
-            else if(combo.Packet.Sequence > client.SequenceID)
+            }
+            else if (combo.Packet.Sequence > client.SequenceID)
             { // Client hinkt hinterher, frage das Paket erneut an
                 await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
                 return;
@@ -243,29 +251,39 @@ namespace NoPasaranTD.Networking
         private void AcceptACK(RUdpPacketCombo combo)
         {
             if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
+            {
                 throw new IOException("Packet was already acknowledged");
+            }
 
             // Entferne den Endpunkt aus der Liste
             if (!info.Endpoints.Remove(combo.Endpoint))
+            {
                 throw new IOException("Packet was already acknowledged");
+            }
 
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             client.Ping = (uint)(Environment.TickCount - info.TickCreated);
 
-            if(info.Endpoints.Count == 0)
+            if (info.Endpoints.Count == 0)
             { // Wenn es niemanden mehr zum Informieren gibt, lösche das Paket aus dem Verlauf
                 if (!packetsSent.TryRemove(combo.Packet.Sequence, out _))
+                {
                     throw new IOException("How tf did this happen now?");
+                }
             }
         }
 
         private async Task AcceptSYN(RUdpPacketCombo combo)
         {
-            if(!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
+            if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
+            {
                 throw new IOException("Packet was already acknowledged");
+            }
 
-            if(!info.Endpoints.Contains(combo.Endpoint))
+            if (!info.Endpoints.Contains(combo.Endpoint))
+            {
                 throw new IOException("Packet was already acknowledged");
+            }
 
             // Versende das Paket erneut, wenn angefragt
             await SendPacketAsync(info.Packet, combo.Endpoint);
@@ -276,7 +294,10 @@ namespace NoPasaranTD.Networking
         private RUdpClientInfo GetRemoteClient(IPEndPoint endpoint)
         { // Suche nach dem Empfänger, wenn nicht gefunden, erstelle einen neuen
             if (!remoteClients.TryGetValue(endpoint, out RUdpClientInfo client))
+            {
                 client = remoteClients[endpoint] = new RUdpClientInfo();
+            }
+
             return client;
         }
 

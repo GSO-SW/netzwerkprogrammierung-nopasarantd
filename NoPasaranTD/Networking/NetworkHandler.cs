@@ -92,7 +92,7 @@ namespace NoPasaranTD.Networking
         #region Konstruktor
 
         public readonly List<NetworkTask> TaskQueue;
-        private List<NetworkTask> resyncPackageL = new List<NetworkTask>();
+        private readonly List<NetworkTask> resyncPackageL = new List<NetworkTask>();
 
         // Offlinemodus des Networkhandlers
         public NetworkHandler()
@@ -108,9 +108,11 @@ namespace NoPasaranTD.Networking
             Participants = participants;
             LocalPlayer = localPlayer;
 
-            EventHandlers = new Dictionary<string, Action<object>>();
-            EventHandlers.Add("ResyncReceive", ResyncReceive);
-            EventHandlers.Add("ResyncReq", ResyncRequest);
+            EventHandlers = new Dictionary<string, Action<object>>
+            {
+                { "ResyncReceive", ResyncReceive },
+                { "ResyncReq", ResyncRequest }
+            };
             TaskQueue = new List<NetworkTask>();
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
@@ -124,7 +126,7 @@ namespace NoPasaranTD.Networking
         /// Kontrolle, ob es Aufgaben gibt die in dem derzeitigen Tick erledigt werden müssen
         /// </summary>
         public void Update()
-         {
+        {
             for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
                 try
@@ -140,7 +142,9 @@ namespace NoPasaranTD.Networking
                         EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
                         handler(TaskQueue[i].Parameter); // Task ausführen
                         if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                        {
                             TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                        }
                     }
                     else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
                     {
@@ -150,14 +154,16 @@ namespace NoPasaranTD.Networking
                         Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
                         InvokeEvent("ResyncReq", 0, false);
                         if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                        {
                             TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                        }
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("The Package has been removed before reviewing: " + e.Message);
                 }
-                
+
             }
         }
 
@@ -178,7 +184,11 @@ namespace NoPasaranTD.Networking
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
                 for (int i = Participants.Count - 1; i >= 0; i--)
                 {
-                    if (Participants[i].Equals(LocalPlayer)) continue;
+                    if (Participants[i].Equals(LocalPlayer))
+                    {
+                        continue;
+                    }
+
                     try { await Socket.SendAsync(encodedMessage, Participants[i].EndPoint); } // Versuche Nachricht an Empfänger zu Senden
                     catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
@@ -193,7 +203,9 @@ namespace NoPasaranTD.Networking
 
             // Führe event im Client aus
             if (!resend)
+            {
                 TaskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
+            }
         }
 
         /// <summary>
@@ -219,7 +231,7 @@ namespace NoPasaranTD.Networking
 
                 if (firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
                 {
-                    Console.WriteLine("Failed to parse message: " + message);                        
+                    Console.WriteLine("Failed to parse message: " + message);
                     continue;
                 }
 
@@ -228,14 +240,14 @@ namespace NoPasaranTD.Networking
                 string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1); // Die Weiteren Daten die übertragen wurden
 
                 // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
-                if(!EventHandlers.TryGetValue(command, out Action<object> handler))
+                if (!EventHandlers.TryGetValue(command, out Action<object> handler))
                 {
                     Console.WriteLine("Cannot find such a command: " + command);
                     continue;
                 }
 
                 try { handler(Serializer.DeserializeObject(Convert.FromBase64String(base64String))); } // Deserialisiert die Daten in ein Objekt                   
-                catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
+                catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }
             }
         }
 
@@ -256,17 +268,31 @@ namespace NoPasaranTD.Networking
                 tasks.Add(new NetworkTask("HPMoneyBlock", Game.HealthPoints, Game.Money)); // Übergibt die Leben und das Geld zur Zeit des zurücksetztens im Objekt und im TickToPerform
                 tasks.Add(new NetworkTask("SettingsBlock1", Game.WaveManager.AutoStart, (long)StaticEngine.TickAcceleration)); // Übergibt ein bool, ob der Autostart aktiv ist und die Geschwindigkeit des Spiels
                 tasks.Add(new NetworkTask("SettingsBlock2", Game.Round, currentTick)); // Übergibt die aktuelle Runde für den Fall das die Clients stark desynchronisiert sind
-                foreach (var item in Game.Towers) // Fügt alle bereits platzierten Türme hinzu
+                foreach (Model.Tower item in Game.Towers) // Fügt alle bereits platzierten Türme hinzu
+                {
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
-                foreach (var item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
+                }
+
+                foreach (Model.Tower item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
+                {
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
+                }
+
                 for (int i = 0; i < Game.Balloons.Length; i++)
-                    foreach (var item in Game.Balloons[i])
+                {
+                    foreach (Model.Balloon item in Game.Balloons[i])
+                    {
                         tasks.Add(new NetworkTask("AddBalloon", item, currentTick)); // Übergibt als TickToPerform den Pfadabschnitt in dem sich der Ballon befindet
+                    }
+                }
+
                 tasks.Insert(0, new NetworkTask("HEADER", tasks.Count + 1, Game.CurrentTick)); // Erstellt den Header. Als Objekt wird die Anzahl aller Pakete übergeben. Als Tick den Tick auf den alles zurückgesetzt wird
 
-                foreach (var item in tasks)
+                foreach (NetworkTask item in tasks)
+                {
                     InvokeEvent("ResyncReceive", item, false);
+                }
+
                 Console.WriteLine(tasks.Count + "");
                 Update();
                 Resyncing = false;
@@ -280,9 +306,13 @@ namespace NoPasaranTD.Networking
         private void ResyncReceive(object t)
         { // Fuck it, empfange einfach den ganzen Spielstatus
             if (!Resyncing) // Checken das nicht bereits resynchronisiert wird und dass nur nicht-Host Clients synchonisieren
+            {
                 resyncPackageL.Add((NetworkTask)t);
+            }
             else
+            {
                 Console.WriteLine("Package Ignored");
+            }
 
             if (((NetworkTask)t).Handler == "HEADER")
             {
@@ -300,7 +330,7 @@ namespace NoPasaranTD.Networking
                     Game.VTowers.Clear(); // Entfernt alle Türme die noch nicht vollkommen platziert sind
                     Game.CurrentTick = (uint)resyncPackageL[0].TickToPerform;
                     List<NetworkTask> sortedList = new List<NetworkTask>();
-                    foreach (var item in resyncPackageL)
+                    foreach (NetworkTask item in resyncPackageL)
                     {
                         switch (item.Handler) // Sortiert die Pakete und führt die Einstellungsblöcke direkt aus
                         {
@@ -324,8 +354,11 @@ namespace NoPasaranTD.Networking
                         }
                     }
 
-                    foreach (var item in sortedList)
+                    foreach (NetworkTask item in sortedList)
+                    {
                         TaskQueue.Add(item);
+                    }
+
                     resyncPackageL.Clear();
                     Update();
                     Game.CheckVTower();
@@ -338,7 +371,10 @@ namespace NoPasaranTD.Networking
             }
         }
 
-        public void Dispose() => Socket?.Dispose();
+        public void Dispose()
+        {
+            Socket?.Dispose();
+        }
 
         #endregion
     }

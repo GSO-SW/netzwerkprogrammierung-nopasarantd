@@ -79,7 +79,7 @@ namespace NoPasaranTD.Data
 
             // Wenn die Datei existiert, öffne einen Stream.
             // Andernfalls erstelle sie und öffne dann den Stream
-            FileStream fileStream = File.Exists(savePath) ? 
+            FileStream fileStream = File.Exists(savePath) ?
                 new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite) :
                 File.Create(savePath);
 

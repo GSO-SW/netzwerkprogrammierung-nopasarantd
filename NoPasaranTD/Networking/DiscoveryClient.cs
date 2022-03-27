@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -159,7 +159,9 @@ namespace NoPasaranTD.Networking
 
             // Warte auf Antwort von jedem Endpunkt
             for (int i = 0; i < endpoints.Length; i++)
+            {
                 await UdpClient.ReceiveAsync();
+            }
         }
         #endregion
 

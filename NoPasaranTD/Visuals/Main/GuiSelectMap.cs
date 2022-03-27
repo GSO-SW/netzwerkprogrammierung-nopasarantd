@@ -50,7 +50,10 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Render(Graphics g)
         {
-            if (mapList.Count == 0) return;
+            if (mapList.Count == 0)
+            {
+                return;
+            }
             // Zeichne Karte
             g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
