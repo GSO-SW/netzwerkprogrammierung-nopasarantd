@@ -56,6 +56,10 @@ namespace NoPasaranTD.Networking
         public NetworkLobby Lobby { get; set; }
 
         public ReliableUPDHandler ReliableUPD { get; }
+        /// <summary>
+        /// Speichert die restliche Zeit die das Spiel pausiert sein soll bei einem resync damit alle Clients gleichzeitig starten
+        /// </summary>
+        public int ResyncDelay { get; set; }
 
         #endregion
         #region Konstruktor
@@ -115,6 +119,7 @@ namespace NoPasaranTD.Networking
                         || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower")
                         || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
                         || TaskQueue[i].Handler == "AddBalloon"
+                        || TaskQueue[i].Handler == "ResyncReceive"
                         || OfflineMode) // Checken ob die Task ausgeführt werden soll
                     {
                         Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
@@ -176,7 +181,7 @@ namespace NoPasaranTD.Networking
                 return;
             }
 
-            // Führe event im client aus
+            // Führe event im Client aus
             if (!resend)
                 TaskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
         }
@@ -256,6 +261,7 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncRequest(object t)
         {
+            ResyncDelay = 2000 * (int)StaticEngine.TickAcceleration;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
                 TaskQueue.Clear(); // Alle Tasks sollen beendet werden wenn ein desync festgestellt wurde
@@ -263,7 +269,8 @@ namespace NoPasaranTD.Networking
                 List<NetworkTask> tasks = new List<NetworkTask>();
                 uint currentTick = Game.CurrentTick;
                 tasks.Add(new NetworkTask("HPMoneyBlock", Game.HealthPoints, Game.Money)); // Übergibt die Leben und das Geld zur Zeit des zurücksetztens im Objekt und im TickToPerform
-                tasks.Add(new NetworkTask("SettingsBlock", Game.WaveManager.AutoStart, (long)StaticEngine.TickAcceleration)); // Übergibt ein bool, ob der Autostart aktiv ist und die Geschwindigkeit des Spiels
+                tasks.Add(new NetworkTask("SettingsBlock1", Game.WaveManager.AutoStart, (long)StaticEngine.TickAcceleration)); // Übergibt ein bool, ob der Autostart aktiv ist und die Geschwindigkeit des Spiels
+                tasks.Add(new NetworkTask("SettingsBlock2", Game.Round, currentTick)); // Übergibt die aktuelle Runde für den Fall das die Clients stark desynchronisiert sind
                 foreach (var item in Game.Towers) // Fügt alle bereits platzierten Türme hinzu
                     tasks.Add(new NetworkTask("AddTower", item, currentTick));
                 foreach (var item in Game.VTowers) // Fügt alle nur vorläufigen Türme hinzu
@@ -275,6 +282,8 @@ namespace NoPasaranTD.Networking
 
                 foreach (var item in tasks)
                     ReliableUPD.SendReliableUDP("ResyncReceive", item);
+                Console.WriteLine(tasks.Count + "");
+                Update();
                 Resyncing = false;
             }
         }
@@ -285,7 +294,11 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncReceive(object t)
         {
-            resyncPackageL.Add((NetworkTask)t);
+            if (!Resyncing) // Checken das nicht bereits resynchronisiert wird und dass nur nicht-Host Clients synchonisieren
+                resyncPackageL.Add((NetworkTask)t);
+            else
+                Console.WriteLine("Package Ignored");
+
             if (((NetworkTask)t).Handler == "HEADER")
             {
                 resyncPackageL.Insert(0, (NetworkTask)t); // Fügt den Header an die erste Stelle im Falle, dass die Pakete eine andere Reihenfolge haben
@@ -295,36 +308,48 @@ namespace NoPasaranTD.Networking
             {
                 if ((int)resyncPackageL[0].Parameter == resyncPackageL.Count) // Kontrollieren, dass alle Pakete angekommen sind
                 {
+                    Console.WriteLine((int)resyncPackageL[0].Parameter + "");
                     Resyncing = true; // Pausiert das Spiel, damit alle Aufgaben auf einmal passieren
                     Game.Towers.Clear(); // Entfernt alle Türme
                     Game.InitBalloons(); // Entfernt alle Ballons
                     Game.VTowers.Clear(); // Entfernt alle Türme die noch nicht vollkommen platziert sind
                     Game.CurrentTick = (uint)resyncPackageL[0].TickToPerform;
-                    for (int i = resyncPackageL.Count - 1; i > 0; i--)
+                    List<NetworkTask> sortedList = new List<NetworkTask>();
+                    foreach (var item in resyncPackageL)
                     {
-                        if (resyncPackageL[i].Handler == "HPMoneyBlock") // Sucht nach dem Paket in dem die Leben und das Geld übertragen werden
+                        switch (item.Handler) // Sortiert die Pakete und führt die Einstellungsblöcke direkt aus
                         {
-                            resyncPackageL.Insert(1, resyncPackageL[i]);
-                            resyncPackageL.RemoveAt(i + 1); // Entfernt die alte Variante die nun um 1 Platz verschoben ist
-                            Game.HealthPoints = (int)resyncPackageL[1].Parameter; // Leben setzten
-                            Game.Money = (int)resyncPackageL[1].TickToPerform; // Geld setzten
-                        }
-                        else if (resyncPackageL[i].Handler == "SettingsBlock") // Sucht nach dem Paket mit den Spieleinstellungen Beschleunigung und Autostart
-                        {
-                            StaticEngine.TickAcceleration = (ulong)resyncPackageL[i].TickToPerform; // Geschwindigkeit setzten
-                            Game.WaveManager.AutoStart = (bool)resyncPackageL[i].Parameter; // Autostart setzten
-                            resyncPackageL.Insert(resyncPackageL.Count, resyncPackageL[i]); // Das Paket an das Ende der Liste schreiben
-                            resyncPackageL.RemoveAt(i); // Das andere Vorkommen löschen
+                            case "HPMoneyBlock":
+                                Game.HealthPoints = (int)item.Parameter; // Leben setzten
+                                Game.Money = (int)item.TickToPerform; // Geld setzten
+                                break;
+                            case "SettingsBlock":
+                                StaticEngine.TickAcceleration = (ulong)item.TickToPerform; // Geschwindigkeit setzten
+                                Game.WaveManager.AutoStart = (bool)item.Parameter; // Autostart setzten
+                                break;
+                            case "SettingsBlock2":
+                                Game.Round = (int)item.Parameter;
+                                break;
+                            case "AddTower":
+                                sortedList.Insert(0, item);
+                                break;
+                            case "AddBalloon":
+                                sortedList.Insert(sortedList.Count, item);
+                                break;
                         }
                     }
 
-                    for (int i = 3; i < resyncPackageL.Count - 1; i++)
-                        TaskQueue.Add(resyncPackageL[i]);
+                    foreach (var item in sortedList)
+                        TaskQueue.Add(item);
                     resyncPackageL.Clear();
                     Update();
                     Game.CheckVTower();
                     Resyncing = false; // Führt das Spiel vom gesendeten Tick aus weiter
                 }
+            }
+            if (IsHost)
+            {
+                resyncPackageL.Clear();
             }
         }
 

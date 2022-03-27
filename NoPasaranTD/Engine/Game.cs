@@ -81,11 +81,29 @@ namespace NoPasaranTD.Engine
 			CurrentMap.Dispose();
         }
 
-        #region Game logic region
-        public void Update()
+		#region Game logic region
+
+		//private bool check = true; // TESTCODE
+		//private bool check2 = true; // TESTCODE
+		public void Update()
 		{
+			if (NetworkHandler.ResyncDelay > 0)
+            {
+				NetworkHandler.ResyncDelay--;
+				return;
+			}
 			if ((Paused && NetworkHandler.OfflineMode) || NetworkHandler.Resyncing) return; // Abfragen ob das Spiel legitim pausiert ist
 			if (HealthPoints <= 0) return; // Abfragen ob das Spiel vorbei ist
+										   //if (Round == 3 && check && NetworkHandler.IsHost) TESTCODE
+										   //         {
+										   //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
+										   //	check = false;
+										   //         }
+										   //if (Round == 4 && check2 && NetworkHandler.IsHost)
+										   //{
+										   //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
+										   //	check2 = false;
+										   //}
 			NetworkHandler.Update();
 
 			WaveManager.Update();
@@ -186,6 +204,8 @@ namespace NoPasaranTD.Engine
 					(float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
 				);
             }
+			//Font fontArial = new Font("Arial", 10, FontStyle.Regular);
+			//g.DrawString(CurrentTick + "", fontArial,new SolidBrush(Color.Black), 0, 200);
 
 			for (int i = Towers.Count - 1; i >= 0; i--)
 				Towers[i].Render(g);

@@ -30,9 +30,9 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void SendReliableUDP(string command, object param)
         {
-            long tickToPerform = networkHandler.Game.CurrentTick;
-            if (command != "AddTower")
-                tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
+            long tickToPerform = networkHandler.Game.CurrentTick + networkHandler.HighestPing;
+            if (command == "AddTower" || command == "ResyncReceive") // Pakete zum Resynchronisieren und zum hinzufügen von den Türmen sollen sofort bei erhalt ausgeführt werden
+                tickToPerform = networkHandler.Game.CurrentTick;
             sendTasks.Add(new ReliableUDPModel(new NetworkTask(command, param, tickToPerform), networkHandler.Game.CurrentTick));
             networkHandler.InvokeEvent("ReliableUDP", sendTasks[sendTasks.Count - 1].NetworkTask, false);
             if ((!networkHandler.OfflineMode && networkHandler.Participants.Count == 1) || networkHandler.OfflineMode) // Wenn der Spieler alleine ist bzw Offline, wird kein UDP benötigt und daher müssen auch keine Ack Packete abgewartet werden
