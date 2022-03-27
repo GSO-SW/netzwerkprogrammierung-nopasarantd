@@ -261,7 +261,7 @@ namespace NoPasaranTD.Networking
         /// <param name="t"></param>
         private void ResyncRequest(object t)
         {
-            ResyncDelay = 2000 * (int)StaticEngine.TickAcceleration;
+            ResyncDelay = 6000 * (int)StaticEngine.TickAcceleration;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
                 TaskQueue.Clear(); // Alle Tasks sollen beendet werden wenn ein desync festgestellt wurde
