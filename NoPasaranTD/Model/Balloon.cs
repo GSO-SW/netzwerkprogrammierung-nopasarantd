@@ -1,10 +1,12 @@
 ﻿using NoPasaranTD.Data;
+using System;
 
 namespace NoPasaranTD.Model
 {
     /// <summary>
     /// Model Klasse eines Ballon Objektes
     /// </summary>
+    [Serializable]
     public class Balloon
     {
         public Balloon(BalloonType type)
@@ -30,12 +32,18 @@ namespace NoPasaranTD.Model
         /// <summary>
         /// Das Geld welches dieses Ballon einbringt, sobald es zerstört wurde (Abhängig vom Ballon Typen)
         /// </summary>
-        public uint Value => StaticInfo.GetBalloonValue(Type);
+        public uint Value { get => StaticInfo.GetBalloonValue(Type); }
+
+        /// <summary>
+        /// Das Pfadsegment auf dem sich der Ballon zu dem Zeitpunkt befindet
+        /// </summary>
+        public uint CurrentSegment { get; set; } = 0;
     }
 
     /// <summary>
     /// Typen eines Ballones
     /// </summary>
+    [Serializable]
     public enum BalloonType
     {
         None,

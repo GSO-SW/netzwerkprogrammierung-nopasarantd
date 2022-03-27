@@ -172,7 +172,8 @@ namespace NoPasaranTD.Visuals.Ingame
                 TowerBuildMenu.Visible = true;
                 await OptionsContainer.ExpandCollapseAsync(true);
                 tower.Hitbox = args.MovedObject;
-                game.NetworkHandler.InvokeEvent("AddTower", tower);
+                tower.ActivateAtTick = game.CurrentTick + game.NetworkHandler.HighestPing;
+                game.NetworkHandler.InvokeEvent("AddTower", tower, false);
             }
         }
 

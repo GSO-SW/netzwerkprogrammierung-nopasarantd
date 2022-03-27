@@ -112,6 +112,8 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
+            if (mapList.Count == 0) return;
+
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);

@@ -28,6 +28,7 @@ namespace NoPasaranTD.Model
         public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level;
         public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
         public Guid ID { get; } = Guid.NewGuid();
+        public long ActivateAtTick { get; set; } = 0;
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc
         {
