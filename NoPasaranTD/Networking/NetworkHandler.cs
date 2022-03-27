@@ -130,9 +130,13 @@ namespace NoPasaranTD.Networking
                     }
                     else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
                     {
+                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
+                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
+                        handler(TaskQueue[i].Parameter); // Task ausführen
                         Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
                         ReliableUPD.SendReliableUDP("ResyncReq", 0);
-                        TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                        if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                            TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
                     }
                 }
                 catch (Exception e)
