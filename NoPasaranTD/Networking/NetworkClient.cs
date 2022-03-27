@@ -7,7 +7,10 @@ namespace NoPasaranTD.Networking
         public IPEndPoint EndPoint { get; internal set; }
 
         public string Name { get; set; }
-        public NetworkClient(string name) => Name = name;
+        public NetworkClient(string name)
+        {
+            Name = name;
+        }
 
         /// <summary>
         /// Serialisiert einen NetworkClient zu einer Zeichenkette,
@@ -15,7 +18,10 @@ namespace NoPasaranTD.Networking
         /// </summary>
         /// <param name="client">Der zu serialisierende NetworkClient</param>
         /// <returns>Zeichenkette, die zum Vermittlungsserver gesendet werden kann</returns>
-        public static string Serialize(NetworkClient client) => client.Name;
+        public static string Serialize(NetworkClient client)
+        {
+            return client.Name;
+        }
 
         /// <summary>
         /// Deserialisiert eine Zeichenkette zu einem NetworkClient,
@@ -23,6 +29,9 @@ namespace NoPasaranTD.Networking
         /// </summary>
         /// <param name="client">Die zu deserialisierende Zeichenkette</param>
         /// <returns>NetworkClient, der vom Spiel ausgewertet werden kann</returns>
-        public static NetworkClient Deserialize(string info) => new NetworkClient(info);
+        public static NetworkClient Deserialize(string info)
+        {
+            return new NetworkClient(info);
+        }
     }
 }

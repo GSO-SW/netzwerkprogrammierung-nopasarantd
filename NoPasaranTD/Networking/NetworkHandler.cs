@@ -1,11 +1,12 @@
-﻿using System;
+﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Utilities;
+using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using NoPasaranTD.Utilities;
-using NoPasaranTD.Engine;
 
 namespace NoPasaranTD.Networking
 {
@@ -43,12 +44,12 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
         /// </summary>
-        public bool OfflineMode { get => Socket == null || Participants == null; }
+        public bool OfflineMode => Socket == null || Participants == null;
 
         /// <summary>
         /// Gibt an ob der ausgeführte Client der host der Sitzung ist
         /// </summary>
-        public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
+        public bool IsHost => OfflineMode || LocalPlayer == Participants[0];
 
         public NetworkLobby Lobby { get; set; }
 
@@ -83,7 +84,7 @@ namespace NoPasaranTD.Networking
         /// <param name="message">Die Nachricht als String</param>
         public async void InvokeEvent(string command, object param)
         {
-            if(!OfflineMode)
+            if (!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format: "COMMAND"("PARAMETER")
                 string message = $"{command}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
@@ -94,7 +95,7 @@ namespace NoPasaranTD.Networking
                 await Socket.SendAsync(encodedMessage, endpoints);
             }
 
-            // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+            // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
             if (!EventHandlers.TryGetValue(command, out Action<object> handler))
             {
                 Console.WriteLine("Cannot find such a command: " + command);
@@ -110,49 +111,48 @@ namespace NoPasaranTD.Networking
         /// </summary>
         private async void ReceiveBroadcast()
         {
-            if (OfflineMode) throw new Exception("Can't receive input in OfflineMode");
+            if (OfflineMode)
+            {
+                throw new Exception("Can't receive input in OfflineMode");
+            }
 
-            //try
-            //{
-                while (true)
-                {                
-                    // Es wird nach einer Nachricht abgehört
-                    byte[] encodedMessage = (await Socket.ReceiveAsync()).Buffer;
-                    string message = Encoding.ASCII.GetString(encodedMessage);
+            while (true)
+            {
+                // Es wird nach einer Nachricht abgehört
+                byte[] encodedMessage = (await Socket.ReceiveAsync()).Buffer;
+                string message = Encoding.ASCII.GetString(encodedMessage);
 
-                    // Index bei welchem der Parameter beginnt
-                    int firstIndexBracket = message.IndexOf('(');
-                    // Index bei welchem der Parameter endet
-                    int lastIndexBracket = message.LastIndexOf(')');
+                // Index bei welchem der Parameter beginnt
+                int firstIndexBracket = message.IndexOf('(');
+                // Index bei welchem der Parameter endet
+                int lastIndexBracket = message.LastIndexOf(')');
 
-                    if (firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
-                    {
-                        Console.WriteLine("Failed to parse message: " + message);                        
-                        continue;
-                    }
-
-                    // COMMAND(PARAMETER)
-                    string command = message.Substring(0, firstIndexBracket);
-                    string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1);
-
-                    // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
-                    if(!EventHandlers.TryGetValue(command, out Action<object> handler))
-                    {
-                        Console.WriteLine("Cannot find such a command: " + command);
-                        continue;
-                    }
-                    
-                    try { handler(Serializer.DeserializeObject(Convert.FromBase64String(base64String))); } // Deserialisiert die Daten in ein Objekt                   
-                    catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }
+                if (firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
+                {
+                    Console.WriteLine("Failed to parse message: " + message);
+                    continue;
                 }
-            //}
-            //catch(Exception e) 
-            //{
-            //    Console.WriteLine(e);
-            //}
+
+                // COMMAND(PARAMETER)
+                string command = message.Substring(0, firstIndexBracket);
+                string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1);
+
+                // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+                if (!EventHandlers.TryGetValue(command, out Action<object> handler))
+                {
+                    Console.WriteLine("Cannot find such a command: " + command);
+                    continue;
+                }
+                    
+                try { handler(Serializer.DeserializeObject(Convert.FromBase64String(base64String))); } // Deserialisiert die Daten in ein Objekt                   
+                catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }
+            }
         }
 
-        public void Dispose() => Socket?.Dispose();
+        public void Dispose()
+        {
+            Socket?.Dispose();
+        }
 
         #endregion
     }

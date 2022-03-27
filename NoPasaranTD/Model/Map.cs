@@ -1,20 +1,38 @@
-﻿using NoPasaranTD.Utilities;
+﻿using Newtonsoft.Json;
+using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using Newtonsoft.Json;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
 
 namespace NoPasaranTD.Model
 {
-    struct Fragment
+    /// <summary>
+    /// Eine Verbindung von Pfadpunkt zu Pfadpunkt
+    /// </summary>
+    internal struct Fragment
     {
         public Fragment(int sv, double sl, double el)
-            => (StartVector, StartLength, EndLength) = (sv, sl, el);
+        {
+            StartVector = sv;
+            StartLength = sl;
+            EndLength = el;
+        }
 
+        /// <summary>
+        /// Index vom Anfang des Richtungsvektors
+        /// </summary>
         public int StartVector { get; }
+
+        /// <summary>
+        /// Die Länge des Pfades an dem der Richtungsvektor startet
+        /// </summary>
         public double StartLength { get; }
+
+        /// <summary>
+        /// Die Länge des Pfades an dem der Richtungsvektor endet
+        /// </summary>
         public double EndLength { get; }
     }
 
@@ -25,7 +43,7 @@ namespace NoPasaranTD.Model
         public Size Dimension { get; set; }
         public List<Obstacle> Obstacles { get; set; }
         public Vector2D[] BalloonPath { get; set; }
-        public float PathWidth { get; set; }
+        public float PathRadius { get; set; }
 
         private string backgroundPath;
         public string BackgroundPath
@@ -34,13 +52,7 @@ namespace NoPasaranTD.Model
             set
             {
                 backgroundPath = value;
-
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                string resourceName = "NoPasaranTD.Resources." + value;
-                using(Stream stream = assembly.GetManifestResourceStream(resourceName))
-                {
-                    BackgroundImage = new Bitmap(stream);
-                }
+                BackgroundImage = ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Maps." + value);
             }
         }
 
@@ -56,7 +68,10 @@ namespace NoPasaranTD.Model
         // Einzelne Fragmente (Errechnet im setter von 'BalloonPath')
         private Fragment[] pathFragments;
 
-        public void Dispose() => BackgroundImage?.Dispose();
+        public void Dispose()
+        {
+            BackgroundImage?.Dispose();
+        }
 
         /// <summary>
         /// Inizialisiert das Objekt und berechnet somit die Länge des Pfades und dessen einzelne Fragmente.<br/>
@@ -66,7 +81,7 @@ namespace NoPasaranTD.Model
         {
             // Pfadlänge berechnen
             PathLength = GetFragmentMagnitudeTo(BalloonPath.Length - 2);
-        
+
             double startMagnitude = 0;
             pathFragments = new Fragment[BalloonPath.Length - 1];
             for (int i = 0; i < pathFragments.Length; i++)
@@ -99,7 +114,7 @@ namespace NoPasaranTD.Model
 
         public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
         {
-            return IsCollidingWithPath(GetScaledRect(scaledWidth,scaledHeight,rect));
+            return IsCollidingWithPath(GetScaledRect(scaledWidth, scaledHeight, rect));
         }
 
         public Rectangle GetScaledRect(int scaledWidth, int scaledHeight, Rectangle rect)
@@ -125,10 +140,15 @@ namespace NoPasaranTD.Model
             Fragment fragment = pathFragments[index];
 
             // Suche nach dem genau richtigen Fragment
-            while (fragment.StartLength > length) 
+            while (fragment.StartLength > length)
+            {
                 fragment = pathFragments[--index];
-            while (fragment.EndLength < length) 
+            }
+
+            while (fragment.EndLength < length)
+            {
                 fragment = pathFragments[++index];
+            }
 
             Vector2D start = BalloonPath[fragment.StartVector];
             Vector2D end = BalloonPath[fragment.StartVector + 1];
@@ -142,8 +162,13 @@ namespace NoPasaranTD.Model
         {
             Vector2D[] cornersV = new Vector2D[4]; // Speichern der Ecken des Rechtecks
             for (int i = 0; i < 2; i++) // Alle Ecken durchgehen
+            {
                 for (int j = 0; j < 2; j++)
+                {
                     cornersV[i * 2 + j] = new Vector2D(rect.X + i * rect.Width, rect.Y + j * rect.Height); // Ecken abspeichern
+                }
+            }
+
             Vector2D save = cornersV[2]; // Ecke 2 mit 3 tauschen um eine durchgehende Reihenfolge zu haben
             cornersV[2] = cornersV[3];
             cornersV[3] = save;
@@ -163,22 +188,32 @@ namespace NoPasaranTD.Model
             {
                 Vector2D connectionRecV;
                 if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
+                {
                     connectionRecV = cornersV[i + 1] - cornersV[i];
+                }
                 else // Bei dem letzten punkt wieder auf den ersten springen
+                {
                     connectionRecV = cornersV[0] - cornersV[i];
+                }
 
                 //Durchgehen aller Pfadpunkte und schauen ob innerhalb des Radius ein Stück des Rechtecks ist
-                foreach (var item in BalloonPath)
+                foreach (Vector2D item in BalloonPath)
                 {
                     // Nächster Punkt auf der Gerade des Rechtecks berechnet
                     float closestPointDistance = -1 * (((cornersV[i].X - item.X) * connectionRecV.X + (cornersV[i].Y - item.Y) * connectionRecV.Y) / (connectionRecV.X * connectionRecV.X + connectionRecV.Y * connectionRecV.Y));
                     if (closestPointDistance < 0) // Sollte der Punkt außerhalb der Länge des Rechtecks liegen wird auf die entsprechende Seite gesetzt
+                    {
                         closestPointDistance = 0;
+                    }
                     else if (closestPointDistance > 1)
+                    {
                         closestPointDistance = 1;
+                    }
 
-                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathWidth) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathRadius) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    {
                         return false;
+                    }
                 }
 
                 // Alle Hitboxen des Pfades durchgehen und auf Kollisionen kontrollieren
@@ -202,7 +237,9 @@ namespace NoPasaranTD.Model
                         float collisionVariableRecF = Vector2D.Intersection(cornersV[i], connectionRecV, pathLocationV, pathDirectionV);
                         // Kontrolle, ob die Schnittstelle zwischen Gerade und Seite des Rechtecks innerhalb der Intervalle von [0,1] liegt
                         if (collisionVariablePathF >= 0 && collisionVariablePathF <= 1 && collisionVariableRecF >= 0 && collisionVariableRecF <= 1)
+                        {
                             return false;
+                        }
                     }
                 }
             }
@@ -216,20 +253,28 @@ namespace NoPasaranTD.Model
         public bool CheckBalloonPosFragment(float pos, uint segmentID)
         {
             if (pos > pathFragments[segmentID].EndLength)
+            {
                 return true;
+            }
+
             return false;
         }
 
         // Berechnen des Betrags zwischen Punkt 'index' und 'index + 1'
         private double GetFragmentMagnitudeOf(int index)
-            => (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
+        {
+            return (BalloonPath[index + 1] - BalloonPath[index]).Magnitude;
+        }
 
         // Berechnen des Betrags zwischen Punkt '(0, 0)' und 'index'
         public double GetFragmentMagnitudeTo(int index)
         {
             double sum = 0;
             for (int i = 0; i <= index; i++)
+            {
                 sum += GetFragmentMagnitudeOf(i);
+            }
+
             return sum;
         }
 
@@ -245,22 +290,37 @@ namespace NoPasaranTD.Model
             {
                 // Erst checken ob es nur einen anliegenden Ballon gibt, also erster / letzter
                 if (i != 0)
+                {
                     directionI = 0;
+                }
+
                 if (i == BalloonPath.Length - 1)
+                {
                     directionI = -1;
+                }
+
                 for (int j = -1; j < 2; j += 2) // Jeden Punkt 2 mal durchgehen, um für beide verbundenen Geraden parallele zu erstellen
                 {
                     if (directionI == 1) // Bei dem ersten nur auf den nächsten Punkt schauen
+                    {
                         if (j < 0)
+                        {
                             j = 1;
+                        }
+                    }
+
                     if (directionI == -1) // Bei dem letzten nur auf den Punkt davor schauen
+                    {
                         if (j > 0)
+                        {
                             break;
+                        }
+                    }
 
                     // Orthogonaler Richtungsvektor zu beiden nächsten Punkten in beide Richtungen
                     Vector2D directionV = new Vector2D(-1 * (BalloonPath[i + j].Y - BalloonPath[i].Y), BalloonPath[i + j].X - BalloonPath[i].X);
                     // Berechnet die Variable für die Geradengleichung um auf den Punkt zu kommen mit dem ausgewählten Abstand
-                    double multiplicatorD = Math.Sqrt((PathWidth * PathWidth) / (directionV.X * directionV.X + directionV.Y * directionV.Y));
+                    double multiplicatorD = Math.Sqrt((PathRadius * PathRadius) / (directionV.X * directionV.X + directionV.Y * directionV.Y));
                     // Die Berechnete Variable in die Geradengleichung einsetzten um den Punkt zu erhalten
                     Vector2D v1 = new Vector2D(BalloonPath[i].X + directionV.X * multiplicatorD, BalloonPath[i].Y + directionV.Y * multiplicatorD);
                     // In beide Richungen orthogonal vom Vektor aus schauen 

@@ -25,12 +25,12 @@ namespace NoPasaranTD.Model
         /// <summary>
         /// Die Stärke des Ballones (Abhängig vom Ballon Typen)
         /// </summary>
-        public uint Strength { get => StaticInfo.GetBalloonStrength(Type); }
+        public uint Strength => StaticInfo.GetBalloonStrength(Type);
 
         /// <summary>
         /// Das Geld welches dieses Ballon einbringt, sobald es zerstört wurde (Abhängig vom Ballon Typen)
         /// </summary>
-        public uint Value { get => StaticInfo.GetBalloonValue(Type); }
+        public uint Value => StaticInfo.GetBalloonValue(Type);
     }
 
     /// <summary>
