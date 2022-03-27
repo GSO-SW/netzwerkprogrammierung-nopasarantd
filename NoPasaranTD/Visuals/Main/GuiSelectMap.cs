@@ -71,5 +71,11 @@ namespace NoPasaranTD.Visuals.Main
             btnStartGame.MouseDown(e);
         }
 
+        public override void KeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+                Program.LoadGame(null);
+        }
+
     }
 }

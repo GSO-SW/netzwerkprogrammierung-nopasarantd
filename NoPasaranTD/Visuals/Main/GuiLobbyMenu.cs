@@ -208,6 +208,8 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void KeyDown(KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.Escape)
+                Program.LoadGame(null);
             ForegroundScreen.KeyDown(e);
         }
 
