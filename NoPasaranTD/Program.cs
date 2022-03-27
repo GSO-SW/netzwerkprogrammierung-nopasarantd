@@ -1,8 +1,8 @@
-﻿using System;
-using System.Windows.Forms;
-using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Visuals;
+using System;
+using System.Windows.Forms;
 
 namespace NoPasaranTD
 {
@@ -17,7 +17,7 @@ namespace NoPasaranTD
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -28,11 +28,38 @@ namespace NoPasaranTD
             Application.Run(display);
         }
 
-        public static void LoadGame(string mapFile) => display.LoadGame(mapFile);
-        public static void LoadGame(string mapFile, NetworkHandler networkHandler) 
-            => display.LoadGame(mapFile, networkHandler);
+        /// <summary>
+        /// Lade Spielinstanz im Offlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
+        /// </summary>
+        /// <param name="mapFile">Dateiname der Map</param>
+        public static void LoadGame(string mapFile)
+        {
+            display.LoadGame(mapFile);
+        }
 
+        /// <summary>
+        /// Lade Spielinstanz im Onlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
+        /// </summary>
+        /// <param name="mapFile">Dateiname der Map</param>
+        /// <param name="handler">Dementsprechender Netzwerkmanager</param>
+        public static void LoadGame(string mapFile, NetworkHandler networkHandler)
+        {
+            display.LoadGame(mapFile, networkHandler);
+        }
+
+        /// <summary>
+        /// Lade einen überlappenden Screen<br/>
+        /// Achtung: Das Spiel wird dabei nicht automatisch gestoppt, 
+        /// sondern läuft im Hintergrund weiter!
+        /// </summary>
+        /// <param name="screen">Der zu ladende Screen</param>
         public static void LoadScreen(GuiComponent screen)
-            => display.LoadScreen(screen);
+        {
+            display.LoadScreen(screen);
+        }
     }
 }

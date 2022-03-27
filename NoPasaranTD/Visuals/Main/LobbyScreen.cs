@@ -80,20 +80,31 @@ namespace NoPasaranTD.Visuals.Main
         public override void Dispose()
         {
             foreach (Map map in mapList?.Values)
+            {
                 map.Dispose();
+            }
+
             mapList?.Clear();
         }
 
         #region Event region
         private void LeaveLobby()
         { // Befehl zum Verlassen der Lobby
-            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
+            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
+
             parent.DiscoveryClient.LeaveCurrentLobbyAsync();
         }
 
         private void StartGame()
         { // Befehl zum Starten des Spiels
-            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
+            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
+
             parent.DiscoveryClient.StartGameAsync();
         }
         #endregion
@@ -101,14 +112,19 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
+            if (mapList.Count == 0)
+            {
+                return;
+            }
+
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
 
             // Map preview
-            g.DrawImage(mapList[Lobby.MapName].BackgroundImage, 
-                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0, 
+            g.DrawImage(mapList[Lobby.MapName].BackgroundImage,
+                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
                 StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
             );
 

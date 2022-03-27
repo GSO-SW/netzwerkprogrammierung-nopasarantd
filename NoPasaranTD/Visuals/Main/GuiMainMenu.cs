@@ -67,13 +67,13 @@ namespace NoPasaranTD.Visuals.Main
 
                 // Spawne Türme in Spielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) }, false);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) }, false);
             }
 
             LobbyScreen = new LobbyScreen(this);
@@ -111,44 +111,61 @@ namespace NoPasaranTD.Visuals.Main
         #region Discovery event region
         private void StartGame()
         { // Befehl zum Starten des Spiels
-            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
+            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
 
             List<NetworkClient> participants = new List<NetworkClient>();
             { // Baue Mitspieler Liste auf (Host auf index 0)
                 string playerStr;
                 string hostStr = NetworkClient.Serialize(CurrentLobby.Host);
-                foreach(NetworkClient player in DiscoveryClient.Clients)
+                foreach (NetworkClient player in DiscoveryClient.Clients)
                 { // Alle Endpunkte (Außer lokaler Spieler)
                     // Serialisiere den Spieler in ein String
                     playerStr = NetworkClient.Serialize(player);
 
                     if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                    {
                         participants.Insert(0, player);
+                    }
                     else // Wenn kein Host, einfach hinzufügen
+                    {
                         participants.Add(player);
+                    }
                 }
 
                 // Lokaler Spieler
                 playerStr = NetworkClient.Serialize(LocalPlayer);
                 if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
+                {
                     participants.Insert(0, LocalPlayer);
-                else 
+                }
+                else
+                {
                     participants.Add(LocalPlayer); // Wenn kein Host, einfach hinzufügen
+                }
             }
             Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
                 DiscoveryClient.UdpClient, participants, LocalPlayer
-            ) { Lobby = CurrentLobby });
+            )
+            { Lobby = CurrentLobby });
         }
 
         private void UpdateInfo()
         { // Befehl zum aktualisieren der Lobbyinformationen
-            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn) return;
+            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
 
             CurrentLobby = null;
-            foreach(NetworkLobby lobby in DiscoveryClient.Lobbies)
+            foreach (NetworkLobby lobby in DiscoveryClient.Lobbies)
             {
                 if (lobby.PlayerExists(LocalPlayer))
+                {
                     CurrentLobby = lobby;
+                }
             }
 
             DiscoveryStatus = null;
@@ -157,7 +174,7 @@ namespace NoPasaranTD.Visuals.Main
 
             // Wenn in keiner lobby, zeige die lobby liste
             // andernfalls, zeige die lobby informationen
-            ForegroundScreen = CurrentLobby == null ? 
+            ForegroundScreen = CurrentLobby == null ?
                 (GuiComponent)LobbyListScreen : LobbyScreen;
         }
         #endregion
@@ -173,7 +190,7 @@ namespace NoPasaranTD.Visuals.Main
         {
             // Spielszene rendern und dimmen
             backgroundGame.Render(g);
-            g.FillRectangle(BACKGROUND_COLOR, 
+            g.FillRectangle(BACKGROUND_COLOR,
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
             ForegroundScreen.Render(g);
 
@@ -184,13 +201,35 @@ namespace NoPasaranTD.Visuals.Main
             }
         }
 
-        public override void KeyUp(KeyEventArgs e) => ForegroundScreen.KeyUp(e);
-        public override void KeyDown(KeyEventArgs e) => ForegroundScreen.KeyDown(e);
+        public override void KeyUp(KeyEventArgs e)
+        {
+            ForegroundScreen.KeyUp(e);
+        }
 
-        public override void MouseUp(MouseEventArgs e) => ForegroundScreen.MouseUp(e);
-        public override void MouseDown(MouseEventArgs e) => ForegroundScreen.MouseDown(e);
-        public override void MouseMove(MouseEventArgs e) => ForegroundScreen.MouseMove(e);
-        public override void MouseWheel(MouseEventArgs e) => ForegroundScreen.MouseWheel(e);
+        public override void KeyDown(KeyEventArgs e)
+        {
+            ForegroundScreen.KeyDown(e);
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            ForegroundScreen.MouseUp(e);
+        }
+
+        public override void MouseDown(MouseEventArgs e)
+        {
+            ForegroundScreen.MouseDown(e);
+        }
+
+        public override void MouseMove(MouseEventArgs e)
+        {
+            ForegroundScreen.MouseMove(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            ForegroundScreen.MouseWheel(e);
+        }
         #endregion
 
         internal static ButtonContainer CreateButton(string text, Rectangle bounds)

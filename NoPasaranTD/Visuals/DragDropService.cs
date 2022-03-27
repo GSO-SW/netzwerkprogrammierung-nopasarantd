@@ -51,7 +51,9 @@ namespace NoPasaranTD.Visuals
         public void Update()
         {
             if (IsMoving)
-                MovedObject = new Rectangle(StaticEngine.MouseX - MovedObject.Width/2, StaticEngine.MouseY - MovedObject.Height / 2, MovedObject.Width, MovedObject.Height);
+            {
+                MovedObject = new Rectangle(StaticEngine.MouseX - MovedObject.Width / 2, StaticEngine.MouseY - MovedObject.Height / 2, MovedObject.Width, MovedObject.Height);
+            }
         }
 
         /// <summary>
@@ -63,7 +65,7 @@ namespace NoPasaranTD.Visuals
             MovedObject = visual;
             IsMoving = true;
         }
-            
+
         /// <summary>
         /// Stopt den Drag Vorgang 
         /// </summary>
@@ -87,9 +89,13 @@ namespace NoPasaranTD.Visuals
         public void MouseDown(MouseEventArgs args)
         {
             if (LeaveSetting == DragDropMode.MouseRightButtonDown && args.Button == MouseButtons.Right)
+            {
                 Leave();
+            }
             else if (LeaveSetting == DragDropMode.MouseLeftButtonDown && args.Button == MouseButtons.Left)
+            {
                 Leave();
+            }
         }
 
         public void MouseUp(MouseEventArgs args)
@@ -97,9 +103,13 @@ namespace NoPasaranTD.Visuals
             if (MoveSetting == DragDropMoveMode.Pressed)
             {
                 if (ApplySetting == DragDropMode.MouseLeftButtonUp && args.Button == MouseButtons.Left)
+                {
                     StopSuccessfully();
+                }
                 else if (ApplySetting == DragDropMode.MouseRightButtonUp && args.Button == MouseButtons.Right)
+                {
                     StopSuccessfully();
+                }
             }
         }
     }

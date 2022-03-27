@@ -1,7 +1,7 @@
-﻿using System.Drawing;
+﻿using NoPasaranTD.Engine;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NoPasaranTD.Engine;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
@@ -102,13 +102,18 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             g.FillRectangle(Background, Bounds);
 
             // Zeigt den Startbutton nur wenn die Runde pausuert ist
             if (currentGame.WaveManager.IsRoundCompleted && IsExpanded)
+            {
                 startButton.Render(g);
+            }
 
             // Zeigt die anderen Buttons nur wenn das Menu expandiert ist
             if (IsExpanded)
@@ -128,9 +133,13 @@ namespace NoPasaranTD.Visuals.Ingame
             accelerationButton.Content = "►►\n " + StaticEngine.TickAcceleration + "x";
 
             if (currentGame.WaveManager.AutoStart)
+            {
                 autoStartButton.Content = "⤻";
+            }
             else
+            {
                 autoStartButton.Content = "⭯";
+            }
 
             if (IsExpanded)
             {
@@ -159,12 +168,16 @@ namespace NoPasaranTD.Visuals.Ingame
         #endregion
         #region Init
 
-        public void Init(Game gamer)
+        /// <summary>
+        /// Initialisiert alle Komponenten
+        /// </summary>
+        /// <param name="game">Eine Spielinstanz in der diese Komponente laufen soll</param>
+        public void Init(Game game)
         {
             int buttonWidth = (Bounds.Width - 7 * ButtonMargin) / 6;
             int buttonHeight = Bounds.Height - ButtonMargin * 2;
 
-            currentGame = gamer;
+            currentGame = game;
 
             // Initialisiert die Grenzen der Buttons
             startButton.Bounds = new Rectangle(Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
@@ -195,31 +208,43 @@ namespace NoPasaranTD.Visuals.Ingame
         #region Event Methoden
 
         // Öffnet die Spielerliste
-        private void PlayersButton_ButtonClicked() =>
+        private void PlayersButton_ButtonClicked()
+        {
             currentGame.UILayout.PlayerListContainer.Visible = !currentGame.UILayout.PlayerListContainer.Visible;
+        }
 
         // Vergrößert oder verkleinert das Optionsmeu
         private async void ExpandButton_ButtonClicked()
         {
             if (IsExpanded)
+            {
                 await ExpandCollapseAsync(false);
+            }
             else
+            {
                 await ExpandCollapseAsync(true);
+            }
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
-        private void AutoStartButton_ButtonClicked() =>
-            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
+        private void AutoStartButton_ButtonClicked()
+        {
+            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0, false);
+        }
 
         // Startet das Spawning der Ballons beim betätigen des Buttons
-        private void StartButton_ButtonClicked() =>
-            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0);
+        private void StartButton_ButtonClicked()
+        {
+            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0, false);
+        }
 
         private void ChatButton_ButtonClicked() =>
             currentGame.UILayout.ChatContainer.Visible = !currentGame.UILayout.ChatContainer.Visible;
 
-        private void AccelerationButton_ButtonClicked() =>
-            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0);
+        private void AccelerationButton_ButtonClicked()
+        {
+            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0, false);
+        }
 
         #endregion
         #region Async Methoden

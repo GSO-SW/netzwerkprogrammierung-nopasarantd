@@ -41,10 +41,14 @@ namespace NoPasaranTD.Visuals
                 else // Sonstige Zeichen, die nicht Backspace sind
                 {
                     if (e.KeyChar == '\b')
+                    {
                         return;
+                    }
 
                     if (CaretIndex == Text.Length)
+                    {
                         Text += e.KeyChar;
+                    }
                     else if (Text.Length > 0)
                     {
                         string left = Text.Substring(0, CaretIndex);
@@ -53,24 +57,32 @@ namespace NoPasaranTD.Visuals
                         Text = left + right;
                     }
                     CaretIndex++;
-                }                
+                }
             }
         }
 
         public override void KeyDown(KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Left && CaretIndex > 0)
+            {
                 CaretIndex--;
+            }
             else if (e.KeyCode == Keys.Right && CaretIndex <= Text.Length - 1)
+            {
                 CaretIndex++;
+            }
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
             if (Bounds.Contains(e.Location))
+            {
                 IsFocused = true;
+            }
             else
+            {
                 IsFocused = false;
+            }
         }
 
         public override void Render(Graphics g)
@@ -105,7 +117,9 @@ namespace NoPasaranTD.Visuals
                 g.Transform = current;
                 
                 if (leftTextSize.Width >= innerBound.Width)
+                {
                     offsetX = innerBound.Width - leftTextSize.Width;
+                }
             }
             else if (IsFocused)
                 g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y +15);

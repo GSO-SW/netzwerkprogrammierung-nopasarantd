@@ -69,7 +69,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             if (e.KeyCode == Keys.Enter && inputBox.IsFocused && !currentGame.NetworkHandler.OfflineMode)
             {
-                currentGame.NetworkHandler.InvokeEvent("SendMessage", "[" + currentGame.NetworkHandler.LocalPlayer.Name + "]\n" + inputBox.Text);
+                currentGame.NetworkHandler.InvokeEvent("SendMessage", "[" + currentGame.NetworkHandler.LocalPlayer.Name + "]\n" + inputBox.Text, false);
                 inputBox.Text = "";
                 inputBox.CaretIndex = 0;
             }                           

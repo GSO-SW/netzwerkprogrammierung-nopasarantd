@@ -46,7 +46,7 @@ namespace NoPasaranTD.Visuals
         // Das innere Rechteck eines Buttons
         private Rectangle innerBackground;
 
-        public ButtonContainer(Rectangle bounds,int margin,string content)
+        public ButtonContainer(Rectangle bounds, int margin, string content)
         {
             Content = content;
             Margin = margin;
@@ -57,27 +57,38 @@ namespace NoPasaranTD.Visuals
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
             // Löst das Button Clicked Event aus wenn innerhalb der Bounds gecklickt wird
             if (Bounds.Contains(e.Location))
+            {
                 ButtonClicked?.Invoke();
+            }
         }
-        
+
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             innerBackground = new Rectangle(Bounds.X + Margin, Bounds.Y + Margin, Bounds.Width - Margin * 2, Bounds.Height - Margin * 2);
-            
+
             // Highlightet den Rand des Buttons wenn die Maus drüber erscheint
             if (!IsMouseOver)
+            {
                 g.FillRectangle(BorderBrush, Bounds);
+            }
             else
             {
                 // Normaler Zustand wenn die Maus nicht über dem Button liegt
                 Color borderColor = (BorderBrush as SolidBrush).Color;
                 g.FillRectangle(new SolidBrush(Color.FromArgb(255, (int)(borderColor.R / 1.5), (int)(borderColor.G / 1.5), (int)(borderColor.B / 1.5))), Bounds);
             }
-               
+
             // Füllt den Hintergrund des Buttons
             g.FillRectangle(Background, innerBackground);
 
