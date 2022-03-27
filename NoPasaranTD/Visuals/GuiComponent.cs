@@ -94,7 +94,7 @@ namespace NoPasaranTD.Visuals
         public static Font StandartIconFont = new Font("Calibri", 40);
 
         public static Font StandartHeader1Font = new Font("Calibri", 24, FontStyle.Bold, GraphicsUnit.Point);
-        public static Font StandartHeader2Font = new Font("Calibri", 16,FontStyle.Bold,GraphicsUnit.Point);
+        public static Font StandartHeader2Font = new Font("Calibri", 16, FontStyle.Bold, GraphicsUnit.Point);
 
         public static Font StandartText1Font = new Font("Calibri", 11, FontStyle.Regular, GraphicsUnit.Point);
         public static Font StandartText2Font = new Font("Calibri", 9, FontStyle.Regular, GraphicsUnit.Point);

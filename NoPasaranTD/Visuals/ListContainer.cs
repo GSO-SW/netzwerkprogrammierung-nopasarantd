@@ -143,7 +143,7 @@ namespace NoPasaranTD.Visuals
                 item.Position = new Point(
                     Position.X + i * (item.ItemSize.Width + Margin) * factorX + Margin,
                     Position.Y + currentHeight * factorY + Margin);
-                currentHeight += (item.ItemSize.Height + Margin)*factorY;
+                currentHeight += (item.ItemSize.Height + Margin) * factorY;
 
                 items.Add(item);
             }

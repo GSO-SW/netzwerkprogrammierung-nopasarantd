@@ -79,13 +79,13 @@ namespace NoPasaranTD.Visuals
         /// <summary>
         /// Stopt und verlässt den DragDrop Vorgang
         /// </summary>
-        public void Leave() 
-        { 
+        public void Leave()
+        {
             IsMoving = false;
-            DragDropLeft?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context }); 
-            Context = null; 
+            DragDropLeft?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context });
+            Context = null;
         }
-            
+
         public void MouseDown(MouseEventArgs args)
         {
             if (LeaveSetting == DragDropMode.MouseRightButtonDown && args.Button == MouseButtons.Right)

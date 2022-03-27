@@ -55,7 +55,9 @@ namespace NoPasaranTD.Utilities
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("NoPasaranTD.Resources.dichter_und_denker.txt"))
             {
                 using (StreamReader reader = new StreamReader(stream))
+                {
                     rawData = reader.ReadToEnd();
+                }
             }
 
             return new List<string>(rawData.Split('\n'));
@@ -66,7 +68,9 @@ namespace NoPasaranTD.Utilities
             List<Image> images = new List<Image>();
 
             for (int i = 1; i <= 13; i++)
+            {
                 images.Add(LoadBitmapResource("NoPasaranTD.Resources.Meme.meme_TD_" + i + ".jpg"));
+            }
 
             return images;
         }

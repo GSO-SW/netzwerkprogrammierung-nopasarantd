@@ -61,7 +61,7 @@ namespace NoPasaranTD.Visuals.Ingame
         private Game currentGame;
         private ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
 
-        private SolidBrush normalBorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122));
+        private readonly SolidBrush normalBorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122));
 
         public override void Render(Graphics g)
         {
@@ -70,7 +70,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 // Zeichnet den Hintergrund des Fensters
                 g.FillRectangle(Background, Bounds);
 
-                if (Context.Level == StaticInfo.GetTowerLevelCap(Context.GetType()) && !currentGame.GodMode) 
+                if (Context.Level == StaticInfo.GetTowerLevelCap(Context.GetType()) && !currentGame.GodMode)
                 {
                     upgradeButton.BorderBrush = Brushes.Red;
                 }
@@ -203,6 +203,6 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             Visible = false;
             Context.IsSelected = false;
-        }       
+        }
     }
 }

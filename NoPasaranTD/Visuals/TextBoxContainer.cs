@@ -37,7 +37,9 @@ namespace NoPasaranTD.Visuals
                     CaretIndex--;
                 }
                 else if (e.KeyChar == (char)Keys.Enter || e.KeyChar == '\n') // Sobald ein Enter-Char eingegeben wird, wird nichts eingetragen
+                {
                     return;
+                }
                 else // Sonstige Zeichen, die nicht Backspace sind
                 {
                     if (e.KeyChar == '\b')
@@ -88,9 +90,13 @@ namespace NoPasaranTD.Visuals
         public override void Render(Graphics g)
         {
             if (IsFocused)
+            {
                 g.FillRectangle(HighlightedBorderBrush, Bounds);
+            }
             else
+            {
                 g.FillRectangle(BorderBrush, Bounds);
+            }
 
             g.FillRectangle(Background, innerBound);
 
@@ -98,8 +104,8 @@ namespace NoPasaranTD.Visuals
             Region currentClip = g.Clip;
 
             g.SetClip(innerBound);
-            g.TranslateTransform(offsetX, 0);                      
-            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground,innerBound.X, innerBound.Y,StringFormat.GenericDefault);
+            g.TranslateTransform(offsetX, 0);
+            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y, StringFormat.GenericDefault);
 
             g.Clip = currentClip;
             g.Transform = current;
@@ -115,15 +121,16 @@ namespace NoPasaranTD.Visuals
 
                 g.Clip = currentClip;
                 g.Transform = current;
-                
+
                 if (leftTextSize.Width >= innerBound.Width)
                 {
                     offsetX = innerBound.Width - leftTextSize.Width;
                 }
             }
             else if (IsFocused)
-                g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y +15);
-                                    
+            {
+                g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 15);
+            }
         }
     }
 }

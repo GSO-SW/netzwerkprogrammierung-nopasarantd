@@ -30,23 +30,23 @@ namespace NoPasaranTD.Visuals.Main
         private Rectangle transparancyLayer = new Rectangle(0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
         private Rectangle randomTextRegion = new Rectangle(50, 60, 200, 200);
 
-        private string randomText = "";
+        private readonly string randomText = "";
 
         // Option Werte für die Random Title Animation
         private float scaleFactor = 1f; // Um welchen Faktor soll zurzeit skaliert werden
-        private float scaleVelocity = 0.001f; // Die Skaliergeschwindigkeit
+        private readonly float scaleVelocity = 0.001f; // Die Skaliergeschwindigkeit
         private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
-        
+
         // Flying Meme Optionen
         private int memeCounter = 1;
-        private float memePositionX= 0;
-        private float memePositionY= 0;
-        private float memeVelocity = 0.1f;
+        private float memePositionX = 0;
+        private float memePositionY = 0;
+        private readonly float memeVelocity = 0.1f;
         private float memeRotation = -10;
         private float memeSlope = 0;
 
-        private Random random;
-        private List<Image> memes = ResourceLoader.LoadMemes();
+        private readonly Random random;
+        private readonly List<Image> memes = ResourceLoader.LoadMemes();
         #endregion
 
         /// <summary>
@@ -90,12 +90,12 @@ namespace NoPasaranTD.Visuals.Main
             int buttonWidth = 300;
 
             // Buttons werden initialisiert
-            singleplayerButton = InitButton("Singleplayer",new Rectangle(StaticEngine.RenderWidth/2 - buttonWidth/2,StaticEngine.RenderHeight / 2 - buttonHeight - margin,buttonWidth,buttonHeight));
+            singleplayerButton = InitButton("Singleplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 - buttonHeight - margin, buttonWidth, buttonHeight));
             multiplayerButton = InitButton("Multiplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2, buttonWidth, buttonHeight));
             tutorialButton = InitButton("Tutorial", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight + margin, buttonWidth, buttonHeight));
 
-            optionsButton = InitButton("Options", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight*2 + margin*2, buttonWidth/2 -margin/2, buttonHeight));
-            creditsButton = InitButton("Credits", new Rectangle(StaticEngine.RenderWidth / 2 + margin, StaticEngine.RenderHeight / 2 + buttonHeight *2 + margin*2, buttonWidth / 2 - margin, buttonHeight));
+            optionsButton = InitButton("Options", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin / 2, buttonHeight));
+            creditsButton = InitButton("Credits", new Rectangle(StaticEngine.RenderWidth / 2 + margin, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin, buttonHeight));
 
             closeButton = InitButton("X", new Rectangle(StaticEngine.RenderWidth - 45, 5, 40, 40));
 
@@ -109,7 +109,7 @@ namespace NoPasaranTD.Visuals.Main
 
             closeButton.ButtonClicked += CloseButton_ButtonClicked;
 
-            Map map = MapData.GetMapByFileName("spentagon"); 
+            Map map = MapData.GetMapByFileName("spentagon");
             map.Initialize();
 
             backgroundGame = new Game(map, new NetworkHandler());
@@ -134,23 +134,23 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(800, 630), towerSize), Level = 2 }, true);
             }
         }
-      
+
         public override void Render(Graphics g)
         {
-            
+
             // Der Titel
             string title = "No Pasaran! TD";
-            Size titleSize = TextRenderer.MeasureText(title, StandartTitle1Font);            
-            
+            Size titleSize = TextRenderer.MeasureText(title, StandartTitle1Font);
+
             // Rendert das Hintergrundspiel
             backgroundGame.Render(g);
-            
+
             Matrix currentTransform = g.Transform;
 
             g.TranslateTransform(memePositionX, memePositionY);
             g.RotateTransform(memeRotation);
 
-            g.DrawImage(memes[memeCounter], 0, 0,150,100);
+            g.DrawImage(memes[memeCounter], 0, 0, 150, 100);
 
             g.Transform = currentTransform;
 
@@ -158,7 +158,7 @@ namespace NoPasaranTD.Visuals.Main
             g.FillRectangle(new SolidBrush(Color.FromArgb(150, 150, 150, 150)), transparancyLayer);
 
             // Rendert den Title
-            g.DrawString(title, StandartTitle1Font, Brushes.Black, StaticEngine.RenderWidth / 2 - titleSize.Width/2, StaticEngine.RenderHeight / 4 -titleSize.Height);
+            g.DrawString(title, StandartTitle1Font, Brushes.Black, StaticEngine.RenderWidth / 2 - titleSize.Width / 2, StaticEngine.RenderHeight / 4 - titleSize.Height);
 
             // Rendert alle UI Elemente           
             singleplayerButton.Render(g);
@@ -170,7 +170,7 @@ namespace NoPasaranTD.Visuals.Main
 
             closeButton.Render(g);
 
-          
+
             g.TranslateTransform(randomTextRegion.X + randomTextRegion.Width / 2, randomTextRegion.Y + randomTextRegion.Height / 2);
             g.RotateTransform(-25);
             g.ScaleTransform(scaleFactor, scaleFactor);
@@ -210,13 +210,17 @@ namespace NoPasaranTD.Visuals.Main
             {
                 scaleFactor -= scaleVelocity;
                 if (scaleFactor <= 0.9)
+                {
                     currentDirection = 1;
+                }
             }
             else if (currentDirection == 1 && StaticEngine.ElapsedTicks % 5 == 0) // Skaliert den Random Text nach aussen
             {
                 scaleFactor += scaleVelocity;
                 if (scaleFactor >= 1)
+                {
                     currentDirection = 0;
+                }
             }
 
             // Aktualisiert die Memebild Position
@@ -229,27 +233,35 @@ namespace NoPasaranTD.Visuals.Main
             {
                 memeCounter++;
                 if (memeCounter == memes.Count)
+                {
                     memeCounter = 1;
+                }
 
-                memePositionY = random.Next(200,StaticEngine.RenderHeight-200);
+                memePositionY = random.Next(200, StaticEngine.RenderHeight - 200);
                 memePositionX = -memes[memeCounter].Width;
                 memeSlope = (float)1 / random.Next(-30, 30);
                 memeRotation = random.Next(-40, 40);
-                
+
             }
         }
 
         // Öffnet die Multiplayerfunktion des Spieles
-        private void MultiplayerButton_ButtonClicked() =>
+        private void MultiplayerButton_ButtonClicked()
+        {
             Program.LoadScreen(new GuiLobbyMenu());
+        }
 
         // Öffnet die Singleplayerfunktionen des Spieles
-        private void SingleplayerButton_ButtonClicked() =>
+        private void SingleplayerButton_ButtonClicked()
+        {
             Program.LoadScreen(new GuiSelectMap());
+        }
 
         // Schließt die Applikation
-        private void CloseButton_ButtonClicked() =>
+        private void CloseButton_ButtonClicked()
+        {
             Program.Shutdown();
+        }
 
         private void CreditsButton_ButtonClicked()
         {
@@ -266,7 +278,9 @@ namespace NoPasaranTD.Visuals.Main
             // TODO: Tutorial Screen
         }
 
-        public override void Dispose() =>
+        public override void Dispose()
+        {
             backgroundGame.Dispose();
+        }
     }
 }

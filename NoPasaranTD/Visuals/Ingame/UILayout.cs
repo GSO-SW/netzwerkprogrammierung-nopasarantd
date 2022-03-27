@@ -82,15 +82,15 @@ namespace NoPasaranTD.Visuals.Ingame
         };
 
         public ChatContainer ChatContainer { get; set; } = new ChatContainer()
-        {           
+        {
             Visible = false,
-            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150, StaticEngine.RenderHeight/2 - 200, 300, 400),
+            Bounds = new Rectangle(StaticEngine.RenderWidth / 2 - 150, StaticEngine.RenderHeight / 2 - 200, 300, 400),
             Background = new SolidBrush(Color.FromArgb(230, 132, 140, 156)),
         };
 
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
-        private DragDropService placingTowerDragDrop = new DragDropService();
+        private readonly DragDropService placingTowerDragDrop = new DragDropService();
 
         private Tower selectedTower;
         /// <summary>
@@ -118,7 +118,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             game = gameObj;
         }
-      
+
         private async void HideBuildMenueButton_ButtonClicked()
         {
             // Animation zum einklappen des Buildmenüs
@@ -186,8 +186,10 @@ namespace NoPasaranTD.Visuals.Ingame
         }
 
         // Wird beim Abbrechen des Drag Drop Vorgang ausgelöst
-        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args) =>
+        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args)
+        {
             await OptionsContainer.ExpandCollapseAsync(true);
+        }
 
         // Wird Ausgelöst sobald ein neues Element im Baumenü ausgewählt
         private void TowerBuildMenu_SelectionChanged()

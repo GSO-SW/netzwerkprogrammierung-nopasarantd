@@ -10,10 +10,10 @@ namespace NoPasaranTD.Visuals.Ingame
         public SolidBrush Background { get; set; }
 
         // Textbox zur Eingabe von Nachrichten
-        private TextBoxContainer inputBox = new TextBoxContainer()
+        private readonly TextBoxContainer inputBox = new TextBoxContainer()
         {
             Background = new SolidBrush(Color.White),
-            Foreground = new SolidBrush(Color.Black),     
+            Foreground = new SolidBrush(Color.Black),
             BorderBrush = new SolidBrush(Color.Black),
             Margin = 2,
             TextFont = StandartText2Font
@@ -32,11 +32,11 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         /// <param name="game"></param>
         public void Init(Game game)
-        {                      
+        {
             currentGame = game;
             currentGame.Messages.CollectionChanged += Messages_CollectionChanged;
 
-            chatObjects = new ListContainer<string,ChatItemContainer>()
+            chatObjects = new ListContainer<string, ChatItemContainer>()
             {
                 ContainerSize = new System.Drawing.Size(Bounds.Width - 6, Bounds.Height - 36),
                 BackgroundColor = new SolidBrush(Color.Transparent),
@@ -72,7 +72,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 currentGame.NetworkHandler.InvokeEvent("SendMessage", "[" + currentGame.NetworkHandler.LocalPlayer.Name + "]\n" + inputBox.Text, false);
                 inputBox.Text = "";
                 inputBox.CaretIndex = 0;
-            }                           
+            }
         }
 
         public override void KeyPress(KeyPressEventArgs e)
@@ -91,7 +91,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 inputBox.Render(g);
                 chatObjects.Render(g);
             }
-        }           
+        }
 
         public override void Update()
         {

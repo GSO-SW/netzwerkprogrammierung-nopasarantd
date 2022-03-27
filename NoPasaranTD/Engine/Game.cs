@@ -30,20 +30,20 @@ namespace NoPasaranTD.Engine
         public bool Paused { get; set; } = false;
         public int Round { get; set; } = 1;
 
-		public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
-		
-		/// <summary>
-		/// Initialisiert ein neues Spiel
-		/// </summary>
-		/// <param name="map">Die Map die gespielt werden soll</param>
-		/// <param name="networkHandler">Der genutzte Networkhandler</param>
-		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
-		public Game(Map map, NetworkHandler networkHandler)
-		{
-			CurrentMap = map;
-			NetworkHandler = networkHandler;
-			NetworkHandler.Game = this;
-			WaveManager = new WaveManager(this, 50);
+        public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
+
+        /// <summary>
+        /// Initialisiert ein neues Spiel
+        /// </summary>
+        /// <param name="map">Die Map die gespielt werden soll</param>
+        /// <param name="networkHandler">Der genutzte Networkhandler</param>
+        /// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
+        public Game(Map map, NetworkHandler networkHandler)
+        {
+            CurrentMap = map;
+            NetworkHandler = networkHandler;
+            NetworkHandler.Game = this;
+            WaveManager = new WaveManager(this, 50);
 
             Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
             Towers = new List<Tower>();
@@ -53,7 +53,7 @@ namespace NoPasaranTD.Engine
             InitNetworkHandler();
             InitBalloons();
         }
-        
+
         private void InitNetworkHandler()
         {
             NetworkHandler.EventHandlers.Add("AddTower", AddVTower);
@@ -80,7 +80,7 @@ namespace NoPasaranTD.Engine
 
         public void Dispose()
         {
-			StaticEngine.TickAcceleration = 1;
+            StaticEngine.TickAcceleration = 1;
 
             UILayout.Dispose();
             NetworkHandler.Dispose();
@@ -579,11 +579,15 @@ namespace NoPasaranTD.Engine
                     new GuiPauseMenu(this) : null);
         }
 
-		public void ToggelAutoStart(object t) =>
-			WaveManager.AutoStart = !WaveManager.AutoStart;
+        public void ToggelAutoStart(object t)
+        {
+            WaveManager.AutoStart = !WaveManager.AutoStart;
+        }
 
-		public void SendMessage(object t) =>
-			Messages.Add(t.ToString());
+        public void SendMessage(object t)
+        {
+            Messages.Add(t.ToString());
+        }
 
         /// <summary>
         /// Findet den übergebenen Turm wenn dieser existiert 

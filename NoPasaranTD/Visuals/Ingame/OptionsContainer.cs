@@ -238,8 +238,10 @@ namespace NoPasaranTD.Visuals.Ingame
             currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0, false);
         }
 
-        private void ChatButton_ButtonClicked() =>
+        private void ChatButton_ButtonClicked()
+        {
             currentGame.UILayout.ChatContainer.Visible = !currentGame.UILayout.ChatContainer.Visible;
+        }
 
         private void AccelerationButton_ButtonClicked()
         {
@@ -252,9 +254,13 @@ namespace NoPasaranTD.Visuals.Ingame
         public async Task ExpandCollapseAsync(bool expanding)
         {
             if (expanding)
+            {
                 await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 7);
+            }
             else
+            {
                 await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin * 3);
+            }
         }
 
         // Vergrößert das Fenster zur angegebenen Breite
