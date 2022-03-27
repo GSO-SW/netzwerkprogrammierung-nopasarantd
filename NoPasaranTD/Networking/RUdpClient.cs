@@ -12,9 +12,6 @@ namespace NoPasaranTD.Networking
 {
     internal struct RUdpPacket
     {
-        public byte Type { get; }
-        public ulong Sequence { get; }
-        public byte[] Data { get; }
         public RUdpPacket(byte type, ulong sequence, byte[] data)
         {
             Type = type;
@@ -22,6 +19,24 @@ namespace NoPasaranTD.Networking
             Data = data;
         }
 
+        /// <summary>
+        /// Pakettyp SYN, ACK oder PKG
+        /// </summary>
+        public byte Type { get; }
+
+        /// <summary>
+        /// Die Sequenz Nummer für dieses Paket
+        /// </summary>
+        public ulong Sequence { get; }
+
+        /// <summary>
+        /// Inhalt des Paketes
+        /// </summary>
+        public byte[] Data { get; }
+
+        /// <summary>
+        /// Serialisiert das Paket zu einem byte[]
+        /// </summary>
         public static byte[] Serialize(RUdpPacket packet)
         {
             byte[] data = new byte[17 + packet.Data.Length];
@@ -33,6 +48,9 @@ namespace NoPasaranTD.Networking
             return data;
         }
 
+        /// <summary>
+        /// Deserialisiert den Datenstrom zu einem Paket
+        /// </summary>
         public static RUdpPacket Deserialize(byte[] data)
         {
             byte type = data[0];
@@ -46,24 +64,23 @@ namespace NoPasaranTD.Networking
 
     }
 
+    /// <summary>
+    /// Kombination aus Paket und Endpunkt
+    /// </summary>
     internal struct RUdpPacketCombo
     {
-        public RUdpPacket Packet { get; }
-        public IPEndPoint Endpoint { get; }
         public RUdpPacketCombo(RUdpPacket packet, IPEndPoint endpoint)
         {
             Packet = packet;
             Endpoint = endpoint;
         }
+
+        public RUdpPacket Packet { get; }
+        public IPEndPoint Endpoint { get; }
     }
 
     internal class RUdpPacketInfo
     {
-        public int TickCreated { get; set; }
-        public int TickSent { get; set; }
-
-        public RUdpPacket Packet { get; }
-        public List<IPEndPoint> Endpoints { get; } 
         public RUdpPacketInfo(RUdpPacket packet, IPEndPoint[] endpoints)
         {
             Packet = packet;
@@ -71,18 +88,45 @@ namespace NoPasaranTD.Networking
             TickCreated = Environment.TickCount;
             TickSent = Environment.TickCount;
         }
+
+        /// <summary>
+        /// Tick an dem dieses Paket erstellt wurde
+        /// </summary>
+        public int TickCreated { get; set; }
+
+        /// <summary>
+        /// Tick an dem dieses Paket zuletzt versendet wurde
+        /// </summary>
+        public int TickSent { get; set; }
+
+        /// <summary>
+        /// Paket was versendet werden soll
+        /// </summary>
+        public RUdpPacket Packet { get; }
+
+        /// <summary>
+        /// Endpunkte an dem das Paket noch zugestellt werden muss
+        /// </summary>
+        public List<IPEndPoint> Endpoints { get; }
     }
 
     internal class RUdpClientInfo
     {
-        public uint Ping { get; set; }
-        public ulong SequenceID { get; set; }
-
         public RUdpClientInfo()
         {
             Ping = 0;
             SequenceID = 0;
         }
+
+        /// <summary>
+        /// Ping von diesem Benutzer
+        /// </summary>
+        public uint Ping { get; set; }
+
+        /// <summary>
+        /// Die Sequenz ID vom letzten versendeten Paket
+        /// </summary>
+        public ulong SequenceID { get; set; }
     }
 
     public class RUdpClient : IDisposable
@@ -151,7 +195,7 @@ namespace NoPasaranTD.Networking
                         {
                             RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
                             if (tick - info.TickSent >= Math.Max(100, client.Ping))
-                            {
+                            { // Sende das Paket erneut nach einer bestimmten Zeit
                                 await SendPacketAsync(info.Packet, info.Endpoints[j]);
                                 info.TickSent = Environment.TickCount;
                             }
@@ -181,13 +225,14 @@ namespace NoPasaranTD.Networking
         {
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             if (combo.Packet.Sequence < client.SequenceID)
-                return;
+                return; // Server hinkt hinterher, ignoriere diese Nachricht
             else if(combo.Packet.Sequence > client.SequenceID)
-            {
+            { // Client hinkt hinterher, frage das Paket erneut an
                 await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
                 return;
             }
 
+            // Akzeptiere das Paket
             await SendPacketAsync(new RUdpPacket(CODE_ACK, client.SequenceID, new byte[0]), combo.Endpoint);
             packetsReceived.Enqueue(combo);
             client.SequenceID++;
@@ -198,6 +243,7 @@ namespace NoPasaranTD.Networking
             if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
                 throw new IOException("Packet was already acknowledged");
 
+            // Entferne den Endpunkt aus der Liste
             if (!info.Endpoints.Remove(combo.Endpoint))
                 throw new IOException("Packet was already acknowledged");
 
@@ -205,7 +251,7 @@ namespace NoPasaranTD.Networking
             client.Ping = (uint)(Environment.TickCount - info.TickCreated);
 
             if(info.Endpoints.Count == 0)
-            {
+            { // Wenn es niemanden mehr zum Informieren gibt, lösche das Paket aus dem Verlauf
                 if (!packetsSent.TryRemove(combo.Packet.Sequence, out _))
                     throw new IOException("How tf did this happen now?");
             }
@@ -219,26 +265,27 @@ namespace NoPasaranTD.Networking
             if(!info.Endpoints.Contains(combo.Endpoint))
                 throw new IOException("Packet was already acknowledged");
 
+            // Versende das Paket erneut, wenn angefragt
             await SendPacketAsync(info.Packet, combo.Endpoint);
         }
         #endregion
 
         #region Utility region
         private RUdpClientInfo GetRemoteClient(IPEndPoint endpoint)
-        {
+        { // Suche nach dem Empfänger, wenn nicht gefunden, erstelle einen neuen
             if (!remoteClients.TryGetValue(endpoint, out RUdpClientInfo client))
                 client = remoteClients[endpoint] = new RUdpClientInfo();
             return client;
         }
 
         private async Task SendPacketAsync(RUdpPacket packet, IPEndPoint endpoint)
-        {
+        { // Serialisiere das Paket und versende es
             byte[] data = RUdpPacket.Serialize(packet);
             await udpClient.SendAsync(data, data.Length, endpoint);
         }
 
         private async Task<RUdpPacketCombo> ReceivePacketAsync()
-        {
+        { // Nehme jegliches Paket an und deserialisiere es wieder
             UdpReceiveResult result = await udpClient.ReceiveAsync();
             return new RUdpPacketCombo(
                 RUdpPacket.Deserialize(result.Buffer),
