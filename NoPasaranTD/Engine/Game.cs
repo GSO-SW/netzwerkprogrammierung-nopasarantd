@@ -40,6 +40,7 @@ namespace NoPasaranTD.Engine
 		public Game(Map map, NetworkHandler networkHandler, StaticDisplay StaticDisplay)
 		{
 			CurrentMap = map;
+			Console.WriteLine("Map defined as \"" + map.ToString() + "\"");
 			NetworkHandler = networkHandler;
 			NetworkHandler.Game = this;
 			WaveManager = new WaveManager(this, 50);
@@ -76,6 +77,7 @@ namespace NoPasaranTD.Engine
         {
             UILayout.Dispose();
             NetworkHandler.Dispose();
+			Console.WriteLine("Map disposed");
 			CurrentMap.Dispose();
         }
 
@@ -126,7 +128,7 @@ namespace NoPasaranTD.Engine
 				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
 				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
 				
-				//NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
+				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, true);
 
 				if (CurrentTick % 1000 == 0)
 					for (int i = 0; i < usersMousePos.Count; i++)

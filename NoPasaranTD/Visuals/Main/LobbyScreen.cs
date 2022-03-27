@@ -107,6 +107,11 @@ namespace NoPasaranTD.Visuals.Main
             btnNextMap.Render(g);
 
             // Map preview
+            if (mapList.Count == 0)
+            {
+                Console.WriteLine("Update but not Error");
+                return;
+            }
             g.DrawImage(mapList[Lobby.MapName].BackgroundImage, 
                 StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0, 
                 StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3

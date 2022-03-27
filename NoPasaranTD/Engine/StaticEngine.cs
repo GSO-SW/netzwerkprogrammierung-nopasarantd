@@ -18,6 +18,9 @@ namespace NoPasaranTD.Engine
         #region Engine region
         internal static ulong ElapsedTicks { get; set; }
         internal static ulong ElapsedHostTicks { get; set; }
+        internal static float HostAvgTickChange { get; set; }
+        internal static float HostAvgTimeFrame { get; set; }
+
 
         /// <summary>
         /// Ein Wert um welchen die Tickinkrementierung beschleunigt werden soll

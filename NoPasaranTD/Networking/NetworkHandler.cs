@@ -103,8 +103,11 @@ namespace NoPasaranTD.Networking
                     taskQueue[i].Handler(taskQueue[i].Parameter); // PingRequest ausführen
                     taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
                 }
-                else if (taskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
+                else if (taskQueue[i].TickToPerform <= Game.CurrentTick  // Checken ob die Task bereits ausgeführt werden soll
+                    || taskQueue[i].TickToPerform == 0)  // Wenn auf 0 gestellt dann ist es zum direkt ausführen
                 {
+                    if (taskQueue[i].TickToPerform == 0)
+                        ;
                     taskQueue[i].Handler(taskQueue[i].Parameter); // Task ausführen
                     taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
                 }
@@ -117,14 +120,17 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
         /// </summary>
+        /// <param name="instantExec">Ob bei ankommen auf den richtigen Tick gewartet werden soll oder dies vernachlässigt wird also direkt ausgeführt wird</param>
         /// <param name="message">Die Nachricht als String</param>
-        public async void InvokeEvent(string command, object param)
+        public async void InvokeEvent(string command, object param, bool instantExec = false)
         {
-            if(!OfflineMode)
+            long tickToPerform = instantExec ? 0 : Game.CurrentTick + highestPing;
+
+            if (!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
                 // "COMMAND"("PARAMETER")
-                string message = $"{command}:{highestPing + Game.CurrentTick}({Convert.ToBase64String(Serializer.SerializeObject(param))})";
+                string message = $"{command}:{ tickToPerform }({Convert.ToBase64String(Serializer.SerializeObject(param))})";
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
@@ -144,7 +150,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im client aus
-            taskQueue.Add(new NetworkTask(handler, param, Game.CurrentTick + highestPing));
+            taskQueue.Add(new NetworkTask(handler, param, tickToPerform));
         }
 
         /// <summary>
