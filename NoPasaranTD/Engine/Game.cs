@@ -44,7 +44,7 @@ namespace NoPasaranTD.Engine
 
 			Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
 			Towers = new List<Tower>();
-			UILayout = new UILayout(this,isActive);
+			UILayout = new UILayout(this);
 
 			InitNetworkHandler();
 			InitBalloons();
