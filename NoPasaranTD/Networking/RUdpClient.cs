@@ -59,6 +59,7 @@ namespace NoPasaranTD.Networking
     internal class RUdpPacketInfo
     {
         public int TickCreated { get; set; }
+        public int TickSent { get; set; }
 
         public RUdpPacket Packet { get; }
         public List<IPEndPoint> Endpoints { get; } 
@@ -67,6 +68,7 @@ namespace NoPasaranTD.Networking
             Packet = packet;
             Endpoints = new List<IPEndPoint>(endpoints);
             TickCreated = Environment.TickCount;
+            TickSent = Environment.TickCount;
         }
     }
 
@@ -148,10 +150,10 @@ namespace NoPasaranTD.Networking
                     for (int j = info.Endpoints.Count - 1; j >= 0; j--)
                     {
                         RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
-                        if (tick - info.TickCreated >= client.Ping)
+                        if (tick - info.TickSent >= Math.Max(100, client.Ping))
                         {
                             await SendPacketAsync(info.Packet, info.Endpoints[j]);
-                            info.TickCreated = Environment.TickCount;
+                            info.TickSent = Environment.TickCount;
                         }
                     }
                 }
