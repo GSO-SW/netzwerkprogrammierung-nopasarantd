@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -92,9 +93,9 @@ namespace NoPasaranTD.Networking
         internal const byte CODE_SYN = 0x03;
 
         private readonly RUdpClientInfo localClient;
-        private readonly Dictionary<IPEndPoint, RUdpClientInfo> remoteClients;
+        private readonly ConcurrentDictionary<IPEndPoint, RUdpClientInfo> remoteClients;
 
-        private readonly Dictionary<ulong, RUdpPacketInfo> packetsSent;
+        private readonly ConcurrentDictionary<ulong, RUdpPacketInfo> packetsSent;
         private readonly Queue<RUdpPacketCombo> packetsReceived;
 
         private readonly UdpClient udpClient;
@@ -102,9 +103,9 @@ namespace NoPasaranTD.Networking
         {
             udpClient = client;
             localClient = new RUdpClientInfo();
-            remoteClients = new Dictionary<IPEndPoint, RUdpClientInfo>();
+            remoteClients = new ConcurrentDictionary<IPEndPoint, RUdpClientInfo>();
 
-            packetsSent = new Dictionary<ulong, RUdpPacketInfo>();
+            packetsSent = new ConcurrentDictionary<ulong, RUdpPacketInfo>();
             packetsReceived = new Queue<RUdpPacketCombo>();
             new Thread(BackgroundThread).Start();
         }
@@ -138,34 +139,41 @@ namespace NoPasaranTD.Networking
         #region Implementation region
         private async void BackgroundThread()
         {
-            while (true)
+            try
             {
-                int tick = Environment.TickCount;
-                for (int i = packetsSent.Count - 1; i >= 0; i--)
+                while (true)
                 {
-                    RUdpPacketInfo info = packetsSent.Values.ElementAt(i);
-                    for (int j = info.Endpoints.Count - 1; j >= 0; j--)
+                    int tick = Environment.TickCount;
+                    for (int i = packetsSent.Count - 1; i >= 0; i--)
                     {
-                        RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
-                        if (tick - info.TickSent >= Math.Max(100, client.Ping))
+                        RUdpPacketInfo info = packetsSent.Values.ElementAt(i);
+                        for (int j = info.Endpoints.Count - 1; j >= 0; j--)
                         {
-                            await SendPacketAsync(info.Packet, info.Endpoints[j]);
-                            info.TickSent = Environment.TickCount;
+                            RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
+                            if (tick - info.TickSent >= Math.Max(100, client.Ping))
+                            {
+                                await SendPacketAsync(info.Packet, info.Endpoints[j]);
+                                info.TickSent = Environment.TickCount;
+                            }
+                        }
+                    }
+
+                    while (udpClient.Available > 0)
+                    {
+                        RUdpPacketCombo combo = await ReceivePacketAsync();
+                        switch (combo.Packet.Type)
+                        {
+                            case CODE_PKG: await AcceptPKG(combo); break;
+                            case CODE_ACK: AcceptACK(combo); break;
+                            case CODE_SYN: await AcceptSYN(combo); break;
+                            default: throw new IOException("Invalid Packet received");
                         }
                     }
                 }
-
-                while (udpClient.Available > 0)
-                {
-                    RUdpPacketCombo combo = await ReceivePacketAsync();
-                    switch (combo.Packet.Type)
-                    {
-                        case CODE_PKG: await AcceptPKG(combo); break;
-                        case CODE_ACK: AcceptACK(combo); break;
-                        case CODE_SYN: await AcceptSYN(combo); break;
-                        default: throw new IOException("Invalid Packet received");
-                    }
-                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
 
@@ -198,7 +206,7 @@ namespace NoPasaranTD.Networking
 
             if(info.Endpoints.Count == 0)
             {
-                if (!packetsSent.Remove(combo.Packet.Sequence))
+                if (!packetsSent.TryRemove(combo.Packet.Sequence, out _))
                     throw new IOException("How tf did this happen now?");
             }
         }
