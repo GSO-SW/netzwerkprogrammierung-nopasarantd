@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using System.Drawing;
 using System.Windows.Forms;
@@ -60,12 +61,23 @@ namespace NoPasaranTD.Visuals.Ingame
         private Game currentGame;
         private ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
 
+        private SolidBrush normalBorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122));
+
         public override void Render(Graphics g)
         {
             if (Visible)
             {
                 // Zeichnet den Hintergrund des Fensters
                 g.FillRectangle(Background, Bounds);
+
+                if (Context.Level == StaticInfo.GetTowerLevelCap(Context.GetType()) && !currentGame.GodMode) 
+                {
+                    upgradeButton.BorderBrush = Brushes.Red;
+                }
+                else
+                {
+                    upgradeButton.BorderBrush = normalBorderBrush;
+                }
 
                 closeButton.Render(g);
                 upgradeButton.Content = "Upgrade: " + Context.UpgradePrice + "₿";
@@ -191,7 +203,6 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             Visible = false;
             Context.IsSelected = false;
-        }
-
+        }       
     }
 }

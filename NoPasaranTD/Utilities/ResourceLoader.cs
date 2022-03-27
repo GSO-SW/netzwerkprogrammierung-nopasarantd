@@ -65,7 +65,7 @@ namespace NoPasaranTD.Utilities
         {
             List<Image> images = new List<Image>();
 
-            for (int i = 1; i <= 8; i++)
+            for (int i = 1; i <= 13; i++)
                 images.Add(LoadBitmapResource("NoPasaranTD.Resources.Meme.meme_TD_" + i + ".jpg"));
 
             return images;
