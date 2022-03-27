@@ -1,18 +1,20 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Model;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Utilities
 {
     public static class ResourceLoader
     {
+        /// <summary>
+        /// Lädt eine eingebettete Ressource und interpretiert sie als Bitmap
+        /// </summary>
+        /// <param name="name">Name der Ressource</param>
+        /// <returns>Eine Bitmap von der eingebetteten Ressource</returns>
         public static Bitmap LoadBitmapResource(string name)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -21,23 +23,26 @@ namespace NoPasaranTD.Utilities
                 return new Bitmap(stream);
             }
         }
+
+        /// <summary>
+        /// Sucht nach Maps im jeweiligen Verzeichnis und lädt diese
+        /// </summary>
+        /// <returns>Ein Dictionary was den Mapnamen und die Mapinstanz für jeden Eintrag speichert</returns>
         public static Dictionary<string, Map> LoadAllMaps()
         {
-            string Ressourcepath = "NoPasaranTD.Resources.Maps.";
+            string path = "NoPasaranTD.Resources.Maps.";
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            string[] Resourcenames = assembly.GetManifestResourceNames().Where(x => x.StartsWith(Ressourcepath) && x.EndsWith(".json")).ToArray();
+            string[] names = assembly.GetManifestResourceNames()
+                .Where(x => x.StartsWith(path) && x.EndsWith(".json")).ToArray();
+
             Dictionary<string, Map> maps = new Dictionary<string, Map>();
-
-            for (int i = 0; i < Resourcenames.Length; i++)
+            for (int i = 0; i < names.Length; i++)
             {
-                string Mapname = Resourcenames[i].Substring(Ressourcepath.Length, Resourcenames[i].Length - Ressourcepath.Length - ".json".Length);
-
-                maps[Mapname] = MapData.GetMapByFileName(Mapname);
-
+                string mapname = names[i].Substring(path.Length, names[i].Length - path.Length - ".json".Length);
+                maps[mapname] = MapData.GetMapByFileName(mapname);
             }
             return maps;
-
         }
 
         /// <summary>

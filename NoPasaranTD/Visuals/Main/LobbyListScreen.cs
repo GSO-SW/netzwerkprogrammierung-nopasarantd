@@ -1,6 +1,5 @@
 ﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Networking;
-using NoPasaranTD.Visuals.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -55,20 +54,30 @@ namespace NoPasaranTD.Visuals.Main
         {
             lobbyList.Items.Clear();
             foreach (NetworkLobby lobby in lobbies)
+            {
                 lobbyList.Items.Add(lobby);
+            }
+
             lobbyList.DefineItems();
         }
 
         #region Screen events
         private void UpdatePlayer(NetworkClient client)
         { // Befehl zum aktualisieren der Spielerinformation
-            if (client == null || parent.DiscoveryClient == null) return;
+            if (client == null || parent.DiscoveryClient == null)
+            {
+                return;
+            }
 
             parent.LocalPlayer = client;
             if (parent.DiscoveryClient.LoggedIn)
+            {
                 parent.DiscoveryClient.UpdatePlayerAsync(client);
+            }
             else
+            {
                 parent.DiscoveryClient.LoginAsync(client);
+            }
 
             // Ursprünglich ist Content auf Login, da diese methode noch nicht ausgeführt wurde
             // Sobald der sich jedoch eingeloggt hat, soll ein anderer Content angezeigt werden
@@ -78,19 +87,32 @@ namespace NoPasaranTD.Visuals.Main
         private void CreateLobby(NetworkClient host)
         { // Befehl zum erstellen einer neuen lobby
             // TODO: Ändern vom Lobbynamen via Textbox
-            if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
-            parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(host, "Lobby Name (By textbox)" + Environment.TickCount, "spentagon"));
+            if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
+
+            parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
+                host, "Lobby Name (By textbox)" + Environment.TickCount, "spentagon"
+            ));
         }
 
         private void JoinLobby()
         { // Befehl zum Beitreten von Lobbies
-            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn) return;
+            if (parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
+            {
+                return;
+            }
+
             parent.DiscoveryClient.JoinLobbyAsync(lobbyList.SelectedItem);
         }
         #endregion
 
         #region Implementation region
-        public override void Update() => lobbyList.Update();
+        public override void Update()
+        {
+            lobbyList.Update();
+        }
 
         public override void Render(Graphics g)
         {
@@ -98,21 +120,31 @@ namespace NoPasaranTD.Visuals.Main
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
 
-            if(parent.LocalPlayer != null)
+            if (parent.LocalPlayer != null)
             { // Render Login Zeichenkette
                 string text = "Logged in as: " + parent.LocalPlayer.Name;
                 Size size = TextRenderer.MeasureText(text, StandartText1Font);
-                g.DrawString(text, StandartText1Font, Brushes.Black, 
-                    StaticEngine.RenderWidth - size.Width, 
+                g.DrawString(text, StandartText1Font, Brushes.Black,
+                    StaticEngine.RenderWidth - size.Width,
                     StaticEngine.RenderHeight - size.Height
                 );
             }
         }
 
-        public override void KeyUp(KeyEventArgs e) => lobbyList.KeyUp(e);
-        public override void KeyDown(KeyEventArgs e) => lobbyList.KeyUp(e);
+        public override void KeyUp(KeyEventArgs e)
+        {
+            lobbyList.KeyUp(e);
+        }
 
-        public override void MouseUp(MouseEventArgs e) => lobbyList.MouseUp(e);
+        public override void KeyDown(KeyEventArgs e)
+        {
+            lobbyList.KeyUp(e);
+        }
+
+        public override void MouseUp(MouseEventArgs e)
+        {
+            lobbyList.MouseUp(e);
+        }
 
         public override void MouseDown(MouseEventArgs e)
         {
@@ -121,8 +153,15 @@ namespace NoPasaranTD.Visuals.Main
             lobbyList.MouseDown(e);
         }
 
-        public override void MouseMove(MouseEventArgs e) => lobbyList.MouseMove(e);
-        public override void MouseWheel(MouseEventArgs e) => lobbyList.MouseWheel(e);
+        public override void MouseMove(MouseEventArgs e)
+        {
+            lobbyList.MouseMove(e);
+        }
+
+        public override void MouseWheel(MouseEventArgs e)
+        {
+            lobbyList.MouseWheel(e);
+        }
         #endregion
 
     }
