@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -37,7 +38,7 @@ namespace NoPasaranTD.Networking
         /// Geändert wird dies sobald eine Peer2Peer Verbindung aufgebaut wurde,
         /// weshalb man dies wirklich nur benutzen sollte wenn GameStarted = true ist
         /// </summary>
-        public UdpClient UdpClient { get; private set; }
+        public RUdpClient UdpClient { get; private set; }
 
         /// <summary>
         /// Gibt eine liste an NetworkClients die sich im Spiel befinden, die ursprünglich als null-Referenz gilt.<br/>
@@ -143,6 +144,27 @@ namespace NoPasaranTD.Networking
         }
         #endregion
 
+        #region Hole-Punching region
+
+        /// <summary>
+        /// Startet den Udp-Hole-Punching prozess.
+        /// Hierbei wird jedem Empfänger eine Anfrage gesendet, damit die Firewall die ausgehenden Verbindungen erkennt.
+        /// Dies hat den Effekt, dass Sie die Daten die auf den lokalen Port des Sockets zulässt.
+        /// Mehr Informationen über UDP/TCP-Hole-Punching hier: https://bford.info/pub/net/p2pnat/
+        /// </summary>
+        private async Task DoHolePunchingAsync()
+        {
+            IPEndPoint[] endpoints = Clients.Select(c => c.EndPoint).ToArray();
+            await UdpClient.SendAsync(new byte[0], endpoints); // Sende leeres Paket an alle Endpunkte
+
+            // Warte auf Antwort von jedem Endpunkt
+            for (int i = 0; i < endpoints.Length; i++)
+            {
+                await UdpClient.ReceiveAsync();
+            }
+        }
+        #endregion
+
         #region Input region
         private void HandleStartP2P(string infoStr)
         {
@@ -154,19 +176,21 @@ namespace NoPasaranTD.Networking
             IPEndPoint remoteEndpoint = new IPEndPoint(
                 (TcpClient.RemoteEndPoint as IPEndPoint).Address, port
             );
-            UdpClient = new UdpClient();
+            UdpClient rawClient = new UdpClient();
+            rawClient.AllowNatTraversal(true);
 
-            Task.Run(() =>
+            Task.Run(async () =>
             { // Stelle sicher, dass der Vermittlungsserver die Nachricht erreicht
                 while (!GameStarted)
                 { // TODO: Auf Reliable UDP umsteigen
                     // Sende auf Serverendpunkt die gegebene ID
                     byte[] data = Encoding.ASCII.GetBytes(id.ToString());
-                    UdpClient.Send(data, data.Length, remoteEndpoint);
-                    Task.Delay(1000).Wait();
+                    rawClient.Send(data, data.Length, remoteEndpoint);
+                    await Task.Delay(1000);
                 }
             });
 
+            UdpClient = new RUdpClient(rawClient);
             Clients = new List<NetworkClient>();
 
             string connectionStr = TcpReader.ReadLine();
@@ -183,6 +207,8 @@ namespace NoPasaranTD.Networking
                     Clients.Add(client);
                 }
             }
+
+            Task.WaitAll(DoHolePunchingAsync());
 
             GameStarted = true;
             // Rufe handler auf

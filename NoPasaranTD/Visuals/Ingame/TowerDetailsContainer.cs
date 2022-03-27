@@ -167,13 +167,13 @@ namespace NoPasaranTD.Visuals.Ingame
         private void TargetModesList_SelectionChanged()
         {
             Context.TargetMode = TargetModesList.SelectedItem;
-            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context, false);
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
         private void SellButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context, false);
         }
 
         // Logik wenn der Tower geupgraded werden soll
@@ -181,7 +181,7 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             if ((currentGame.Money >= Context.UpgradePrice && Context.CanLevelUp()) || currentGame.GodMode)
             {
-                currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context);
+                currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context, false);
             }
         }
 

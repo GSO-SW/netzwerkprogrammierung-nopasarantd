@@ -28,6 +28,11 @@ namespace NoPasaranTD
             Application.Run(display);
         }
 
+        public static void Shutdown()
+        {
+            display.Close();
+        }
+
         /// <summary>
         /// Lade Spielinstanz im Offlinemodus.<br/>
         /// Falls der Parameter eine Null-Referenz ist, 

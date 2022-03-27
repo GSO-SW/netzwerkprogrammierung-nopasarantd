@@ -81,11 +81,18 @@ namespace NoPasaranTD.Visuals.Ingame
             Foreground = Brushes.Black,
         };
 
+        public ChatContainer ChatContainer { get; set; } = new ChatContainer()
+        {           
+            Visible = false,
+            Bounds = new Rectangle(StaticEngine.RenderWidth/2 - 150, StaticEngine.RenderHeight/2 - 200, 300, 400),
+            Background = new SolidBrush(Color.FromArgb(230, 132, 140, 156)),
+        };
+
 
         // Drag Drop Service für das platzieren eines neuen Towers auf dem Bildschirm
-        private readonly DragDropService placingTowerDragDrop = new DragDropService();
+        private DragDropService placingTowerDragDrop = new DragDropService();
 
-        private Tower selectedTower = null;
+        private Tower selectedTower;
         /// <summary>
         /// Der Ausgweählte Tower. Wird beim draufklicken zugewiesen
         /// </summary>
@@ -97,12 +104,13 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.DefineItems();
             TowerDetailsContainer.Init(gameObj);
             PlayerListContainer.Init(gameObj);
-
+            ChatContainer.Init(gameObj);
             OptionsContainer.Init(gameObj);
 
             // Initialisiert alle Events
             TowerBuildMenu.SelectionChanged += TowerBuildMenu_SelectionChanged;
             placingTowerDragDrop.DragDropFinish += PlacingTowerDragDrop_DragDropFinishAsync;
+            placingTowerDragDrop.DragDropLeft += PlacingTowerDragDrop_DragDropLeft;
             HideBuildMenuContainer.ButtonClicked += HideBuildMenueButton_ButtonClicked;
 
             // Verweist alle GUI Components
@@ -110,7 +118,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             game = gameObj;
         }
-
+      
         private async void HideBuildMenueButton_ButtonClicked()
         {
             // Animation zum einklappen des Buildmenüs
@@ -172,10 +180,16 @@ namespace NoPasaranTD.Visuals.Ingame
                 TowerBuildMenu.Visible = true;
                 await OptionsContainer.ExpandCollapseAsync(true);
                 tower.Hitbox = args.MovedObject;
-                game.NetworkHandler.InvokeEvent("AddTower", tower);
+                tower.ActivateAtTick = game.CurrentTick + game.NetworkHandler.HighestPing;
+                game.NetworkHandler.InvokeEvent("AddTower", tower, false);
             }
         }
 
+        // Wird beim Abbrechen des Drag Drop Vorgang ausgelöst
+        private async void PlacingTowerDragDrop_DragDropLeft(DragDropArgs args) =>
+            await OptionsContainer.ExpandCollapseAsync(true);
+
+        // Wird Ausgelöst sobald ein neues Element im Baumenü ausgewählt
         private void TowerBuildMenu_SelectionChanged()
         {
             Tower tower = null;
@@ -216,6 +230,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerBuildMenu.Update();
             PlayerListContainer.Update();
             OptionsContainer.Update();
+            ChatContainer.Update();
         }
 
         public override void Render(Graphics g)
@@ -230,13 +245,10 @@ namespace NoPasaranTD.Visuals.Ingame
             HideBuildMenuContainer.Render(g);
             PlayerListContainer.Render(g);
             OptionsContainer.Render(g);
+            ChatContainer.Render(g);
 
             DrawGameStats(g);
 
-            // TODO: Testcode, ausgewählter Tower soll gerendert werden
-            // unabhängig davon ob er bewegt wird oder nicht!
-            // Bei bewegen ins Spielfeld, nur die Alpha etwas runterdrehen.
-            // Bei platzieren das Alpha wieder auf normal setzen und den Tower auf diese Position zeichnen
             if (placingTowerDragDrop.Context != null)
             {
                 if (placingTowerDragDrop.IsMoving)
@@ -276,6 +288,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             TowerBuildMenu.KeyPress(e);
             HideBuildMenuContainer.KeyPress(e);
+            ChatContainer.KeyPress(e);
         }
 
         public override void KeyDown(KeyEventArgs args)
@@ -287,6 +300,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
             TowerBuildMenu.KeyDown(args);
             HideBuildMenuContainer.KeyDown(args);
+            ChatContainer.KeyDown(args);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -311,6 +325,7 @@ namespace NoPasaranTD.Visuals.Ingame
             TowerDetailsContainer.MouseDown(e);
             placingTowerDragDrop.MouseDown(e);
             OptionsContainer.MouseDown(e);
+            ChatContainer.MouseDown(e);
 
             foreach (Tower item in game.Towers)
             {
@@ -338,6 +353,7 @@ namespace NoPasaranTD.Visuals.Ingame
             }
 
             TowerBuildMenu.MouseMove(e);
+            ChatContainer.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
@@ -348,6 +364,7 @@ namespace NoPasaranTD.Visuals.Ingame
             }
 
             TowerBuildMenu.MouseWheel(e);
+            ChatContainer.MouseWheel(e);
         }
 
         private void DrawGameStats(Graphics g)

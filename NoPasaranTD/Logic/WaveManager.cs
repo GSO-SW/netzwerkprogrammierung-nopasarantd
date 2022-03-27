@@ -228,10 +228,8 @@ namespace NoPasaranTD.Engine
         /// </summary>
         public void StartSpawn()
         {
-            if (IsCompleted == true)
-            {
-                IsCompleted = false;
-            }
+            if (IsCompleted)
+				IsCompleted = false;
         }
 
         /// <summary>
@@ -239,10 +237,8 @@ namespace NoPasaranTD.Engine
         /// </summary>
         public void StopSpawn()
         {
-            if (completed == false)
-            {
-                completed = true;
-            }
-        }
-    }
+            if (!IsCompleted)
+				IsCompleted = true;
+        }		
+	}
 }

@@ -128,6 +128,8 @@ namespace NoPasaranTD.Visuals
             int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
             int factorY = Orientation == Orientation.Vertical ? 1 : 0;
 
+            int currentHeight = 0;
+
             for (int i = 0; i < Items.Count; i++)
             {
                 // Platziert für jedes Model Objekt einen eigenen Container im List-Container
@@ -139,9 +141,9 @@ namespace NoPasaranTD.Visuals
                 item.ListArgs = ListArgs;
 
                 item.Position = new Point(
-                    Position.X + i * (ItemSize.Width + Margin) * factorX + Margin,
-                    Position.Y + i * (ItemSize.Height + Margin) * factorY + Margin
-                );
+                    Position.X + i * (item.ItemSize.Width + Margin) * factorX + Margin,
+                    Position.Y + currentHeight * factorY + Margin);
+                currentHeight += (item.ItemSize.Height + Margin)*factorY;
 
                 items.Add(item);
             }

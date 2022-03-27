@@ -14,8 +14,8 @@ namespace NoPasaranTD.Visuals.Main
         private readonly ButtonContainer btnUpdatePlayer;
         private readonly ButtonContainer btnCreateLobby;
 
-        private readonly GuiMainMenu parent;
-        public LobbyListScreen(GuiMainMenu parent)
+        private readonly GuiLobbyMenu parent;
+        public LobbyListScreen(GuiLobbyMenu parent)
         {
             this.parent = parent;
             lobbyList = new ListContainer<NetworkLobby, LobbyItemContainer>()
@@ -32,13 +32,13 @@ namespace NoPasaranTD.Visuals.Main
             lobbyList.SelectionChanged += JoinLobby;
 
             // Aktualisiere Spielerinformationen
-            btnUpdatePlayer = GuiMainMenu.CreateButton("Login", new Rectangle(5, 5, 100, 30));
+            btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(5, 5, 100, 30));
 
             // TODO: Mit TextBox aktualisieren
             btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient("SKRR" + Environment.TickCount));
 
             // Erstelle neue Lobby
-            btnCreateLobby = GuiMainMenu.CreateButton("Create Lobby", new Rectangle(
+            btnCreateLobby = GuiLobbyMenu.CreateButton("Create Lobby", new Rectangle(
                 lobbyList.Position.X + lobbyList.ContainerSize.Width - 150,
                 lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
                 150, 30

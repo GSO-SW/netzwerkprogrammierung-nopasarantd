@@ -2,6 +2,7 @@
 using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
+using NoPasaranTD.Visuals;
 using NoPasaranTD.Visuals.Ingame;
 using NoPasaranTD.Visuals.Ingame.GameOver;
 using System;
@@ -13,13 +14,14 @@ namespace NoPasaranTD.Engine
 {
     public class Game : IDisposable
     {
-        public uint CurrentTick { get; private set; }
+        public uint CurrentTick { get; set; }
         public NetworkHandler NetworkHandler { get; }
         public WaveManager WaveManager { get; }
 
         public Map CurrentMap { get; }
         public List<Balloon>[] Balloons { get; }
         public List<Tower> Towers { get; }
+        public List<Tower> VTowers { get; } // Speichert die Türme die noch nicht aktiv sind und nur angezeigt werden
         public UILayout UILayout { get; }
 
         public int Money { get; set; } = StaticInfo.StartMoney;
@@ -28,39 +30,47 @@ namespace NoPasaranTD.Engine
         public bool Paused { get; set; } = false;
         public int Round { get; set; } = 1;
 
-        /// <summary>
-        /// Initialisiert ein neues Spiel
-        /// </summary>
-        /// <param name="map">Die Map die gespielt werden soll</param>
-        /// <param name="networkHandler">Der genutzte Networkhandler</param>
-        /// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
-        public Game(Map map, NetworkHandler networkHandler)
-        {
-            CurrentMap = map;
-            NetworkHandler = networkHandler;
-            NetworkHandler.Game = this;
-            WaveManager = new WaveManager(this, 50);
+		public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
+		
+		/// <summary>
+		/// Initialisiert ein neues Spiel
+		/// </summary>
+		/// <param name="map">Die Map die gespielt werden soll</param>
+		/// <param name="networkHandler">Der genutzte Networkhandler</param>
+		/// <param name="isActive">Ist das Spiel ein Aktives Spiel oder ein Hintergrundspiel</param>
+		public Game(Map map, NetworkHandler networkHandler)
+		{
+			CurrentMap = map;
+			NetworkHandler = networkHandler;
+			NetworkHandler.Game = this;
+			WaveManager = new WaveManager(this, 50);
 
             Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
             Towers = new List<Tower>();
+            VTowers = new List<Tower>();
             UILayout = new UILayout(this);
 
             InitNetworkHandler();
             InitBalloons();
         }
-
+        
         private void InitNetworkHandler()
         {
-            NetworkHandler.EventHandlers.Add("AddTower", AddTower);
+            NetworkHandler.EventHandlers.Add("AddTower", AddVTower);
             NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
             NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
             NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
             NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
             NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
             NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
+            NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
+            NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
         }
 
-        private void InitBalloons()
+        /// <summary>
+        /// Initialisiert die Eigenschaft der Ballons und löscht damit vorhandene Werte
+        /// </summary>
+        public void InitBalloons()
         {
             for (int i = 0; i < Balloons.Length; i++)
             {
@@ -70,22 +80,47 @@ namespace NoPasaranTD.Engine
 
         public void Dispose()
         {
+			StaticEngine.TickAcceleration = 1;
+
             UILayout.Dispose();
             NetworkHandler.Dispose();
             CurrentMap.Dispose();
         }
 
         #region Game logic region
+
+        //private bool check = true; // TESTCODE
+        //private bool check2 = true; // TESTCODE
         public void Update()
         {
-            if (Paused && NetworkHandler.OfflineMode || HealthPoints <= 0)
+            if (NetworkHandler.ResyncDelay > 0)
             {
-                return; // Abfragen ob das Spiel legitim pausiert ist oder das Spiel vorbei ist
+                NetworkHandler.ResyncDelay--;
+                return;
             }
+            if ((Paused && NetworkHandler.OfflineMode) || NetworkHandler.Resyncing)
+            {
+                return; // Abfragen ob das Spiel legitim pausiert ist
+            }
+
+            if (HealthPoints <= 0)
+            {
+                return; // Abfragen ob das Spiel vorbei ist
+            }
+            //if (Round == 3 && check && NetworkHandler.IsHost) TESTCODE
+            //         {
+            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
+            //	check = false;
+            //         }
+            //if (Round == 4 && check2 && NetworkHandler.IsHost)
+            //{
+            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
+            //	check2 = false;
+            //}
             NetworkHandler.Update();
 
             WaveManager.Update();
-            for (int i = Balloons.Length - 1; i >= 0; i--)
+            for (int i = 0; i < Balloons.Length; i++)
             {
                 for (int j = Balloons[i].Count - 1; j >= 0; j--)
                 { // Aktualisiere Ballons
@@ -100,19 +135,19 @@ namespace NoPasaranTD.Engine
                                 Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
                             }
                         }
-
                         Balloons[i].RemoveAt(j);
                     }
                     else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
                     {
+                        Balloons[i][j].CurrentSegment++; // Erhöht das Pfadsegment des Ballons
                         Balloons[i + 1].Add(Balloons[i][j]); // Einfügen des Ballons in das nächste Pfadsegment
                         Balloons[i].RemoveAt(j); // Entfernen des Ballons aus dem letzten Pfadsegment
                     }
                 }
             }
 
-            // Aktualisiere Türme
-            for (int i = Towers.Count - 1; i >= 0; i--)
+            CheckVTower();
+            for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
             {
                 Towers[i].Update(this);
             }
@@ -121,12 +156,26 @@ namespace NoPasaranTD.Engine
             CurrentTick++;
         }
 
+        /// <summary>
+        /// Kontrolliert alle nicht aktiven Türme, ob diese aktiviert werden müssen in dem Tick
+        /// </summary>
+        public void CheckVTower()
+        {
+            for (int i = VTowers.Count - 1; i >= 0; i--)
+            {
+                if (VTowers[i].ActivateAtTick <= CurrentTick) // Checken, ob der Turm schon aktiv ist
+                {
+                    AddTower(VTowers[i]); // Turm neu abspeichern bei den aktiven Türmen
+                    VTowers.RemoveAt(i);
+                }
+            }
+        }
+
         public void Render(Graphics g)
         {
             // Zeichne Karte
             g.DrawImage(CurrentMap.BackgroundImage,
-                0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
-            );
+                0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
 
             foreach (List<Balloon> item in Balloons)
             {
@@ -168,10 +217,17 @@ namespace NoPasaranTD.Engine
                     (float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
                 );
             }
+            //Font fontArial = new Font("Arial", 10, FontStyle.Regular);
+            //g.DrawString(CurrentTick + "", fontArial,new SolidBrush(Color.Black), 0, 200);
 
             for (int i = Towers.Count - 1; i >= 0; i--)
             {
                 Towers[i].Render(g);
+            }
+
+            for (int i = VTowers.Count - 1; i >= 0; i--)
+            {
+                VTowers[i].Render(g);
             }
 
             UILayout.Render(g);
@@ -271,6 +327,14 @@ namespace NoPasaranTD.Engine
             for (int i = Towers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem Turm gibt
             {
                 if (Towers[i].Hitbox.IntersectsWith(rect))
+                {
+                    return false;
+                }
+            }
+
+            for (int i = VTowers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem noch nicht platzierten Turm gibt
+            {
+                if (VTowers[i].Hitbox.IntersectsWith(rect))
                 {
                     return false;
                 }
@@ -382,55 +446,114 @@ namespace NoPasaranTD.Engine
             return true;
         }
 
+        /// <summary>
+        /// Den übergebenen Turm lokal einfügen
+        /// </summary>
+        /// <param name="t"></param>
         private void AddTower(object t)
         {
-            (t as Tower).IsSelected = false;
-            (t as Tower).IsPlaced = true;
-
             Towers.Add((Tower)t);
             Towers[Towers.Count - 1].SearchSegments(CurrentMap);
-            if (!GodMode)
+            if (!GodMode && !NetworkHandler.Resyncing) // Im GodMode kein Geld abziehen // Beim resynchronisieren auch kein Geld abziehen
             {
                 Money -= (int)StaticInfo.GetTowerPrice(t.GetType());
             }
         }
 
-        private void RemoveTower(object t)
+        /// <summary>
+        /// Fügt Türme in eine Liste ein wenn diese gezeichnet werden sollen aber noch inaktiv sind.
+        /// Kontrolliert, ob Türme beim platzieren kollidieren.
+        /// </summary>
+        /// <param name="t"></param>
+        private void AddVTower(object t)
         {
-            Tower targetTower = FindTowerID(t);
-
-            Tower selectedTower = UILayout.TowerDetailsContainer.Context;
-            if (selectedTower != null && selectedTower.ID == targetTower.ID)
+            if (StaticInfo.GetTowerPrice(GetType()) <= Money || GodMode) // Kontrollieren, dass der Spieler genug Geld hat
             {
-                UILayout.TowerDetailsContainer.Visible = false;
-            }
+                if (IsTowerValidPosition((t as Tower).Hitbox)) // Kontrollieren, dass der Turm an der Stelle platziert werden kann
+                {
+                    (t as Tower).IsSelected = false; // Ist nicht mehr der ausgewählte Turm
+                    (t as Tower).IsPlaced = true;
 
-            Money += (int)targetTower.SellPrice;
-            Towers.Remove(targetTower);
+                    VTowers.Add((Tower)t);
+                }
+                else
+                {
+                    for (int i = VTowers.Count - 1; i >= 0; i--)  //Überprüft, ob es eine Kollision mit einem noch nicht platzierten Turm gibt
+                    {
+                        if (VTowers[i].Hitbox.IntersectsWith((t as Tower).Hitbox)) // Turm finden mit dem der neu hinzugefügte kollidieren würde
+                        {
+                            if (VTowers[i].ActivateAtTick > (t as Tower).ActivateAtTick) // Kontrollieren, welcher der beiden Türme zuerst platziert wird und damit zuerst gebaut wurde
+                            {
+                                VTowers.RemoveAt(i); // Sollte der stehende Turm einfach vom Spieler platziert sein und es wird ein Paket erhalten welches vorher gesendet wurde wird das neu platzierte übernommen
+                                VTowers.Add((Tower)t);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
+        /// <summary>
+        /// Die lokale Version des übergebenen Turmes entfernen
+        /// </summary>
+        /// <param name="t"></param>
+        private void RemoveTower(object t)
+        {
+            Tower tower = FindTowerID(t);
+            if (tower != null) // Kontrollieren, dass ein Turm existiert
+            {
+                Tower selectedTower = UILayout.TowerDetailsContainer.Context;
+                if (selectedTower != null && selectedTower.ID == tower.ID) // Sollte der gelöschte Turm ausgewählt sein wird dieses Feld geschlossen
+                {
+                    UILayout.TowerDetailsContainer.Visible = false;
+                }
+
+                Money += (int)tower.SellPrice; // Geld fürs verkaufen an den Spieler auszahlen
+                Towers.Remove(tower);
+            }
+        }
+
+        /// <summary>
+        /// Upgraded die lokale Vesion des übergebenen Turmes
+        /// </summary>
+        /// <param name="t"></param>
         public void UpgradeTower(object t)
         {
             Tower tower = FindTowerID(t);
-            if (!GodMode)
+            if (tower != null && tower.UpgradePrice <= Money && tower.CanLevelUp()) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
             {
-                Money -= (int)tower.UpgradePrice;
-            }
+                if (!GodMode) // Im Godmode soll kein Geld abgezogen werden
+                {
+                    Money -= (int)tower.UpgradePrice;
+                }
 
-            tower.Level++;
-            tower.SearchSegments(CurrentMap);
+                tower.Level++;
+                tower.SearchSegments(CurrentMap); // Pfadsegmente in der Reichweite entsprechend der neuen Reichweite updaten
+            }
         }
 
+        /// <summary>
+        /// Wechselt den Schussmodus der lokalen Version des übergebenen Turmes
+        /// </summary>
+        /// <param name="t"></param>
         public void ModeChangeTower(object t)
         {
-            Tower targetTower = FindTowerID(t);
-            targetTower.TargetMode = (t as Tower).TargetMode;
-
-            Tower selectedTower = UILayout.TowerDetailsContainer.Context;
-            if (selectedTower != null && selectedTower.ID == targetTower.ID)
+            Tower tower = FindTowerID(t);
+            if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
-                UILayout.TowerDetailsContainer.Context = targetTower;
+                tower.TargetMode = (t as Tower).TargetMode;
+
+                Tower selectedTower = UILayout.TowerDetailsContainer.Context; // Derzeit angezeigten Turm auswählen
+                if (selectedTower != null && selectedTower.ID == tower.ID) // Sollte ein Turm ausgewählt sein und dem veränderten entsprechen wird die Ansicht geupdated
+                {
+                    UILayout.TowerDetailsContainer.Context = tower;
+                }
             }
+        }
+
+        private void AddBalloon(object t)
+        {
+            Balloons[(t as Balloon).CurrentSegment].Add(t as Balloon);
         }
 
         public void StartRound(object t)
@@ -456,22 +579,34 @@ namespace NoPasaranTD.Engine
                     new GuiPauseMenu(this) : null);
         }
 
-        public void ToggelAutoStart(object t)
-        {
-            WaveManager.AutoStart = !WaveManager.AutoStart;
-        }
+		public void ToggelAutoStart(object t) =>
+			WaveManager.AutoStart = !WaveManager.AutoStart;
 
+		public void SendMessage(object t) =>
+			Messages.Add(t.ToString());
+
+        /// <summary>
+        /// Findet den übergebenen Turm wenn dieser existiert 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns>Gibt einen Verweis auf das Objekt des übersendeten Turmes zurück</returns>
         private Tower FindTowerID(object t)
         {
-            foreach (Tower tower in Towers)
+            try // Falls kein Turm mehr gefunden wird, bsw bei mehrfachem Löschen soll das Program nicht crashen
             {
-                if (tower.ID == (t as Tower).ID)
+                foreach (Tower tower in Towers) // Alle Tower durchsuchen
                 {
-                    return tower;
+                    if (tower.ID == (t as Tower).ID)
+                    {
+                        return tower;
+                    }
                 }
             }
-
-            throw new Exception("Tower not found");
+            catch (Exception e)
+            {
+                Console.WriteLine("The towersearch failed with following message: " + e.Message);
+            }
+            return null;
         }
 
     }

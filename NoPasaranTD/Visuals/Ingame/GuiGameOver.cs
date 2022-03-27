@@ -1,7 +1,6 @@
 ﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System.Drawing;
-using System.IO;
 using System.Media;
 using System.Reflection;
 using System.Windows.Forms;
