@@ -126,9 +126,6 @@ namespace NoPasaranTD.Networking
                 await SendPacketAsync(packet, endpoint);
 
             localClient.SequenceID++;
-
-            while (packetsSent.ContainsKey(packet.Sequence))
-                await Task.Delay(1); // Warte solange bis das Paket akzeptiert wurde
         }
 
         public async Task<UdpReceiveResult> ReceiveAsync()
