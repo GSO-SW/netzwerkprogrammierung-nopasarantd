@@ -16,33 +16,42 @@ namespace NoPasaranTD.Engine
         private Game currentGame;
 
         public StaticDisplay()
-            => InitializeComponent();
+        {
+            InitializeComponent();
+        }
 
         private void Display_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Game instanz freigeben
-            currentGame?.Dispose();
+            Game backupGame = currentGame; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
             currentGame = null;
+            backupGame?.Dispose(); // Game instanz freigeben
 
-            // Screen instanz freigeben
-            currentScreen?.Dispose();
+            GuiComponent backupScreen = currentScreen; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
             currentScreen = null;
+            backupScreen?.Dispose(); // Screen instanz freigeben
         }
 
         /// <summary>
-        /// Lade Spielinstanz im Offlinemodus
+        /// Lade Spielinstanz im Offlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
-        public void LoadGame(string mapFile) => LoadGame(mapFile, mapFile == null ? null : new NetworkHandler());
+        public void LoadGame(string mapFile)
+        {
+            LoadGame(mapFile, mapFile == null ? null : new NetworkHandler());
+        }
 
         /// <summary>
-        /// Lade Spielinstanz im Onlinemodus
+        /// Lade Spielinstanz im Onlinemodus.<br/>
+        /// Falls der Parameter eine Null-Referenz ist, 
+        /// entlädt er das Spiel und kehrt automatisch ins Hauptmenü zurück
         /// </summary>
         /// <param name="mapFile">Dateiname der Map</param>
         /// <param name="handler">Dementsprechender Netzwerkmanager</param>
         public void LoadGame(string mapFile, NetworkHandler handler)
         {
-            currentGame?.Dispose();
+            Game backupGame = currentGame; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
 
             if (mapFile == null)
             {
@@ -53,15 +62,24 @@ namespace NoPasaranTD.Engine
             {
                 // Lade map und initialisiere sie
                 Map map = MapData.GetMapByFileName(mapFile); map.Initialize();
-                currentGame = new Game(map, handler,true);
+                currentGame = new Game(map, handler);
                 LoadScreen(null); // Screen entladen
             }
+
+            backupGame?.Dispose(); // Game instanz freigeben
         }
 
+        /// <summary>
+        /// Lade einen überlappenden Screen<br/>
+        /// Achtung: Das Spiel wird dabei nicht automatisch gestoppt, 
+        /// sondern läuft im Hintergrund weiter!
+        /// </summary>
+        /// <param name="screen">Der zu ladende Screen</param>
         public void LoadScreen(GuiComponent screen)
         {
-            currentScreen?.Dispose();
+            GuiComponent backupScreen = currentScreen; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
             currentScreen = screen;
+            backupScreen?.Dispose();
         }
 
         #region Mouse region
@@ -198,7 +216,9 @@ namespace NoPasaranTD.Engine
             { // Framerate aktualisieren (falls geändert)
                 int fps = Math.Max(1, 1000 / StaticEngine.Framerate);
                 if (tmrGameUpdate.Interval != fps)
+                {
                     tmrGameUpdate.Interval = fps;
+                }
             }
 
             Refresh();

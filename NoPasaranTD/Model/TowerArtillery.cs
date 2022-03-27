@@ -8,31 +8,28 @@ namespace NoPasaranTD.Model
     public class TowerArtillery : Tower
     {
         private static readonly Pen RANGE_CIRCLE_PEN = new Pen(Color.Purple, 2.3f);
-
-        Utilities.Vector2D lastBalloonPos;
-        Utilities.Vector2D[] lastBalloonPositions;
-        Utilities.Vector2D rotationVec = new Utilities.Vector2D(30,30), vect = new Utilities.Vector2D(0,0);
-        PointF centerCanon = new Point(0,0);
-        RectangleF rectPipeTransformed = new RectangleF(), rectCircle1 = new RectangleF(), rectCircle2 = new RectangleF(),
+        private Utilities.Vector2D lastBalloonPos;
+        private readonly Utilities.Vector2D[] lastBalloonPositions;
+        private Utilities.Vector2D rotationVec = new Utilities.Vector2D(30, 30), vect = new Utilities.Vector2D(0, 0);
+        private PointF centerCanon = new Point(0, 0);
+        private RectangleF rectPipeTransformed = new RectangleF(), rectCircle1 = new RectangleF(), rectCircle2 = new RectangleF(),
             rectCircle3 = new RectangleF(), rectPipe = new RectangleF();
 
         //animation related
-        int phaseUp = 1; // 1:reloading | 2:firing | 3:waiting
-        int phaseDown = 3; // 1:midair | 2:impact | 3:void
-        float ratioPipeToHitbox;
-        int targetCounter = 0;
-
-        ulong ticks = 0; // Anzahl vergangener Ticks
-        ulong tickReloadStart = 0;
-        ulong tickFireStart = 0;
-        ulong tickImpactStart = 0;
-
-        ulong tickLength_fireAnimation = 2000;
-        ulong tickLength_waitBetweenReloadAndFire = 1000;
-        ulong tickLength_impactAnimation = 1000;
-        ulong tickLength_impactCrossFade = 1500;
-        bool reloadOnlyAfterImpact = true;
-        int maxTargetsLocked = 10;
+        private int phaseUp = 1; // 1:reloading | 2:firing | 3:waiting
+        private int phaseDown = 3; // 1:midair | 2:impact | 3:void
+        private readonly float ratioPipeToHitbox;
+        private int targetCounter = 0;
+        private ulong ticks = 0; // Anzahl vergangener Ticks
+        private ulong tickReloadStart = 0;
+        private ulong tickFireStart = 0;
+        private ulong tickImpactStart = 0;
+        private readonly ulong tickLength_fireAnimation = 2000;
+        private readonly ulong tickLength_waitBetweenReloadAndFire = 1000;
+        private readonly ulong tickLength_impactAnimation = 1000;
+        private readonly ulong tickLength_impactCrossFade = 1500;
+        private readonly bool reloadOnlyAfterImpact = true;
+        private readonly int maxTargetsLocked = 10;
 
         public TowerArtillery()
         {
@@ -58,10 +55,10 @@ namespace NoPasaranTD.Model
             float diameter = Math.Min(rectPipe.Width, rectPipe.Height);
             float brickSizeX = rectPipe.Width * 0.2f;
             RectangleF supportLeg1 = new RectangleF(
-                rectPipe.X + diameter / 2 - brickSizeX/2, leg1.Y,
+                rectPipe.X + diameter / 2 - brickSizeX / 2, leg1.Y,
                 brickSizeX, leg1.Height);
             RectangleF supportLeg2 = new RectangleF(
-                rectPipe.X + diameter / 2 - brickSizeX/2, leg2.Y,
+                rectPipe.X + diameter / 2 - brickSizeX / 2, leg2.Y,
                 brickSizeX, leg2.Height);
 
             /*
@@ -88,12 +85,15 @@ namespace NoPasaranTD.Model
                 int lines = 40;
                 float lineStep = (Hitbox.Width + Hitbox.Height) / (float)lines;
                 for (int i = 1; i < lines + 1; i++)
+                {
                     g.DrawLine(Pens.DarkRed,
                        Math.Min(Hitbox.Left + lineStep * i, Hitbox.Right),
                        Hitbox.Top + Math.Max(Hitbox.Left + lineStep * i - Hitbox.Right, 0),
                        Hitbox.Left + Math.Max(Hitbox.Top + lineStep * i - Hitbox.Bottom, 0),
                        Math.Min(Hitbox.Top + lineStep * i, Hitbox.Bottom)
                        );
+                }
+
                 g.FillRectangle(new SolidBrush(Color.FromArgb(20, Color.Red)), Hitbox);
 
                 g.FillRectangle(Brushes.Red, leg1);
@@ -103,7 +103,7 @@ namespace NoPasaranTD.Model
                 g.FillRectangle(Brushes.Red, supportLeg1);
                 g.FillRectangle(Brushes.Red, supportLeg2);
             }
-            
+
 
 
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
@@ -111,7 +111,10 @@ namespace NoPasaranTD.Model
 
 
             // attack radius
-            if (IsSelected) g.DrawEllipse(RANGE_CIRCLE_PEN, Hitbox.X + (int)(Hitbox.Width / 2.0 - Range), Hitbox.Y + (int)(Hitbox.Height / 2 - Range), (int)Range * 2, (int)Range * 2);
+            if (IsSelected)
+            {
+                g.DrawEllipse(RANGE_CIRCLE_PEN, Hitbox.X + (int)(Hitbox.Width / 2.0 - Range), Hitbox.Y + (int)(Hitbox.Height / 2 - Range), (int)Range * 2, (int)Range * 2);
+            }
 
             ulong tickLength_reloadAnimation = Delay
                 - tickLength_fireAnimation
@@ -121,34 +124,34 @@ namespace NoPasaranTD.Model
             switch (phaseUp)
             {
                 case 1: // animation: reload
-                    
-                    PointF margin = new PointF(Hitbox.Width*(1-ratioPipeToHitbox)/2, Hitbox.Height*(1-ratioPipeToHitbox)/2);
-                    rectPipe = new RectangleF(Hitbox.X+margin.X, Hitbox.Y+margin.Y, Hitbox.Width * ratioPipeToHitbox, Hitbox.Height * ratioPipeToHitbox);
-                    float TS1 = TweenService(tickReloadStart, tickReloadStart + tickLength_reloadAnimation, 0, diameter/2, lTicks); // für die linke seite
+
+                    PointF margin = new PointF(Hitbox.Width * (1 - ratioPipeToHitbox) / 2, Hitbox.Height * (1 - ratioPipeToHitbox) / 2);
+                    rectPipe = new RectangleF(Hitbox.X + margin.X, Hitbox.Y + margin.Y, Hitbox.Width * ratioPipeToHitbox, Hitbox.Height * ratioPipeToHitbox);
+                    float TS1 = TweenService(tickReloadStart, tickReloadStart + tickLength_reloadAnimation, 0, diameter / 2, lTicks); // für die linke seite
                     float TS2 = TweenServiceExp(tickReloadStart, tickReloadStart + tickLength_reloadAnimation, 0, rectPipe.Width - TS1 - diameter / 2, lTicks, 6); // für die rechte seite
-                    
+
                     float upperY = rectPipe.Y,
                         lowerY = rectPipe.Bottom,
                         leftLineX = rectPipe.X + TS1,
                         rightLineX = rectPipe.Right - TS1 - TS2;
-                    
+
                     rectPipeTransformed = new RectangleF(
-                        leftLineX ,            upperY,
-                        rightLineX-leftLineX,  lowerY-upperY);
-                    
+                        leftLineX, upperY,
+                        rightLineX - leftLineX, lowerY - upperY);
+
                     rectCircle1 = new RectangleF(
-                        leftLineX - TS1,       upperY,
-                        TS1*2,                 lowerY-upperY);
-                    
+                        leftLineX - TS1, upperY,
+                        TS1 * 2, lowerY - upperY);
+
                     rectCircle2 = new RectangleF(
-                        rightLineX - TS1,      upperY,
-                        TS1*2,                 lowerY-upperY);
+                        rightLineX - TS1, upperY,
+                        TS1 * 2, lowerY - upperY);
 
                     rectCircle3 = new RectangleF(
                         rectCircle2.X + rectCircle2.Width * 0.1f, rectCircle2.Y + rectCircle2.Height * 0.1f,
                         rectCircle2.Width * 0.8f, rectCircle2.Height * 0.8f);
-                    
-                    
+
+
 
                     // Bei Hindernissen wird es rot gezeichnet
                     if (IsPositionValid || IsPlaced)
@@ -174,12 +177,12 @@ namespace NoPasaranTD.Model
                         g.DrawEllipse(Pens.Red, rectCircle2);
                     }
 
-                    
 
 
-                    
 
-                    centerCanon = new PointF(leftLineX,upperY + (lowerY-upperY)/2);
+
+
+                    centerCanon = new PointF(leftLineX, upperY + (lowerY - upperY) / 2);
 
                     if (tickReloadStart + tickLength_reloadAnimation < lTicks) { tickFireStart = tickReloadStart + tickLength_reloadAnimation + tickLength_waitBetweenReloadAndFire; phaseUp = 2; }
                     break;
@@ -206,19 +209,19 @@ namespace NoPasaranTD.Model
                             g.DrawLine(Pens.Red, centerCanon.X - rotationVec.X, centerCanon.Y - rotationVec.Y, centerCanon.X + rotationVec.X, centerCanon.Y + rotationVec.Y);
                         }
                         // projectile
-                        
-                        float TS3 = TweenServiceExp(tickFireStart, tickFireStart + tickLength_fireAnimation,20,100,lTicks,7);
-                        float TS4 = TweenServiceExp(tickFireStart+ (ulong)(tickLength_fireAnimation*0.8f), tickFireStart + tickLength_fireAnimation, 255, 0, lTicks, 2);
+
+                        float TS3 = TweenServiceExp(tickFireStart, tickFireStart + tickLength_fireAnimation, 20, 100, lTicks, 7);
+                        float TS4 = TweenServiceExp(tickFireStart + (ulong)(tickLength_fireAnimation * 0.8f), tickFireStart + tickLength_fireAnimation, 255, 0, lTicks, 2);
                         SolidBrush bruhTransparent = new SolidBrush(Color.FromArgb((int)TS4, Color.SlateGray));
                         RectangleF rect = new RectangleF(
                             centerCanon.X - TS3, centerCanon.Y - TS3,
-                            TS3*2, TS3*2
+                            TS3 * 2, TS3 * 2
                             );
                         g.FillEllipse(bruhTransparent, rect);
                         if (lTicks > tickFireStart + tickLength_fireAnimation)
                         { phaseUp = 3; phaseDown = 1; }
                     }
-                    
+
                     break;
                 case 3: // wait
                     g.FillRectangle(Brushes.DarkGray, rectPipeTransformed);
@@ -227,7 +230,7 @@ namespace NoPasaranTD.Model
                     g.FillEllipse(Brushes.Black, rectCircle3);
                     g.DrawEllipse(Pens.SlateGray, rectCircle2);
 
-                    if (phaseDown != 1 && ( !reloadOnlyAfterImpact || phaseDown != 2)) // [!phaseDown2] could be optional
+                    if (phaseDown != 1 && (!reloadOnlyAfterImpact || phaseDown != 2)) // [!phaseDown2] could be optional
                     {
                         tickReloadStart = lTicks;
                         phaseUp = 1;
@@ -248,11 +251,11 @@ namespace NoPasaranTD.Model
                     if (tickImpactStart + groundWaveTime < lTicks)
                     {
                         float TS12 = TweenServiceExp(tickImpactStart + groundWaveTime, tickImpactStart + tickLength_impactAnimation, 1, 0, lTicks, 2, false);
-                        SolidBrush bruhTransparent = new SolidBrush(Color.FromArgb((int)(TS12*150), Color.DarkGray));
+                        SolidBrush bruhTransparent = new SolidBrush(Color.FromArgb((int)(TS12 * 150), Color.DarkGray));
                         g.FillEllipse(bruhTransparent,
                                 lastBalloonPositions[0].X - blastRadius * (1 - TS12),
                                 lastBalloonPositions[0].Y - blastRadius * (1 - TS12),
-                                blastRadius * 2 * (1 - TS12), blastRadius * 2 * (1-TS12));
+                                blastRadius * 2 * (1 - TS12), blastRadius * 2 * (1 - TS12));
                     }
 
                     // impact crosses
@@ -260,12 +263,12 @@ namespace NoPasaranTD.Model
                     {
                         int crossSize = 10;
                         float TS14 = TweenServiceExp(tickImpactStart, tickImpactStart + tickLength_impactCrossFade, 1, 0, lTicks, 1);
-                        Pen penTransparent = new Pen(Color.FromArgb((int)Math.Max(TS14*255,10), Color.White));
-                        SolidBrush bruhTransparent = new SolidBrush(Color.FromArgb((int)Math.Max(TS14*100,5), Color.White));
+                        Pen penTransparent = new Pen(Color.FromArgb((int)Math.Max(TS14 * 255, 10), Color.White));
+                        SolidBrush bruhTransparent = new SolidBrush(Color.FromArgb((int)Math.Max(TS14 * 100, 5), Color.White));
                         for (int i = 0; i < realTargetCounter; i++)
                         {
                             g.FillEllipse(bruhTransparent,
-                                lastBalloonPositions[i].X - crossSize*2, lastBalloonPositions[i].Y - crossSize*2,
+                                lastBalloonPositions[i].X - crossSize * 2, lastBalloonPositions[i].Y - crossSize * 2,
                                 crossSize * 4, crossSize * 4);
                             g.DrawEllipse(penTransparent,
                                 lastBalloonPositions[i].X - crossSize, lastBalloonPositions[i].Y - crossSize,
@@ -276,10 +279,10 @@ namespace NoPasaranTD.Model
                             g.DrawLine(penTransparent,
                                 lastBalloonPositions[i].X, lastBalloonPositions[i].Y - crossSize,
                                 lastBalloonPositions[i].X, lastBalloonPositions[i].Y + crossSize);
-                            
+
                         }
                     }
-                    
+
                     // gray lines / earthquake thingy  [deprecated]
                     /*if (tickImpactStart + 400 < lTicks)
                         for (int i = 1; i < maxTargetsLocked; i++)
@@ -295,8 +298,8 @@ namespace NoPasaranTD.Model
                     {
                         // Vector Balloon to Canon
                         vect = new Utilities.Vector2D(
-                            (rectPipe.X + diameter / 2)-lastBalloonPositions[0].X,
-                            (rectPipe.Y + diameter / 2)-lastBalloonPositions[0].Y
+                            (rectPipe.X + diameter / 2) - lastBalloonPositions[0].X,
+                            (rectPipe.Y + diameter / 2) - lastBalloonPositions[0].Y
                         );
                         // draw line between canon center and target / debugging thingy
                         //g.DrawLine(penBlack, lastBalloonPositions[0].X + vect.X, lastBalloonPositions[0].Y + vect.Y,
@@ -310,24 +313,24 @@ namespace NoPasaranTD.Model
                         g.FillEllipse(bruhTransparent,
                             lastBalloonPositions[0].X + vect.X * TS1 - TS3, lastBalloonPositions[0].Y + vect.Y * TS1 - TS3,
                             TS3 * 2, TS3 * 2);
-                        
+
                         // super sonic sound/air waves
                         float sonicBoomSize = 100;
                         ulong layerTimeToLive = 500;
                         int layerAmount = 20;
                         int transparencyValue = 200;
-                        ulong layersFinalEndTime = (ulong)(tickLength_impactAnimation*0.8);
-                        int initalTransparency = Math.Max(Math.Min(transparencyValue / layerAmount,255),0);
+                        ulong layersFinalEndTime = (ulong)(tickLength_impactAnimation * 0.8);
+                        int initalTransparency = Math.Max(Math.Min(transparencyValue / layerAmount, 255), 0);
                         for (int i = 0; i < layerAmount; i++)
                         {
                             ulong
                                 layerStart = tickImpactStart + (ulong)(
                                 (double)layersFinalEndTime * i / layerAmount),
-                                layerEnd   = tickImpactStart + (ulong)(
+                                layerEnd = tickImpactStart + (ulong)(
                                 (double)layersFinalEndTime * i / layerAmount + layerTimeToLive);
                             float TS_fadeLayer = TweenService(layerStart, layerEnd, initalTransparency, 0, lTicks);
-                            float TS_constP= TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, layerStart);
-                            
+                            float TS_constP = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, layerStart);
+
                             float TS3_projectileSizeAtT = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 100, 20, layerStart);
                             float TS1_fixed = TweenService(tickImpactStart, tickImpactStart + tickLength_impactAnimation, 1, 0, layerStart);
                             float lSonicBoomSize = sonicBoomSize * TS1_fixed + TS3_projectileSizeAtT * (1 - TS1_fixed);
@@ -338,9 +341,13 @@ namespace NoPasaranTD.Model
                             lSonicBoomSize * 2, lSonicBoomSize * 2);
                         }
                     }
-                    
+
                     if (tickImpactStart + tickLength_impactCrossFade < lTicks
-                        && tickImpactStart + tickLength_impactAnimation < lTicks) phaseDown = 3;
+                        && tickImpactStart + tickLength_impactAnimation < lTicks)
+                    {
+                        phaseDown = 3;
+                    }
+
                     break;
                 case 3:
                     break;
@@ -348,8 +355,9 @@ namespace NoPasaranTD.Model
 
 
         }
-        (int segment, int index) target = (-1, -1);
-        int realTargetCounter = 0;
+
+        private (int segment, int index) target = (-1, -1);
+        private int realTargetCounter = 0;
         public override void Update(Game game)
         {
             ticks++;
@@ -358,7 +366,7 @@ namespace NoPasaranTD.Model
             {
 
                 case 1: // midair
-                    
+
                     target = game.FindTargetForTower(this);
                     if (target.index == -1) { break; }
                     // targetCounter --> total tries of searchin target; realTargetCounter --> total unique targets found
@@ -376,7 +384,7 @@ namespace NoPasaranTD.Model
                     target = game.FindTargetForTower(this);
                     targetCounter++;
                     if (target.index == -1) { break; }
-                    
+
 
                     lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[target.segment][target.index].PathPosition);
                     /* 
@@ -388,8 +396,8 @@ namespace NoPasaranTD.Model
                     }
                     if (b) break;
                     */
-                    lastBalloonPositions[realTargetCounter-1] = lastBalloonPos;
-                    
+                    lastBalloonPositions[realTargetCounter - 1] = lastBalloonPos;
+
                     realTargetCounter++;
 
                     game.DamageBalloon(target.segment, target.index, (int)Strength, this); // TODO: uint to int could be an oof conversion
@@ -412,7 +420,7 @@ namespace NoPasaranTD.Model
         /// <returns></returns>
         private static float TweenService(ulong tickStart, ulong tickEnd, float minValue, float maxValue, ulong currentTick)
         {
-            float deltaValue = maxValue - minValue, deltaTick = tickEnd-tickStart;
+            float deltaValue = maxValue - minValue, deltaTick = tickEnd - tickStart;
             float factor = Math.Min(Math.Max(currentTick - tickStart, 0), deltaTick) / deltaTick;  //  E[0;1]
             return minValue + deltaValue * factor;
         }
@@ -441,6 +449,9 @@ namespace NoPasaranTD.Model
                 : (deltaValue * (float)Math.Pow(factor, power)));
         }
 
-        public override string ToString() => "Artillery";
+        public override string ToString()
+        {
+            return "Artillery";
+        }
     }
 }
