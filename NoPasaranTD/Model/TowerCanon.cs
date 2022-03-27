@@ -1,8 +1,11 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
+using System.Reflection;
 
 namespace NoPasaranTD.Model.Towers
 {
@@ -33,28 +36,12 @@ namespace NoPasaranTD.Model.Towers
         {
             int centerX = Hitbox.X + Hitbox.Width / 2;
             int centerY = Hitbox.Y + Hitbox.Height / 2;
-
-            // Koordinaten des Hitboxpolygons
-            PointF[] hitboxPolygonCorners = new PointF[8]
-            {
-                new PointF(Hitbox.X , Hitbox.Y + HITBOX_CORNER_MARGIN),
-                new PointF(Hitbox.X + HITBOX_CORNER_MARGIN, Hitbox.Y),
-
-                new PointF(Hitbox.X + Hitbox.Width - HITBOX_CORNER_MARGIN, Hitbox.Y),
-                new PointF(Hitbox.X + Hitbox.Width, Hitbox.Y + HITBOX_CORNER_MARGIN),
-
-                new PointF(Hitbox.X + Hitbox.Width ,Hitbox.Y+Hitbox.Height- HITBOX_CORNER_MARGIN),
-                new PointF(Hitbox.X + Hitbox.Width - HITBOX_CORNER_MARGIN ,Hitbox.Y+Hitbox.Height),
-
-                new PointF(Hitbox.X + HITBOX_CORNER_MARGIN,Hitbox.Y+Hitbox.Height),
-                new PointF(Hitbox.X , Hitbox.Y + Hitbox.Height - HITBOX_CORNER_MARGIN),
-            };
-
+      
             // Zeichnet die Hitbox des Towers
             if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
-                g.FillPolygon(Brushes.SlateGray, hitboxPolygonCorners);
+                g.DrawImage(StaticInfo.TowerCanonImages[0], Hitbox);
             else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
-                g.FillPolygon(Brushes.Red, hitboxPolygonCorners);
+                g.FillRectangle(Brushes.Red, Hitbox);
 
             if (IsSelected)
                 g.DrawEllipse(RANGE_CIRCLE_PEN, (float)(centerX - Range), (float)(centerY - Range), (float)Range * 2, (float)Range * 2);
@@ -76,10 +63,11 @@ namespace NoPasaranTD.Model.Towers
             g.RotateTransform(currentAngle);
 
             // Das Barrel wird gezeichnet
-            g.FillRectangle(Brushes.DarkGray, barrel);
+            g.DrawImage(StaticInfo.TowerCanonImages[2], barrel);
 
             // Das innere Viereck wird gezeichnet
-            g.FillRectangle(Brushes.LightGray, -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
+            
+            g.DrawImage(StaticInfo.TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
 
             if (justShotSomeUglyAss)
             {

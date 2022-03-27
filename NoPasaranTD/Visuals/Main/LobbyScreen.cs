@@ -1,6 +1,13 @@
 ﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
+using NoPasaranTD.Utilities;
+using NoPasaranTD.Visuals.Ingame;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Main
@@ -16,11 +23,16 @@ namespace NoPasaranTD.Visuals.Main
         private readonly StringFormat textFormat;
         private readonly ButtonContainer btnLeaveLobby;
         private readonly ButtonContainer btnStartGame;
+        private readonly ButtonContainer btnNextMap;
+        private readonly ButtonContainer btnPreviousMap;
+        private Dictionary<string, Map> mapList;
 
         private readonly GuiMainMenu parent;
         public LobbyScreen(GuiMainMenu parent)
         {
             this.parent = parent;
+            mapList = ResourceLoader.LoadAllMaps();
+
             textFormat = new StringFormat()
             {
                 Alignment = StringAlignment.Center
@@ -38,6 +50,32 @@ namespace NoPasaranTD.Visuals.Main
                 150, 30
             ));
             btnStartGame.ButtonClicked += StartGame;
+
+            btnPreviousMap = GuiMainMenu.CreateButton("<", new Rectangle(
+                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3 + 5, StaticEngine.RenderHeight / 3 + 5, 100, 30
+            ));
+
+            btnPreviousMap.ButtonClicked += () =>
+            {
+                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName));
+                currentIndex = Math.Abs(--currentIndex % mapList.Count);
+
+                Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
+                parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
+            };
+
+            btnNextMap = GuiMainMenu.CreateButton(">", new Rectangle(
+               StaticEngine.RenderWidth - 105, StaticEngine.RenderHeight / 3 + 5, 100, 30
+            ));
+
+            btnNextMap.ButtonClicked += () =>
+            {
+                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName));
+                currentIndex = ++currentIndex % mapList.Count;
+
+                Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
+                parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
+            };
         }
 
         #region Event region
@@ -59,6 +97,14 @@ namespace NoPasaranTD.Visuals.Main
         {
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
+            btnPreviousMap.Render(g);
+            btnNextMap.Render(g);
+
+            // Map preview
+            g.DrawImage(mapList[Lobby.MapName].BackgroundImage, 
+                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0, 
+                StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
+            );
 
             // Lobby name
             g.DrawString(Lobby.Name, StandartHeader1Font, Brushes.Black, 0, 0);
@@ -81,6 +127,8 @@ namespace NoPasaranTD.Visuals.Main
         {
             btnLeaveLobby.MouseDown(e);
             btnStartGame.MouseDown(e);
+            btnPreviousMap.MouseDown(e);
+            btnNextMap.MouseDown(e);
         }
         #endregion
 

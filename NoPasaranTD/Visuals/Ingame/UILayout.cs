@@ -145,7 +145,6 @@ namespace NoPasaranTD.Visuals.Ingame
             if (HideBuildMenuContainer.Bounds.IntersectsWith(args.MovedObject)) return;
             if (OptionsContainer.Bounds.IntersectsWith(args.MovedObject)) return;
             if (!game.IsTowerValidPosition(args.MovedObject)) return;
-            await OptionsContainer.ExpandCollapseAsync(true);
 
             Tower tower = null;
             if (args.Context is TowerCanon) tower = new TowerCanon();
@@ -154,6 +153,7 @@ namespace NoPasaranTD.Visuals.Ingame
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
                 TowerBuildMenu.Visible = true;
+                await OptionsContainer.ExpandCollapseAsync(true);
                 tower.Hitbox = args.MovedObject;
                 tower.ActivateAtTick = game.CurrentTick + game.NetworkHandler.HighestPing;
                 game.NetworkHandler.ReliableUPD.SendReliableUDP("AddTower", tower);
