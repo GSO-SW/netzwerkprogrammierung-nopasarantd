@@ -136,6 +136,8 @@ namespace NoPasaranTD.Networking
         internal const byte CODE_ACK = 0x02;
         internal const byte CODE_SYN = 0x03;
 
+        public uint HighestPing => remoteClients.Values.Select(c => c.Ping).Max();
+
         private readonly RUdpClientInfo localClient;
         private readonly ConcurrentDictionary<IPEndPoint, RUdpClientInfo> remoteClients;
 

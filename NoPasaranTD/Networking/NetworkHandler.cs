@@ -7,6 +7,32 @@ using System.Threading;
 
 namespace NoPasaranTD.Networking
 {
+    [Serializable]
+    public class NetworkTask
+    {
+        public NetworkTask(string handler, object parameter, long tickToPerform)
+        {
+            Handler = handler;
+            Parameter = parameter;
+            TickToPerform = tickToPerform;
+        }
+
+        /// <summary>
+        /// String des Handlers der ausgeführt werden soll
+        /// </summary>
+        public string Handler { get; }
+
+        /// <summary>
+        /// Parameter der dem Handler übergeben werden soll
+        /// </summary>
+        public object Parameter { get; }
+
+        /// <summary>
+        /// Zeitpunkt in Ticks an dem der Handler ausgeführt werden soll
+        /// </summary>
+        public long TickToPerform { get; set; }
+    }
+
     public class NetworkHandler : IDisposable
     {
         #region Eigenschaften
@@ -20,6 +46,11 @@ namespace NoPasaranTD.Networking
         /// Socket für die ReliableUDP-Protokoll Verbindung
         /// </summary>
         public RUdpClient Socket { get; }
+
+        /// <summary>
+        /// Höchster Ping eines Clients
+        /// </summary>
+        public uint HighestPing => IsHost ? 0 : Socket.HighestPing;
 
         /// <summary>
         /// Teilnehmer der derzeitigen Session.<br/>
@@ -61,8 +92,6 @@ namespace NoPasaranTD.Networking
         #region Konstruktor
 
         public readonly List<NetworkTask> TaskQueue;
-        private readonly List<int> pings;
-        public int HighestPing = 0;
         private List<NetworkTask> resyncPackageL = new List<NetworkTask>();
 
         // Offlinemodus des Networkhandlers
@@ -70,7 +99,6 @@ namespace NoPasaranTD.Networking
         {
             EventHandlers = new Dictionary<string, Action<object>>();
             TaskQueue = new List<NetworkTask>();
-            pings = new List<int>();
         }
 
         // Onlinemodus des Networkhandlers
@@ -81,11 +109,9 @@ namespace NoPasaranTD.Networking
             LocalPlayer = localPlayer;
 
             EventHandlers = new Dictionary<string, Action<object>>();
-            EventHandlers.Add("PingRequest", PingRequest);
             EventHandlers.Add("ResyncReceive", ResyncReceive);
             EventHandlers.Add("ResyncReq", ResyncRequest);
             TaskQueue = new List<NetworkTask>();
-            pings = new List<int>();
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();
@@ -103,13 +129,7 @@ namespace NoPasaranTD.Networking
             {
                 try
                 {
-                    if (TaskQueue[i].Handler == "PingRequest")
-                    {
-                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
-                        handler(TaskQueue[i].Parameter); // Task ausführen
-                        TaskQueue.RemoveAt(i);
-                    }
-                    else if (TaskQueue[i].TickToPerform == Game.CurrentTick
+                    if (TaskQueue[i].TickToPerform == Game.CurrentTick
                         || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower")
                         || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
                         || TaskQueue[i].Handler == "AddBalloon"
@@ -139,10 +159,6 @@ namespace NoPasaranTD.Networking
                 }
                 
             }
-
-            if (!OfflineMode)
-                if (Game.CurrentTick % 500 == 0)
-                    InvokeEvent("PingRequest", (long)Game.CurrentTick, false);
         }
 
         /// <summary>
@@ -224,30 +240,12 @@ namespace NoPasaranTD.Networking
         }
 
         /// <summary>
-        /// PingRequest Antworten vergleichen und den Höchsten Ping
-        /// abspeichern, wenn dieser über 300 liegt
-        /// </summary>
-        /// <param name="t"></param>
-        private void PingRequest(object t)
-        {
-            pings.Add((int)(Game.CurrentTick - (long)t)); // Delay zwischen senden 
-            if (pings.Count == Participants.Count) // Nur kontrollieren, sobald alle Clients geantwortet haben
-            {
-                HighestPing = 100; // Ping erstmal wieder auf 0 als Basiswert setzen
-                foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
-                    if (HighestPing < item * 4 * (int)StaticEngine.TickAcceleration) // Höchsten Ping suchen
-                        HighestPing = item * 4 * (int)StaticEngine.TickAcceleration; // Die Verbindung muss im Zweifelsfall hin und her gehen, um ein Paket mit Sicherheit zu senden
-                pings.Clear();
-            }
-        }
-
-        /// <summary>
         /// Sendet alle entscheidenden Daten, wenn ein anderer Client desynchronisiert wurde, um wieder zu synchronisieren.
         /// Das senden geht nur vom Host aus.
         /// </summary>
         /// <param name="t"></param>
         private void ResyncRequest(object t)
-        {
+        { // Fuck it, sende einfach den ganzen Spielstatus
             ResyncDelay = 6000 * (int)StaticEngine.TickAcceleration;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
@@ -280,7 +278,7 @@ namespace NoPasaranTD.Networking
         /// </summary>
         /// <param name="t"></param>
         private void ResyncReceive(object t)
-        {
+        { // Fuck it, empfange einfach den ganzen Spielstatus
             if (!Resyncing) // Checken das nicht bereits resynchronisiert wird und dass nur nicht-Host Clients synchonisieren
                 resyncPackageL.Add((NetworkTask)t);
             else
