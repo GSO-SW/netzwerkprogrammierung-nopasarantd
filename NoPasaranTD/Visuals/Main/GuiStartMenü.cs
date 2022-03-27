@@ -4,12 +4,10 @@ using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
-using NoPasaranTD.Visuals.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Main
@@ -38,7 +36,8 @@ namespace NoPasaranTD.Visuals.Main
         private float scaleFactor = 1f; // Um welchen Faktor soll zurzeit skaliert werden
         private float scaleVelocity = 0.001f; // Die Skaliergeschwindigkeit
         private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
-
+        
+        // Flying Meme Optionen
         private int memeCounter = 1;
         private float memePositionX= 0;
         private float memePositionY= 0;
@@ -52,7 +51,7 @@ namespace NoPasaranTD.Visuals.Main
         #endregion
 
         /// <summary>
-        /// Der Einheitliche Button
+        /// Der Einheitliche Button wird als Button Design für alle Buttons genutzt
         /// </summary>
         /// <param name="content"></param>
         /// <param name="bounds"></param>
@@ -73,12 +72,14 @@ namespace NoPasaranTD.Visuals.Main
 
         public GuiStartMenü()
         {
+            StaticEngine.TickAcceleration = 1;
+
             random = new Random();
             List<string> list = ResourceLoader.DichterUndDenker();
             randomText = list[random.Next(list.Count - 1)];
 
             memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
-            memeSlope = (float)1 / random.Next(-30, 30);
+            memeSlope = (float)1 / random.Next(-30, 30);            
         }
 
         public void Init(StaticDisplay staticDisplay)
@@ -219,14 +220,17 @@ namespace NoPasaranTD.Visuals.Main
                 if (scaleFactor >= 1)
                     currentDirection = 0;
             }
+
+            // Aktualisiert die Memebild Position
             memePositionX += memeVelocity;
             memePositionY += memeSlope;
             memeRotation += 0.01f;
 
+            // Überprüft ob das derzeitige Meme noch valide ist
             if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
             {
                 memeCounter++;
-                if (memeCounter == 8)
+                if (memeCounter == memes.Count)
                     memeCounter = 1;
 
                 memePositionY = random.Next(200,StaticEngine.RenderHeight-200);

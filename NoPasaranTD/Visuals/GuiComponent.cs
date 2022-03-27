@@ -91,8 +91,6 @@ namespace NoPasaranTD.Visuals
             }
         }
 
-        public virtual void Dispose() { }
-
         public static Font StandartIconFont = new Font("Calibri", 40);
 
         public static Font StandartHeader1Font = new Font("Calibri", 24, FontStyle.Bold, GraphicsUnit.Point);

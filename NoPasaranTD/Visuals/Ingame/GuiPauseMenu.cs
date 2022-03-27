@@ -67,13 +67,13 @@ namespace NoPasaranTD.Visuals.Ingame
         {
             return new ButtonContainer
             {
+                Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+                Foreground = new SolidBrush(Color.Black),
+                Margin = 3,
+                StringFont = StandartText1Font,
                 Bounds = bounds,
                 Content = text,
-                StringFont = StandartText1Font,
-                Foreground = Brushes.Black,
-                Background = Brushes.LightGray,
-                BorderBrush = Brushes.Blue,
-                Margin = 2
             };
         }
 
