@@ -173,6 +173,7 @@ namespace NoPasaranTD.Networking
         /// <param resend="resend">Soll das Paket selbst ausgeführt werden</param>
         public async void InvokeEvent(string command, object param, bool reliable = true)
         {
+            long tickToPerform = Game.CurrentTick + highestPing;
             if (!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
