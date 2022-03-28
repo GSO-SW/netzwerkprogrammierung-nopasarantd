@@ -99,8 +99,6 @@ namespace NoPasaranTD.Engine
 
         #region Game logic region
 
-        //private bool check = true; // TESTCODE
-        //private bool check2 = true; // TESTCODE
         public void Update()
         {
             if (NetworkHandler.ResyncDelay > 0)
@@ -117,16 +115,6 @@ namespace NoPasaranTD.Engine
             {
                 return; // Abfragen ob das Spiel vorbei ist
             }
-            //if (Round == 3 && check && NetworkHandler.IsHost) TESTCODE
-            //         {
-            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
-            //	check = false;
-            //         }
-            //if (Round == 4 && check2 && NetworkHandler.IsHost)
-            //{
-            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
-            //	check2 = false;
-            //}
             NetworkHandler.Update();
 
             WaveManager.Update();
@@ -215,7 +203,7 @@ namespace NoPasaranTD.Engine
                 {
                     Brush brush;
                     switch (item[i].Type)
-                    { // TODO: Ändern durch Texturen
+                    {
                         case BalloonType.Red: brush = Brushes.Red; break;
                         case BalloonType.Blue: brush = Brushes.Blue; break;
                         case BalloonType.Green: brush = Brushes.Green; break;
@@ -384,7 +372,7 @@ namespace NoPasaranTD.Engine
 
             for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
             {
-                if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
+                if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRectDown(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
                 {
                     return false;
                 }
