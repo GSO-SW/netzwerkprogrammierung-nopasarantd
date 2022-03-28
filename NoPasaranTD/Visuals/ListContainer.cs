@@ -11,7 +11,7 @@ namespace NoPasaranTD.Visuals
     /// </summary>
     /// <typeparam name="T">Model Typ (Welches Model soll genutzt werden z.b Tower)</typeparam>
     /// <typeparam name="R">Item Container Typ (Welcher Containertyp wird Verwendet z.b TowerItemContainer)</typeparam>
-    public class ListContainer<T,R> : GuiComponent where R : new()
+    public class ListContainer<T, R> : GuiComponent where R : new()
     {
         #region Events
 
@@ -25,12 +25,14 @@ namespace NoPasaranTD.Visuals
         #region Constructor
 
         public ListContainer()
-            => Items.CollectionChanged += ItemsCollectionChanged;
+        {
+            Items.CollectionChanged += ItemsCollectionChanged;
+        }
 
         #endregion
         #region Private Members
 
-        private List<ItemContainer<T>> items = new List<ItemContainer<T>>(); // Liste von allen Visuellen Item Containern
+        private readonly List<ItemContainer<T>> items = new List<ItemContainer<T>>(); // Liste von allen Visuellen Item Containern
         private ItemContainer<T> selectedItem; // Der derzeitige ausgewählte Item Container
 
         #endregion
@@ -46,8 +48,8 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public Size ContainerSize
         {
-            get => new Size(Bounds.Width, Bounds.Height); 
-            set => Bounds = new Rectangle(Position, value); 
+            get => new Size(Bounds.Width, Bounds.Height);
+            set => Bounds = new Rectangle(Position, value);
         }
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace NoPasaranTD.Visuals
         /// Die Hintergrund Farbe des Containers
         /// </summary>
         public Brush BackgroundColor { get; set; } = Brushes.White;
-       
+
         /// <summary>
         /// Der Abstand eines Items zu den Containern Grenzen und anderen Items
         /// </summary>
@@ -75,8 +77,8 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public Point Position
         {
-            get => new Point(Bounds.X, Bounds.Y); 
-            set => Bounds = new Rectangle(value, ContainerSize); 
+            get => new Point(Bounds.X, Bounds.Y);
+            set => Bounds = new Rectangle(value, ContainerSize);
         }
 
         private NotifyCollection<T> _contextItems = new NotifyCollection<T>();
@@ -86,29 +88,34 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public NotifyCollection<T> Items
         {
-            get => _contextItems; 
+            get => _contextItems;
             set { _contextItems = value; _contextItems.CollectionChanged += ItemsCollectionChanged; }
         }
 
         /// <summary>
         /// Das dezeitige Ausgewählte Model Objekt
         /// </summary>
-        public T SelectedItem 
-        { 
-            get => selectedItem.DataContext; 
-            set 
+        public T SelectedItem
+        {
+            get => selectedItem.DataContext;
+            set
             {
                 selectedItem = items.Find(x => x.DataContext.Equals(value));
                 if (selectedItem != null)
-                {                   
+                {
                     for (int i = 0; i < items.Count; i++)
+                    {
                         items[i].IsSelected = false;
+                    }
+
                     selectedItem.IsSelected = true;
-                }                
-            } 
+                }
+            }
         }
-        
-        #endregion      
+
+        public object[] ListArgs { get; set; }
+
+        #endregion
         #region Public Methods
 
         /// <summary>
@@ -121,6 +128,8 @@ namespace NoPasaranTD.Visuals
             int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
             int factorY = Orientation == Orientation.Vertical ? 1 : 0;
 
+            int currentHeight = 0;
+
             for (int i = 0; i < Items.Count; i++)
             {
                 // Platziert für jedes Model Objekt einen eigenen Container im List-Container
@@ -129,26 +138,45 @@ namespace NoPasaranTD.Visuals
                 item.ParentBounds = Bounds;
                 item.DataContext = Items[i];
                 item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
+                item.ListArgs = ListArgs;
 
                 item.Position = new Point(
-                    Position.X + i*(ItemSize.Width + Margin)*factorX + Margin,
-                    Position.Y + i*(ItemSize.Height + Margin)*factorY + Margin
-                );
-                
+                    Position.X + i * (item.ItemSize.Width + Margin) * factorX + Margin,
+                    Position.Y + currentHeight * factorY + Margin);
+                currentHeight += (item.ItemSize.Height + Margin) * factorY;
+
                 items.Add(item);
-            }                                
+            }
+        }
+
+        public override void Dispose()
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                items[i].Dispose();
+            }
         }
 
         public override void Update()
         {
-            if (!Active) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].Update();
+            }
         }
 
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             g.FillRectangle(BackgroundColor, Bounds);
 
             Region clip = g.Clip; // Speichere ursprüngliche Region
@@ -156,41 +184,68 @@ namespace NoPasaranTD.Visuals
 
             // Render Items innerhalb dieser Region
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].Render(g);
+            }
 
             g.Clip = clip; // Setze ursprüngliche Region zurück
         }
 
         public override void KeyUp(KeyEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].KeyUp(e);
+            }
         }
 
         public override void KeyPress(KeyPressEventArgs e)
         {
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].KeyPress(e);
+            }
         }
 
         public override void KeyDown(KeyEventArgs args)
         {
-            if (!Active) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].KeyDown(args);
+            }
         }
 
         public override void MouseUp(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].MouseUp(e);
+            }
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (IsMouseOver)
+            if (IsMouseOver && Visible)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -203,20 +258,33 @@ namespace NoPasaranTD.Visuals
                         SelectionChanged?.Invoke();
                     }
                 }
-            }            
+            }
         }
 
         public override void MouseMove(MouseEventArgs e)
         {
-            if (!Active) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             for (int i = items.Count - 1; i >= 0; i--)
+            {
                 items[i].MouseMove(e);
+            }
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
-            if (!Active) return;
-            if (items.Count == 0) return;
+            if (!Visible)
+            {
+                return;
+            }
+
+            if (items.Count == 0)
+            {
+                return;
+            }
 
             bool firstOutOfBounds, lastOutOfBounds;
             { // Definiere ob erster oder letzter außerhalb des bereiches ist
@@ -239,15 +307,24 @@ namespace NoPasaranTD.Visuals
             }
 
             // Falls keines der Items außerhalb des sichtbereiches ist, soll nicht gescrollt werden
-            if (!firstOutOfBounds && !lastOutOfBounds) return;
+            if (!firstOutOfBounds && !lastOutOfBounds)
+            {
+                return;
+            }
 
             int delta = e.Delta < 0 ? -1 : 1;
 
             // Falls nach oben gescrollt werden soll, aber das erste item nicht außerhalb des sichtbereiches ist, soll nicht gescrollt werden
-            if (delta > 0 && !firstOutOfBounds) return;
+            if (delta > 0 && !firstOutOfBounds)
+            {
+                return;
+            }
 
             // Falls nach unten gescrollt werden soll, aber das letzte item nicht außerhalb des sichtbereiches ist, soll nicht gescrollt werden
-            if (delta < 0 && !lastOutOfBounds) return;
+            if (delta < 0 && !lastOutOfBounds)
+            {
+                return;
+            }
 
             int scrollX = Orientation == Orientation.Horizontal ? 1 : 0;
             int scrollY = Orientation == Orientation.Vertical ? 1 : 0;
@@ -264,8 +341,10 @@ namespace NoPasaranTD.Visuals
         #endregion
         #region Private Methods
 
-        private void ItemsCollectionChanged() =>
+        private void ItemsCollectionChanged()
+        {
             DefineItems();
+        }
 
         #endregion
     }
@@ -276,13 +355,27 @@ namespace NoPasaranTD.Visuals
     /// <typeparam name="T"></typeparam>
     public class NotifyCollection<T> : ICollection<T>
     {
-        private ArrayList arrayList = new ArrayList();
+        private readonly ArrayList arrayList = new ArrayList();
 
         public delegate void NotifyOnListChanged();
         /// <summary>
         /// Wird bei einer Änderung der Liste ausgelöst
         /// </summary>
         public event NotifyOnListChanged CollectionChanged;
+
+        public NotifyCollection()
+        {
+
+        }
+
+        public NotifyCollection(List<T> items)
+        {
+            if (items != null)
+            {
+                arrayList.AddRange(items);
+            }
+        }
+
 
         public int Count => arrayList.Count;
 
@@ -296,19 +389,23 @@ namespace NoPasaranTD.Visuals
             OnListChanged();
         }
 
-        public void Clear() 
+        public void Clear()
         {
             arrayList.Clear();
             OnListChanged();
         }
 
-        public bool Contains(T item) =>
-            arrayList.Contains(item);
+        public bool Contains(T item)
+        {
+            return arrayList.Contains(item);
+        }
 
         public void CopyTo(T[] array, int arrayIndex) { }
 
-        public IEnumerator<T> GetEnumerator() =>
-            (IEnumerator<T>)arrayList.GetEnumerator();
+        public IEnumerator<T> GetEnumerator()
+        {
+            return (IEnumerator<T>)arrayList.GetEnumerator();
+        }
 
         public bool Remove(T item)
         {
@@ -318,16 +415,20 @@ namespace NoPasaranTD.Visuals
                 OnListChanged();
                 return true;
             }
-            catch (Exception) { return false; }          
+            catch (Exception) { return false; }
         }
 
         protected virtual void OnListChanged()
         {
             if (CollectionChanged != null)
+            {
                 CollectionChanged();
+            }
         }
-            
-        IEnumerator IEnumerable.GetEnumerator() =>
-             arrayList.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return arrayList.GetEnumerator();
+        }
     }
 }

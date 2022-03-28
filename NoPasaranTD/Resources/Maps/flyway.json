@@ -1,12 +1,7 @@
 {
-  "Name": "Spentagon",
-  "Dimension": "550, 399",
-  "Obstacles": [
-    {
-      "ObstacleType": 3,
-      "Hitbox": "100, 50, 25, 25"
-    }
-  ],
+  "Name": "Flyway",
+  "Dimension": "640, 360",
+  "Obstacles": [],
   "BalloonPath": [
     {
       "X": 176.0,
@@ -49,6 +44,6 @@
       "Y": 148.0
     }
   ],
-  "PathWidth": 18.3576,
-  "BackgroundPath": "spentagon.jpg"
+  "PathRadius": 5,
+  "BackgroundPath": "flyway.jpg"
 }

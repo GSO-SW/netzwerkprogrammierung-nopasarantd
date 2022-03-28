@@ -17,6 +17,11 @@ namespace NoPasaranTD.Engine
         #region Engine region
         internal static ulong ElapsedTicks { get; set; }
 
+        /// <summary>
+        /// Ein Wert um welchen die Tickinkrementierung beschleunigt werden soll
+        /// </summary>
+        internal static ulong TickAcceleration { get; set; } = 1;
+
         // TODO: Ändern zu jetzige Server-Ticks
         private static int lastTick = Environment.TickCount;
 
@@ -28,7 +33,7 @@ namespace NoPasaranTD.Engine
             // TODO: Ändern zu jetzige Server-Ticks
             int currTick = Environment.TickCount;
             int deltaTick = currTick - lastTick;
-            ElapsedTicks += (ulong)deltaTick;
+            ElapsedTicks += ((ulong)deltaTick) * TickAcceleration;
             lastTick = currTick;
         }
         #endregion

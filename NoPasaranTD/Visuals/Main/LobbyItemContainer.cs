@@ -41,12 +41,19 @@ namespace NoPasaranTD.Visuals.Main
         /// </summary>
         public float BorderWidth
         {
-            get { return borderWidth; }
+            get => borderWidth;
             set
             {
                 borderWidth = value;
-                if (borderPen != null) borderPen.Width = value;
-                if (hoverPen != null) hoverPen.Width = value;
+                if (borderPen != null)
+                {
+                    borderPen.Width = value;
+                }
+
+                if (hoverPen != null)
+                {
+                    hoverPen.Width = value;
+                }
             }
         }
         #endregion
@@ -60,19 +67,19 @@ namespace NoPasaranTD.Visuals.Main
         /// <summary>
         /// Position des Item-Containers auf dem Screen
         /// </summary>
-        public override Point Position 
-        { 
-            get { return Bounds.Location; }
+        public override Point Position
+        {
+            get => Bounds.Location;
             set { Bounds = new Rectangle(value, Bounds.Size); PositionChanged(); }
         }
 
         /// <summary>
         /// Größe des Items
         /// </summary>
-        public override Size ItemSize 
-        { 
-            get { return Bounds.Size; }
-            set { Bounds = new Rectangle(Bounds.Location, value); }
+        public override Size ItemSize
+        {
+            get => Bounds.Size;
+            set => Bounds = new Rectangle(Bounds.Location, value);
         }
 
         /// <summary>
@@ -81,15 +88,19 @@ namespace NoPasaranTD.Visuals.Main
         /// <param name="offX">Entfernung der X-Position</param>
         /// <param name="offY">Entfernung der Y-Position</param>
         public override void TranslateTransform(int offX, int offY)
-            => Position += new Size(offX, offY);
+        {
+            Position += new Size(offX, offY);
+        }
 
         // Prüft ob sich der Container im sichtbaren Bereich befindet. Wenn ja, dann darf dieser gezeichnet werden. Wenn nicht, dann nicht.
         private void PositionChanged()
-            => Visible = Position.Y + ItemSize.Height >= ParentBounds.Y && Position.Y <= ParentBounds.Y + ParentBounds.Height;
+        {
+            Visible = Position.Y + ItemSize.Height >= ParentBounds.Y && Position.Y <= ParentBounds.Y + ParentBounds.Height;
+        }
         #endregion
 
-        private StringFormat titleFormat;
-        private StringFormat subtitleFormat;
+        private readonly StringFormat titleFormat;
+        private readonly StringFormat subtitleFormat;
         public LobbyItemContainer()
         {
             titleFormat = new StringFormat()
@@ -111,7 +122,10 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             g.FillRectangle(BackgroundBrush, Bounds);
             g.DrawRectangle(IsMouseOver ? hoverPen : borderPen, Bounds);

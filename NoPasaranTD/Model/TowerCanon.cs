@@ -1,91 +1,60 @@
-﻿using NoPasaranTD.Data;
-using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace NoPasaranTD.Model.Towers
 {
+    [Serializable]
     public class TowerCanon : Tower
     {
-        double shotAnimationLength = 0.2; // in percent of delay   E[0;1]
+        private static readonly List<Image> TowerCanonImages = new List<Image>()
+        {
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_body.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_head.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_barrel.png")
+        };
 
-        SolidBrush bruhBlack, bruhRed, bruhPurple, bruhLightGray, bruhFireColor, bruhDarkGray, brushSlateGray;
-        Pen penBlack, penRed, penPurple;
-        Stopwatch sw;
-        Font font;
-        bool justShotSomeUglyAss;
-        long time;
-        long timeLastShot;
-        Utilities.Vector2D lastBalloonPos;
-        (int segment, int index) lastBalloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
-        int centerX, centerY, sizeX, sizeY;
-        uint delay;
-        uint strength;
-        double range;
+        private const double SHOT_ANIMATION_LENGTH = 0.2d; // in percent of delay   E[0;1]
+        private static readonly Pen RANGE_CIRCLE_PEN = new Pen(Color.Purple, 2.3f);
 
-        // Das Geschütz der Kanone
-        RectangleF barrel;
+        private (int segment, int index) lastBalloonIndex; // Tuple zum speichern des letzten angezielten Ballon Indexes
+        private long time, timeLastShot;
+        private bool justShotSomeUglyAss;
+        private Vector2D lastBalloonPos;
 
         private float currentAngle = 0; // Derzeitiger Rotationswinkel des Geschützes der Kanone
         private float aimAngle = 0; // Nächster Rotationswinkel des Geschützes der Kanone
-        private ulong ticks = 0; // Anzahl vergangener Ticks
-
-        private float hitboxCornerMargin = 10; // Größe der Polygoneckenabstände zur tatäschlichen Hitbox Ecke
 
         public TowerCanon()
         {
-            GetBalloonFunc = FarthestBallonCheck;
-            sizeX = StaticInfo.GetTowerSize(GetType()).Width; sizeY = StaticInfo.GetTowerSize(GetType()).Height;
-            justShotSomeUglyAss = false;
-            bruhBlack = new SolidBrush(Color.Black); bruhRed = new SolidBrush(Color.Red); bruhPurple = new SolidBrush(Color.Purple); bruhLightGray = new SolidBrush(Color.LightGray);
-            bruhFireColor = new SolidBrush(Color.Orange);
-            bruhDarkGray = new SolidBrush(Color.DarkGray);
-            brushSlateGray = new SolidBrush(Color.SlateGray);
-            penBlack = new Pen(Color.Black); penRed = new Pen(Color.Red); penPurple = new Pen(Color.Purple, 2.3f);
-            font = new Font(FontFamily.GenericSerif, 7);
-            time = 0;
-            timeLastShot = 0;
             lastBalloonIndex = (-1, -1);
-            range = Range;
-            delay = Delay;
-            strength = Strength;
-            sw = new Stopwatch();
-            sw.Start();
+            time = 0L; timeLastShot = 0L;
+            justShotSomeUglyAss = false;
+            lastBalloonPos = new Vector2D(0, 0);
         }
 
         public override void Render(Graphics g)
         {
-            centerX = Hitbox.X + Hitbox.Width / 2; centerY = Hitbox.Y + Hitbox.Height / 2; sizeX = Hitbox.Width; sizeY = Hitbox.Height;
-
-            // Koordinaten des Hitboxpolygons
-            PointF[] hitboxPolygonCorners = new PointF[8]
-            {
-                new PointF(Hitbox.X , Hitbox.Y + hitboxCornerMargin),
-                new PointF(Hitbox.X + hitboxCornerMargin, Hitbox.Y),
-
-                new PointF(Hitbox.X + Hitbox.Width - hitboxCornerMargin, Hitbox.Y ),
-                new PointF(Hitbox.X + Hitbox.Width, Hitbox.Y + hitboxCornerMargin),
-
-                new PointF(Hitbox.X + Hitbox.Width ,Hitbox.Y+Hitbox.Height- hitboxCornerMargin),
-                new PointF(Hitbox.X + Hitbox.Width - hitboxCornerMargin ,Hitbox.Y+Hitbox.Height),
-
-                new PointF(Hitbox.X + hitboxCornerMargin,Hitbox.Y+Hitbox.Height),
-                new PointF(Hitbox.X , Hitbox.Y + Hitbox.Height - hitboxCornerMargin),
-
-            };
+            int centerX = Hitbox.X + Hitbox.Width / 2;
+            int centerY = Hitbox.Y + Hitbox.Height / 2;
 
             // Zeichnet die Hitbox des Towers
             if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
-                g.FillPolygon(brushSlateGray, hitboxPolygonCorners);
+            {
+                g.DrawImage(TowerCanonImages[0], Hitbox);
+            }
             else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
-                g.FillPolygon(Brushes.Red, hitboxPolygonCorners);
-
+            {
+                g.FillRectangle(Brushes.Red, Hitbox);
+            }
 
             if (IsSelected)
-                g.DrawEllipse(penPurple, (float)(centerX - range), (float)(centerY - range), (float)range * 2, (float)range * 2);
+            {
+                g.DrawEllipse(RANGE_CIRCLE_PEN, (float)(centerX - Range), (float)(centerY - Range), (float)Range * 2, (float)Range * 2);
+            }
 
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - time + timeLastShot).ToString(), font, bruhLightGray, Hitbox.Location); 
@@ -94,7 +63,7 @@ namespace NoPasaranTD.Model.Towers
             RotateBarrel(lastBalloonPos);
 
             // Das Barrel als Rechteck
-            barrel = new RectangleF(-5, 0, 10, 50);
+            RectangleF barrel = new RectangleF(-5, 0, 10, 50);
             Matrix currentTransform = g.Transform; // Derzeitige Transformationsmatrix
 
             // Setzt den Koordinatenursprung auf das Zentrum des Towers
@@ -104,22 +73,27 @@ namespace NoPasaranTD.Model.Towers
             g.RotateTransform(currentAngle);
 
             // Das Barrel wird gezeichnet
-            g.FillRectangle(bruhDarkGray, barrel);
+            g.DrawImage(TowerCanonImages[2], barrel);
 
             // Das innere Viereck wird gezeichnet
-            g.FillRectangle(bruhLightGray, -(sizeX * 0.4f) / 2, -(sizeY * 0.4f) / 2, sizeX * 0.4f, sizeY * 0.4f);
+
+            g.DrawImage(TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
 
             if (justShotSomeUglyAss)
             {
-                float factor = System.Math.Max((time - timeLastShot) / (delay * (float)shotAnimationLength), 0);
                 if (Math.Pow(
                     (centerX - lastBalloonPos.X) * (centerX - lastBalloonPos.X)
                     + (centerY - lastBalloonPos.Y) * (centerY - lastBalloonPos.Y),
-                    0.5) < range)
+                    0.5) < Range)
+                {
                     //g.DrawLine(penRed, barrel.X + barrel.Width/2,barrel.Y+barrel.Height,lastBalloonPos.X - centerX ,lastBalloonPos.Y - centerY);
-                    g.FillEllipse(bruhFireColor, -barrel.Width + barrel.Width / 4, barrel.Height - 5, 15 * ticks % 30, 15 * ticks % 30); // Feueranimation als Ellipse
+                    g.FillEllipse(Brushes.Orange, -barrel.Width + barrel.Width / 4, barrel.Height - 5, 15 * time % 30, 15 * time % 30); // Feueranimation als Ellipse
+                }
 
-                if (timeLastShot + delay * shotAnimationLength < time) justShotSomeUglyAss = false;
+                if (timeLastShot + Delay * SHOT_ANIMATION_LENGTH < time)
+                {
+                    justShotSomeUglyAss = false;
+                }
             }
 
             // Die Originalmatrix wird wieder angewandt
@@ -128,10 +102,8 @@ namespace NoPasaranTD.Model.Towers
 
         public override void Update(Game game)
         {
-            ticks++;
-            time = sw.ElapsedMilliseconds;
-
-            if (time > timeLastShot + delay)
+            time = game.CurrentTick;
+            if (time > timeLastShot + Delay)
             {
                 (int segment, int index) targetIndex = game.FindTargetForTower(this);
                 if (targetIndex.Item1 != -1)
@@ -140,15 +112,22 @@ namespace NoPasaranTD.Model.Towers
                     lastBalloonIndex = targetIndex;
                     justShotSomeUglyAss = true;
                     lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[targetIndex.segment][targetIndex.index].PathPosition);
-                    game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)strength, this); // TODO: uint to int could be an oof conversion
+                    game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)Strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
-            if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);
+            if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index)
+            {
+                lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);
+            }
 
-            if (currentAngle < aimAngle && ticks % 9 == 0 && aimAngle - currentAngle > 5)
+            if (currentAngle < aimAngle && time % 9 == 0 && aimAngle - currentAngle > 5)
+            {
                 currentAngle += 4.5F;
-            else if (currentAngle > aimAngle && ticks % 9 == 0 && currentAngle - aimAngle > 5)
+            }
+            else if (currentAngle > aimAngle && time % 9 == 0 && currentAngle - aimAngle > 5)
+            {
                 currentAngle -= 4.5F;
+            }
         }
 
         // Weißt dem Tower einen neuen Ziel-Rotationswinkel zu
@@ -159,6 +138,9 @@ namespace NoPasaranTD.Model.Towers
             aimAngle = (90 + (float)(vecCenterTarget.Angle / Math.PI) * 180) * -1; // Berechnen des Winkels des Vekors zu den Achsen und Umrechung von RAD zu DEG
         }
 
-        public override string ToString() => "Canon";
+        public override string ToString()
+        {
+            return "Canon";
+        }
     }
 }

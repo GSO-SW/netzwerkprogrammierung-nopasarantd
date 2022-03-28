@@ -22,10 +22,12 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public abstract Size ItemSize { get; set; }
 
-        public Rectangle ParentBounds { get; set; }  
+        public Rectangle ParentBounds { get; set; }
 
         public bool IsSelected { get; set; }
-
+        public object[] ListArgs { get; set; }
         public abstract void TranslateTransform(int offX, int offY);
+
+
     }
 }

@@ -7,54 +7,43 @@ using System.Drawing;
 
 namespace NoPasaranTD.Model
 {
+    [Serializable]
     public abstract class Tower
     {
-        public Rectangle Hitbox { get; set; } // TODO should size of rectangle be accessable?
-        public uint Level { get; set; }
+        public TowerTargetMode TargetMode { get; set; } = TowerTargetMode.Farthest;
+        public Rectangle Hitbox { get; set; }
+        public uint Level { get; set; } = 1;
 
-        public uint Strength { get => StaticInfo.GetTowerDamage(GetType()); }
-        public uint Delay { get => StaticInfo.GetTowerDelay(GetType()); }
-        public double Range { get => StaticInfo.GetTowerRange(GetType()); }
         public ulong NumberKills { get; set; }
         public bool IsSelected { get; set; } = true;
+        public bool IsPositionValid { get; set; }
+        public bool IsPlaced { get; set; }
+
         public List<int> SegmentsInRange { get; private set; }
         public List<Vector2D> NotVisibleSpots { get; private set; }
 
-        public Func<Balloon, Balloon, bool> GetBalloonFunc { get; set; }
+        public uint Strength => StaticInfo.GetTowerDamage(GetType()) * Level;
+        public uint Delay => StaticInfo.GetTowerDelay(GetType()) / (Level * 2);
+        public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.3;
+        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level;
+        public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
+        public Guid ID { get; } = Guid.NewGuid();
+        public long ActivateAtTick { get; set; } = 0;
 
-        public TowerTargetMode TowerTargetMode
+        public Func<Balloon, Balloon, bool> GetBalloonFunc
         {
             get
             {
-                if (GetBalloonFunc == FarthestBallonCheck)
-                    return TowerTargetMode.Farthest;
-                else if (GetBalloonFunc == FarthestBackBallonCheck)
-                    return TowerTargetMode.FarthestBack;
-                else if (GetBalloonFunc == StrongestBallonCheck)
-                    return TowerTargetMode.Strongest;
-                else
-                    return TowerTargetMode.Weakest;
-            }
-            set
-            {
-                switch (value)
+                switch (TargetMode)
                 {
-                    case TowerTargetMode.Farthest:
-                        GetBalloonFunc = FarthestBallonCheck; break;
-                    case TowerTargetMode.FarthestBack:
-                        GetBalloonFunc = FarthestBackBallonCheck; break;
-                    case TowerTargetMode.Strongest:
-                        GetBalloonFunc = StrongestBallonCheck; break;
-                    case TowerTargetMode.Weakest:
-                        GetBalloonFunc = WeakestBallonCheck; break;
-                    default:
-                        break;
+                    case TowerTargetMode.Farthest: return FarthestBalloonCheck;
+                    case TowerTargetMode.FarthestBack: return FarthestBackBalloonCheck;
+                    case TowerTargetMode.Strongest: return StrongestBalloonCheck;
+                    case TowerTargetMode.Weakest: return WeakestBalloonCheck;
+                    default: throw new Exception("TowerTargetMode not found");
                 }
             }
         }
-
-        public bool IsPositionValid { get; set; }
-        public bool IsPlaced { get; set; }
 
         public abstract void Render(Graphics g);
         public abstract void Update(Game game);
@@ -66,36 +55,44 @@ namespace NoPasaranTD.Model
         /// <param name="bCheck">Zu kontrollierender Ballon</param>
         /// <param name="bCurrent">Derzeitiger Ballon</param>
         /// <returns>True wenn der Ballon Check weiter ist als der Ballon bCurrent</returns>
-        public bool FarthestBallonCheck(Balloon bCheck, Balloon bCurrent)
+        public bool FarthestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
-            if (bCheck.PathPosition > bCurrent.PathPosition)
-                return true;
-            return false;
+            return bCheck.PathPosition > bCurrent.PathPosition;
         }
-        public bool FarthestBackBallonCheck(Balloon bCheck, Balloon bCurrent)
+
+        public bool FarthestBackBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
-            if (bCheck.PathPosition < bCurrent.PathPosition)
-                return true;
-            return false;
+            return bCheck.PathPosition < bCurrent.PathPosition;
         }
-        public bool StrongestBallonCheck(Balloon bCheck, Balloon bCurrent)
+
+        public bool StrongestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
-            if (bCheck.Strength > bCurrent.Strength)
-                return true;
-            return false;
+            return bCheck.Strength > bCurrent.Strength;
         }
-        public bool WeakestBallonCheck(Balloon bCheck, Balloon bCurrent)
+
+        public bool WeakestBalloonCheck(Balloon bCheck, Balloon bCurrent)
         {
-            if (bCheck.Strength < bCurrent.Strength)
-                return true;
-            return false;
+            return bCheck.Strength < bCurrent.Strength;
         }
         #endregion
 
+        /// <summary>
+        /// Kontrolliert ob der Tower unter dem LevelCap ist
+        /// </summary>
+        /// <returns>Gibt true zurück, wenn das Level um 1 inkrementiert werden kann, ohne den LevelCap zu überschreiten</returns>
+        public bool CanLevelUp()
+        {
+            return Level < StaticInfo.GetTowerLevelCap(GetType());
+        }
+
+        /// <summary>
+        /// Bestimmt alle Pfadeigenschaften für den Turm abhängig, von der Reichweite, also welche Segmente in Reichweite sind und welche Teile durch ein Hinderniss verdeckt sind
+        /// </summary>
+        /// <param name="map"></param>
         public void SearchSegments(Map map)
         {
-            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox);
-            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
+            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox); // Das skallierte Rechteck des Turmes
+            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2); // Das Zentrum des Turmes welches als Anhaltspunkt für die Reichweite genommen wird
             FindSegmentsInRange(map, centreP);
             FindObstaclesInTheWay(map, centreP);
         }
@@ -113,13 +110,19 @@ namespace NoPasaranTD.Model
                 Vector2D directionP = new Vector2D(map.BalloonPath[i + 1].X - locationP.X, map.BalloonPath[i + 1].Y - locationP.Y);
                 float factor = -1 * (directionP.X * (locationP.X - centreP.X) + directionP.Y * (locationP.Y - centreP.Y)) / (directionP.X * directionP.X + directionP.Y * directionP.Y);
                 if (factor > 1)
+                {
                     factor = 1;
+                }
                 else if (factor < 0)
+                {
                     factor = 0;
+                }
 
                 Vector2D closestP = locationP + factor * directionP;
                 if ((closestP - centreP).Magnitude <= Range)
+                {
                     segments.Add(i);
+                }
             }
             SegmentsInRange = segments;
         }
@@ -127,9 +130,9 @@ namespace NoPasaranTD.Model
         private void FindObstaclesInTheWay(Map map, Vector2D centreP)
         {
             List<Vector2D> blindSpots = new List<Vector2D>();
-            for (int j = 0; j < SegmentsInRange.Count - 1; j++)// Alle Pfadstücke des Ballonpfades durchgehen
+            for (int j = 0; j < SegmentsInRange.Count; j++)// Alle Pfadstücke des Ballonpfades durchgehen
             {
-                foreach (var item in map.Obstacles) // Alle Hindernisse durchgehen
+                foreach (Obstacle item in map.Obstacles) // Alle Hindernisse durchgehen
                 {
                     Vector2D[] cornersV = map.GetRectangleCorners(item.Hitbox); // Alle Eckpunkte des Hindernisses bestimmen
                     List<float> pathValues = new List<float>();
@@ -143,38 +146,56 @@ namespace NoPasaranTD.Model
                             float factorPath = Vector2D.Intersection(locationPathV, connectionPathV, centreP, connectionRecV);
                             float factorRec = Vector2D.Intersection(centreP, connectionRecV, locationPathV, connectionPathV);
                             if (factorPath > 0 && factorPath < 1 && factorRec > 1 && (connectionRecV * factorRec).MagnitudeSquared < Range * Range) // Der Schnittpunkt ist innerhalb des Intervals des Pfades und hinter dem Hindernis
+                            {
                                 pathValues.Add((float)(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1) + (connectionPathV * factorPath).Magnitude));
+                            }
                         }
                     }
 
                     if (pathValues.Count == 0)
                     {
                         if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV) || CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j] + 1], centreP, cornersV))
+                        {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), map.GetFragmentMagnitudeTo(SegmentsInRange[j]))); // j muss um 1 nach hinten verschoben werden, da immer die länge bis zum nächsten Stück berechnet wird
+                        }
                     }
                     else if (pathValues.Count == 1) // Nur ein Schnittpunkt
                     {   // Einer der Eckpunkte muss der nächste Endpunkt sein für dieses Pfadstück
                         if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV)) // Der Eckpunkt davor ist im Schatten des Hindernisses
+                        {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), pathValues[0]));
+                        }
                         else // Der Eckpunkt danach ist im Schatten des Hindernisses
+                        {
                             blindSpots.Add(new Vector2D(pathValues[0], map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1)));
+                        }
                     }
                     else // Mehr als 1 Schnittpunkt wurde gefunden
                     {
                         float lowerBound = pathValues[0];
                         float upperBound = pathValues[0];
-                        foreach (var pValue in pathValues)
+                        foreach (float pValue in pathValues)
                         {
                             if (lowerBound > pValue) // Sortieren der Werte
+                            {
                                 lowerBound = pValue;
+                            }
                             else if (upperBound < pValue)
+                            {
                                 upperBound = pValue;
+                            }
                         }
                         if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV)) // Kontrollieren, dass die Enden des Pfades nicht verdeckt sind
+                        {
                             lowerBound = (float)map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1);
+                        }
+
                         if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j] + 1], centreP, cornersV))
+                        {
                             upperBound = (float)map.GetFragmentMagnitudeTo(SegmentsInRange[j]);
-                        blindSpots.Add(new Vector2D(lowerBound,upperBound));
+                        }
+
+                        blindSpots.Add(new Vector2D(lowerBound, upperBound));
                     }
                 }
             }
@@ -195,18 +216,26 @@ namespace NoPasaranTD.Model
             {
                 Vector2D connectionRecV;
                 if (i != cornersV.Length - 1) // Die connection ist immer mit dem nächsten Punkt in der Reihe
+                {
                     connectionRecV = cornersV[i + 1] - cornersV[i];
+                }
                 else // Bei dem letzten punkt wieder auf den ersten springen
+                {
                     connectionRecV = cornersV[0] - cornersV[i];
+                }
+
                 float factorPathTower = Vector2D.Intersection(pathLocV, towerPathV, cornersV[i], connectionRecV);
                 float factorObstacle = Vector2D.Intersection(cornersV[i], connectionRecV, pathLocV, towerPathV);
                 if (factorPathTower <= 1 && factorPathTower >= 0 && factorObstacle <= 1 && factorObstacle >= 0)
+                {
                     return true;
+                }
             }
             return false;
         }
     }
 
+    [Serializable]
     public enum TowerTargetMode
     {
         Farthest,

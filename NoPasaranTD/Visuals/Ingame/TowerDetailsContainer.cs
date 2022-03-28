@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using System.Drawing;
 using System.Windows.Forms;
@@ -16,13 +17,13 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Der ausgewählte Tower
         /// </summary>
-        public Tower Context 
+        public Tower Context
         {
             get => context;
             set
             {
                 context = value;
-                TargetModesList.SelectedItem = context.TowerTargetMode;
+                TargetModesList.SelectedItem = context.TargetMode;
             }
         }
 
@@ -58,13 +59,9 @@ namespace NoPasaranTD.Visuals.Ingame
         #endregion
 
         private Game currentGame;
-        public ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
+        private ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
 
-
-        public TowerDetailsContainer()
-        {
-            
-        }
+        private readonly SolidBrush normalBorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122));
 
         public override void Render(Graphics g)
         {
@@ -73,8 +70,19 @@ namespace NoPasaranTD.Visuals.Ingame
                 // Zeichnet den Hintergrund des Fensters
                 g.FillRectangle(Background, Bounds);
 
+                if (Context.Level == StaticInfo.GetTowerLevelCap(Context.GetType()) && !currentGame.GodMode)
+                {
+                    upgradeButton.BorderBrush = Brushes.Red;
+                }
+                else
+                {
+                    upgradeButton.BorderBrush = normalBorderBrush;
+                }
+
                 closeButton.Render(g);
+                upgradeButton.Content = "Upgrade: " + Context.UpgradePrice + "₿";
                 upgradeButton.Render(g);
+                sellButton.Content = "Sell: " + Context.SellPrice + "₿";
                 sellButton.Render(g);
                 TargetModesList.Render(g);
 
@@ -108,9 +116,9 @@ namespace NoPasaranTD.Visuals.Ingame
             closeButton = new ButtonContainer()
             {
                 Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + 5, 20, 20),
-                Content = "X",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Content = "⮿",
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -120,10 +128,10 @@ namespace NoPasaranTD.Visuals.Ingame
             // Init UpgradeButton
             upgradeButton = new ButtonContainer()
             {
-                Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10,30),
+                Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10, 30),
                 Content = "Upgrade",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -135,8 +143,8 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 Bounds = new Rectangle(Bounds.X + Bounds.Width / 2 + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10, 30),
                 Content = "Sell",
-                Background = Brushes.Gray,
-                BorderBrush = new SolidBrush(Color.FromArgb(32, 125, 199)),
+                Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
                 Margin = 1,
                 StringFont = ButtonFont,
                 Foreground = Brushes.Black
@@ -150,7 +158,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 ItemSize = new System.Drawing.Size(190, 25),
                 Position = new System.Drawing.Point(Bounds.X + 5, Bounds.Y + 150),
                 ContainerSize = new System.Drawing.Size(200, 130),
-                BackgroundColor = new SolidBrush(Color.FromArgb(250, 143, 167, 186)),
+                BackgroundColor = Brushes.Transparent,
             };
             TargetModesList.DefineItems();
             TargetModesList.SelectionChanged += TargetModesList_SelectionChanged;
@@ -158,36 +166,43 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private void TargetModesList_SelectionChanged()
         {
-            Context.TowerTargetMode = TargetModesList.SelectedItem;
+            Context.TargetMode = TargetModesList.SelectedItem;
+            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context, false);
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
         private void SellButton_ButtonClicked()
         {
-            currentGame.Towers.Remove(Context);
-            Visible = false;
+            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context, false);
         }
 
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            // TODO: Tower Upgraden
+            if ((currentGame.Money >= Context.UpgradePrice && Context.CanLevelUp()) || currentGame.GodMode)
+            {
+                currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context, false);
+            }
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
+            if (!Visible)
+            {
+                return;
+            }
+
             closeButton.MouseDown(e);
             sellButton.MouseDown(e);
             upgradeButton.MouseDown(e);
             TargetModesList.MouseDown(e);
         }
-           
+
         // Versteckt das Fenster wenn der Schließenbutton betätigt wird
         private void CloseButton_ButtonClicked()
         {
             Visible = false;
             Context.IsSelected = false;
-        } 
-            
+        }
     }
 }
