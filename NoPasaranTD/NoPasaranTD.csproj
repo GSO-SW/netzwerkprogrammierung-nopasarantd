@@ -114,6 +114,7 @@
     </Compile>
     <EmbeddedResource Include="Resources\spentagon.json" />
     <EmbeddedResource Include="Resources\house.json" />
+    <EmbeddedResource Include="Resources\flyway.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -123,6 +124,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\house.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\flyway.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
