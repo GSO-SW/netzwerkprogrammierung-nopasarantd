@@ -206,14 +206,21 @@ namespace NoPasaranTD.Engine
                 currentScreen?.Update();
                 StaticEngine.ElapsedTicks--;
             }
-            while (!IamHost && IsNetworkReady && StaticEngine.ElapsedHostTicks > 0
-                && periodTicks < TweenService(periodStart, periodStart + StaticEngine.HostAvgTimeFrame, 0, StaticEngine.HostAvgTickChange, Environment.TickCount))
+
+            float someVal = TweenService(periodStart, periodStart + StaticEngine.HostAvgTimeFrame, 0, StaticEngine.HostAvgTickChange, Environment.TickCount);
+            if (Environment.TickCount > periodStart + StaticEngine.HostAvgTimeFrame)
             {
-                if (Environment.TickCount > periodStart + StaticEngine.HostAvgTimeFrame)
-                {
-                    periodTicks = 0;
-                    periodStart = Environment.TickCount;
-                }
+                periodTicks = 0;
+                periodStart = Environment.TickCount;
+            }
+            while (!IamHost && IsNetworkReady
+                && (StaticEngine.ElapsedHostTicks > 0 ||
+                    (StaticEngine.ElapsedHostTicks == 0 &&
+                        periodTicks < someVal
+                    )
+                   )
+                  )
+            {
                 periodTicks++;
 
                 if (Environment.TickCount >= environTime)
@@ -223,8 +230,10 @@ namespace NoPasaranTD.Engine
                     tickswork = 0;
                 }
                 tickswork++;
+
                 lastOnlineUpdate = Environment.TickCount;
-                StaticEngine.ElapsedHostTicks--;
+                if (StaticEngine.ElapsedHostTicks > 0) StaticEngine.ElapsedHostTicks--;
+                //StaticEngine.ElapsedHostTicks -= (StaticEngine.ElapsedHostTicks == 0 ? 0 : 1);
                 currentGame?.Update();
                 currentScreen?.Update();
                 if (currentGame.CurrentTick % 100 == 0) Console.WriteLine(Environment.TickCount.ToString() + "ms os time  |  current exec ticks left: "+StaticEngine.ElapsedHostTicks.ToString());
@@ -296,6 +305,9 @@ namespace NoPasaranTD.Engine
                 }
                 avgTickChange = sumTickChange / (serverTicks.Length + biasSum);
                 avgTimeFrame = sumTimeFrame / (serverTicks.Length + biasSum);
+
+                if (avgTickChange < 0)
+                    ;
 
                 StaticEngine.HostAvgTickChange = (int)avgTickChange;
                 StaticEngine.HostAvgTimeFrame = (int)avgTimeFrame;

@@ -106,13 +106,10 @@ namespace NoPasaranTD.Networking
                 else if (taskQueue[i].TickToPerform <= Game.CurrentTick  // Checken ob die Task bereits ausgeführt werden soll
                     || taskQueue[i].TickToPerform == 0)  // Wenn auf 0 gestellt dann ist es zum direkt ausführen
                 {
-                    if (taskQueue[i].TickToPerform == 0)
-                        ;
                     taskQueue[i].Handler(taskQueue[i].Parameter); // Task ausführen
                     taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
                 }
             }
-
             if (Game.CurrentTick % 500 == 0 && !OfflineMode)
                 InvokeEvent("PingRequest", (long)Game.CurrentTick);
         }
