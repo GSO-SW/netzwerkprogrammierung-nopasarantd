@@ -73,18 +73,9 @@ namespace NoPasaranTD.Engine
             NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
             NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
             NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
+            NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
         }
-		private void InitNetworkHandler()
-		{
-			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
-			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
-			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
-			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
-			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
-			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
-			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-			NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
-		}
+
 
         /// <summary>
         /// Initialisiert die Eigenschaft der Ballons und löscht damit vorhandene Werte
@@ -178,17 +169,20 @@ namespace NoPasaranTD.Engine
 				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
 				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
 				
-				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
+				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
 
 				if (CurrentTick % 1000 == 0)
-					for (int i = 0; i < usersMousePos.Count; i++)
-						if (usersMousePos[i].TTL < Environment.TickCount)
-						{
-							usersMousePos.RemoveAt(i);
-							usersMouseTag.RemoveAt(i);
-						}
+                {
+                    for (int i = 0; i < usersMousePos.Count; i++)
+                    {
+                        if (usersMousePos[i].TTL < Environment.TickCount)
+                        {
+                            usersMousePos.RemoveAt(i);
+                            usersMouseTag.RemoveAt(i);
+                        }
+                    }
+                }					
 			}
-
 
 			UILayout.Update();
 			CurrentTick++;
@@ -255,8 +249,6 @@ namespace NoPasaranTD.Engine
                     (float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
                 );
             }
-            //Font fontArial = new Font("Arial", 10, FontStyle.Regular);
-            //g.DrawString(CurrentTick + "", fontArial,new SolidBrush(Color.Black), 0, 200);
 
             for (int i = Towers.Count - 1; i >= 0; i--)
             {
@@ -270,20 +262,17 @@ namespace NoPasaranTD.Engine
             }
 
             UILayout.Render(g);
-        }
 
-			// zeichne die Maus Positionen von anderen wenn online
-			if (!NetworkHandler.OfflineMode)
-				for (int i = 0; i < usersMousePos.Count; i++)
+            // zeichne die Maus Positionen von anderen wenn online
+            if (!NetworkHandler.OfflineMode)
+            {
+                for (int i = 0; i < usersMousePos.Count; i++)
                 {
-					g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
-						usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
-					g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
-				}
-					
-            
-
-
+                    g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
+                        usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
+                    g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
+                }
+            }
 		}
 
         public void KeyUp(KeyEventArgs e)

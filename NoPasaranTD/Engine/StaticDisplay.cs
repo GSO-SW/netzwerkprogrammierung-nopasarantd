@@ -217,8 +217,6 @@ namespace NoPasaranTD.Engine
 
             Refresh();
         }
-        #endregion
-
-        
+        #endregion        
     }
 }

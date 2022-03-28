@@ -162,7 +162,6 @@ namespace NoPasaranTD.Networking
                 {
                     Console.WriteLine("The Package has been removed before reviewing: " + e.Message);
                 }
-
             }
         }
 
@@ -173,7 +172,7 @@ namespace NoPasaranTD.Networking
         /// <param resend="resend">Soll das Paket selbst ausgeführt werden</param>
         public async void InvokeEvent(string command, object param, bool reliable = true)
         {
-            long tickToPerform = Game.CurrentTick + highestPing;
+            long tickToPerform = Game.CurrentTick + 1;
             if (!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
