@@ -156,14 +156,15 @@ namespace NoPasaranTD.Model
                     if (pathValues.Count == 0)
                     {
                         // Kontrolliert, ob einer der Eckpunkte innerhalb der verdeckten Fläche ist
-                        if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV) || CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j] + 1], centreP, cornersV))
+                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]), centreP, cornersV) 
+                           || CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j] + 1]), centreP, cornersV))
                         {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), map.GetFragmentMagnitudeTo(SegmentsInRange[j]))); // j muss um 1 nach hinten verschoben werden, da immer die länge bis zum nächsten Stück berechnet wird
                         }
                     }
                     else if (pathValues.Count == 1) // Nur ein Schnittpunkt
                     {   // Einer der Eckpunkte muss der nächste Endpunkt sein für dieses Pfadstück
-                        if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV)) // Der Eckpunkt davor ist im Schatten des Hindernisses
+                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]), centreP, cornersV)) // Der Eckpunkt davor ist im Schatten des Hindernisses
                         {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), pathValues[0]));
                         }

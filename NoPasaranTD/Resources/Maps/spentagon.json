@@ -3,10 +3,6 @@
   "Dimension": "550, 399",
   "Obstacles": [
     {
-      "ObstacleType": 1,
-      "Hitbox": "120, 0, 20, 50"
-    },
-    {
       "ObstacleType": 0,
       "Hitbox": "450, 10, 80, 80"
     },
