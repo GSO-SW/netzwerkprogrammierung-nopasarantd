@@ -126,6 +126,7 @@
     </Compile>
     <EmbeddedResource Include="Resources\Maps\spentagon.json" />
     <EmbeddedResource Include="Resources\Maps\house.json" />
+    <EmbeddedResource Include="Resources\Maps\flyway.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -174,6 +175,9 @@
     <EmbeddedResource Include="Resources\Meme\meme_TD_12.jpg" />
     <EmbeddedResource Include="Resources\Meme\meme_TD_13.jpg" />
     <EmbeddedResource Include="Resources\Meme\meme_TD_9.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\flyway.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

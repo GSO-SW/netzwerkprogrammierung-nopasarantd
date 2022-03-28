@@ -181,7 +181,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 await OptionsContainer.ExpandCollapseAsync(true);
                 tower.Hitbox = args.MovedObject;
                 tower.ActivateAtTick = game.CurrentTick + game.NetworkHandler.HighestPing;
-                game.NetworkHandler.InvokeEvent("AddTower", tower, false);
+                game.NetworkHandler.InvokeEvent("AddTower", tower);
             }
         }
 
