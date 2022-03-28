@@ -23,11 +23,9 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Model Item
         /// </summary>
-        public override Tower DataContext {
-            get
-            {
-                return dataContext;
-            }
+        public override Tower DataContext
+        {
+            get => dataContext;
 
             set
             {
@@ -44,7 +42,7 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public override Point Position
         {
-            get { return new Point(Bounds.X, Bounds.Y); }
+            get => new Point(Bounds.X, Bounds.Y);
             set { Bounds = new Rectangle(value, ItemSize); PositionChanged(); }
         }
 
@@ -53,11 +51,11 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         public override Size ItemSize
         {
-            get { return new Size(Bounds.Width, Bounds.Height); }
-            set { Bounds = new Rectangle(Position, value); }
+            get => new Size(Bounds.Width, Bounds.Height);
+            set => Bounds = new Rectangle(Position, value);
         }
 
-        private SizeF scaleFactor = new SizeF(1,1); // Faktor zum anpassen der angezeigten Türme
+        private SizeF scaleFactor = new SizeF(1, 1); // Faktor zum anpassen der angezeigten Türme
 
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.FromArgb(200, 14, 14, 14));
         #endregion
@@ -65,7 +63,9 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Prüft ob sich der Container im Sichtbaren Bereich befindet. Wenn ja dann darf dieser gezeichnet werden, wenn nicht dann nicht.
         private void PositionChanged()
-            => Visible = Position.X + ItemSize.Width >= ParentBounds.X && Position.X <= ParentBounds.X + ParentBounds.Width;
+        {
+            Visible = Position.X + ItemSize.Width >= ParentBounds.X && Position.X <= ParentBounds.X + ParentBounds.Width;
+        }
 
         #endregion
         #region Public Methods
@@ -75,17 +75,22 @@ namespace NoPasaranTD.Visuals.Ingame
             if (Visible)
             {
                 if (IsMouseOver) // Der Spieler Hovert mit der Maus über dem Container
+                {
                     g.FillRectangle(Brushes.SlateGray, Bounds);
+                }
                 else
+                {
                     g.FillRectangle(BackgroundBrush, Bounds);
+                }
+
                 Matrix matrix = g.Transform;
-                g.TranslateTransform(Position.X + ItemSize.Width / 2,Position.Y + ItemSize.Height / 2); // Neuen Nullpunkt setzen
+                g.TranslateTransform(Position.X + ItemSize.Width / 2, Position.Y + ItemSize.Height / 2); // Neuen Nullpunkt setzen
                 // Faktor zum skalieren berechnen
                 scaleFactor = new SizeF((float)Math.Min(dataContext.Hitbox.Width, ItemSize.Width) / Math.Max(dataContext.Hitbox.Width, ItemSize.Width), (float)Math.Min(dataContext.Hitbox.Width, ItemSize.Width) / Math.Max(dataContext.Hitbox.Width, ItemSize.Width));
                 g.ScaleTransform(scaleFactor.Width, scaleFactor.Height);
                 DataContext.Render(g);
                 g.Transform = matrix; // Transformation zurück wandeln
-                
+
                 // Die Größe des angezeigten Preises
                 Size priceSize = TextRenderer.MeasureText(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString() + " ₿", GuiComponent.StandartHeader2Font);
                 g.DrawString(StaticInfo.GetTowerPrice(DataContext.GetType()).ToString() + " ₿", GuiComponent.StandartHeader2Font, Foreground, Bounds.X + Bounds.Width / 2 - priceSize.Width / 2, Bounds.Y + Bounds.Height - priceSize.Height - 5);
@@ -98,8 +103,10 @@ namespace NoPasaranTD.Visuals.Ingame
         /// </summary>
         /// <param name="offX"></param>
         /// <param name="offY"></param>
-        public override void TranslateTransform(int offX, int offY) =>
+        public override void TranslateTransform(int offX, int offY)
+        {
             Position = new Point(offX + Position.X, offY + Position.Y);
+        }
         #endregion
     }
 }

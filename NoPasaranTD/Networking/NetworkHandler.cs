@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
-using System.Threading;
-using System.Net.Sockets;
+﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
-using NoPasaranTD.Engine;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
 namespace NoPasaranTD.Networking
 {
@@ -43,16 +43,12 @@ namespace NoPasaranTD.Networking
         /// <summary>
         /// Gibt an ob sich der NetworkHandler im Offlinemodus befindet
         /// </summary>
-        public bool OfflineMode { get => Socket == null || Participants == null; }
+        public bool OfflineMode => Socket == null || Participants == null;
 
         /// <summary>
         /// Gibt an ob der ausgeführte Client der host der Sitzung ist
         /// </summary>
-        public bool IsHost { get => OfflineMode || LocalPlayer == Participants[0]; }
-        /// <summary>
-        /// Gibt zurück den letzten Zeitpunkt wo Update durchgeführt wurde auf Basis von Environment.TickCount()
-        /// </summary>
-        public int LastUpdate { get; private set; }
+        public bool IsHost => OfflineMode || LocalPlayer == Participants[0];
 
         public NetworkLobby Lobby { get; set; }
 
@@ -78,8 +74,10 @@ namespace NoPasaranTD.Networking
             Participants = participants;
             LocalPlayer = localPlayer;
 
-            EventHandlers = new Dictionary<string, Action<object>>();
-            EventHandlers.Add("PingRequest", PingRequest);
+            EventHandlers = new Dictionary<string, Action<object>>
+            {
+                { "PingRequest", PingRequest }
+            };
             taskQueue = new List<NetworkTask>();
             pings = new List<int>();
 
@@ -95,7 +93,6 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void Update()
         {
-            LastUpdate = Environment.TickCount;
             for (int i = taskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
                 if (taskQueue[i].Handler == PingRequest) // Checken, ob die Task ein PingRequest ist und direkt ausgeführt werden soll
@@ -103,26 +100,25 @@ namespace NoPasaranTD.Networking
                     taskQueue[i].Handler(taskQueue[i].Parameter); // PingRequest ausführen
                     taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
                 }
-                else if (taskQueue[i].TickToPerform <= Game.CurrentTick  // Checken ob die Task bereits ausgeführt werden soll
-                    || taskQueue[i].TickToPerform == 0)  // Wenn auf 0 gestellt dann ist es zum direkt ausführen
+                else if (taskQueue[i].TickToPerform <= Game.CurrentTick) // Checken ob die Task bereits ausgeführt werden soll
                 {
                     taskQueue[i].Handler(taskQueue[i].Parameter); // Task ausführen
                     taskQueue.RemoveAt(taskQueue.Count - 1); // Task aus der Queue entfernen
                 }
             }
             if (Game.CurrentTick % 500 == 0 && !OfflineMode)
+            {
                 InvokeEvent("PingRequest", (long)Game.CurrentTick);
+            }
         }
 
         /// <summary>
         /// Versendet eine Nachricht an alle Lobbyteilnehmer
         /// </summary>
-        /// <param name="instantExec">Ob bei ankommen auf den richtigen Tick gewartet werden soll oder dies vernachlässigt wird also direkt ausgeführt wird</param>
         /// <param name="message">Die Nachricht als String</param>
-        public async void InvokeEvent(string command, object param, bool instantExec = false)
+        public async void InvokeEvent(string command, object param)
         {
-            long tickToPerform = instantExec ? 0 : Game.CurrentTick + highestPing;
-
+            long tickToPerform = Game.CurrentTick + highestPing;
             if (!OfflineMode)
             {
                 // Eine Nachricht wird erstellt mit folgendem Format:
@@ -133,13 +129,17 @@ namespace NoPasaranTD.Networking
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
                 for (int i = Participants.Count - 1; i >= 0; i--)
                 {
-                    if (Participants[i].Equals(LocalPlayer)) continue;
+                    if (Participants[i].Equals(LocalPlayer))
+                    {
+                        continue;
+                    }
+
                     try { await Socket.SendAsync(encodedMessage, encodedMessage.Length, Participants[i].EndPoint); } // Versuche nachricht an Empfänger zu Senden
                     catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
                 }
             }
 
-            // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+            // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
             if (!EventHandlers.TryGetValue(command, out Action<object> handler))
             {
                 Console.WriteLine("Cannot find such a command: " + command);
@@ -155,7 +155,10 @@ namespace NoPasaranTD.Networking
         /// </summary>
         private void ReceiveBroadcast()
         {
-            if (OfflineMode) throw new Exception("Can't receive input in OfflineMode");
+            if (OfflineMode)
+            {
+                throw new Exception("Can't receive input in OfflineMode");
+            }
 
             // Der IP-Endpunkt von dem Abgehört werden soll
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -163,7 +166,7 @@ namespace NoPasaranTD.Networking
             try
             {
                 while (true)
-                {                
+                {
                     // Es wird nach einer Nachricht abgehört
                     byte[] encodedMessage = Socket.Receive(ref endPoint);
                     string message = Encoding.ASCII.GetString(encodedMessage);
@@ -177,7 +180,7 @@ namespace NoPasaranTD.Networking
 
                     if (firstIndexColon == -1 || firstIndexBracket == -1 || lastIndexBracket == -1) // Überprüft ob die Nachricht dem Format "COMMAND"("PARAMETER") entspricht
                     {
-                        Console.WriteLine("Failed to parse message: " + message);                        
+                        Console.WriteLine("Failed to parse message: " + message);
                         continue;
                     }
 
@@ -186,18 +189,18 @@ namespace NoPasaranTD.Networking
                     string tickToPerform = message.Substring(firstIndexColon + 1, firstIndexBracket - firstIndexColon - 1); // Der Tick in dem das Ereignis ausgeführt werden soll
                     string base64String = message.Substring(firstIndexBracket + 1, lastIndexBracket - firstIndexBracket - 1); // Die Weiteren Daten die übertragen wurden
 
-                    // Übergiebt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
-                    if(!EventHandlers.TryGetValue(command, out Action<object> handler))
+                    // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer exisitiert
+                    if (!EventHandlers.TryGetValue(command, out Action<object> handler))
                     {
                         Console.WriteLine("Cannot find such a command: " + command);
                         continue;
                     }
 
                     try { taskQueue.Add(new NetworkTask(handler, Serializer.DeserializeObject(Convert.FromBase64String(base64String)), Convert.ToInt64(tickToPerform))); } // Deserialisiert die Daten in ein Objekt                   
-                    catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }                                           
+                    catch (Exception e) { Console.WriteLine("Cannot invoke handler: " + e.Message); }
                 }
             }
-            catch(Exception e) 
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -214,14 +217,22 @@ namespace NoPasaranTD.Networking
             if (pings.Count == Participants.Count) // Nur kontrollieren, sobald alle Clients geantwortet haben
             {
                 highestPing = 0; // Ping erstmal wieder auf 0 als Basiswert setzen
-                foreach (var item in pings) // Alle Eingegangenen Werte überprüfen
+                foreach (int item in pings) // Alle Eingegangenen Werte überprüfen
+                {
                     if (highestPing < item * 2) // Höchsten Ping suchen
+                    {
                         highestPing = item * 2;
+                    }
+                }
+
                 pings.Clear();
             }
         }
 
-        public void Dispose() => Socket?.Dispose();
+        public void Dispose()
+        {
+            Socket?.Dispose();
+        }
 
         #endregion
     }

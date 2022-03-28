@@ -42,7 +42,7 @@ namespace NoPasaranTD.Engine
             }*/
             int currTick = Environment.TickCount;
             int deltaTick = currTick - lastTick;
-            ElapsedTicks += ((ulong)deltaTick)*TickAcceleration;
+            ElapsedTicks += ((ulong)deltaTick) * TickAcceleration;
             lastTick = currTick;
         }
         [Serializable]

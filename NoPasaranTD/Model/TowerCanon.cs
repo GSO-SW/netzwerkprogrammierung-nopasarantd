@@ -2,17 +2,22 @@
 using NoPasaranTD.Engine;
 using NoPasaranTD.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
-using System.Reflection;
 
 namespace NoPasaranTD.Model.Towers
 {
     [Serializable]
     public class TowerCanon : Tower
     {
-        private const float HITBOX_CORNER_MARGIN = 10; // Größe der Polygoneckenabstände zur tatäschlichen Hitbox Ecke
+        private static readonly List<Image> TowerCanonImages = new List<Image>()
+        {
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_body.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_head.png"),
+            ResourceLoader.LoadBitmapResource("NoPasaranTD.Resources.Towers.canon_barrel.png")
+        };
+
         private const double SHOT_ANIMATION_LENGTH = 0.2d; // in percent of delay   E[0;1]
         private static readonly Pen RANGE_CIRCLE_PEN = new Pen(Color.Purple, 2.3f);
 
@@ -36,15 +41,21 @@ namespace NoPasaranTD.Model.Towers
         {
             int centerX = Hitbox.X + Hitbox.Width / 2;
             int centerY = Hitbox.Y + Hitbox.Height / 2;
-      
+
             // Zeichnet die Hitbox des Towers
             if (IsPositionValid || IsPlaced) // Der Tower wird normal gezeichnet wenn dieser gesetzt ist oder seine Position valide ist
-                g.DrawImage(StaticInfo.TowerCanonImages[0], Hitbox);
+            {
+                g.DrawImage(TowerCanonImages[0], Hitbox);
+            }
             else if (!IsPlaced) // Ist der Tower nicht gesetzt und die Position ist nicht Valide dann soll dieser einen roten Ground haben
+            {
                 g.FillRectangle(Brushes.Red, Hitbox);
+            }
 
             if (IsSelected)
+            {
                 g.DrawEllipse(RANGE_CIRCLE_PEN, (float)(centerX - Range), (float)(centerY - Range), (float)Range * 2, (float)Range * 2);
+            }
 
             // draws the time left to the next shot in the corner of the tower | generally a debugging/visualization thingy
             //g.DrawString((delay - time + timeLastShot).ToString(), font, bruhLightGray, Hitbox.Location); 
@@ -63,11 +74,11 @@ namespace NoPasaranTD.Model.Towers
             g.RotateTransform(currentAngle);
 
             // Das Barrel wird gezeichnet
-            g.DrawImage(StaticInfo.TowerCanonImages[2], barrel);
+            g.DrawImage(TowerCanonImages[2], barrel);
 
             // Das innere Viereck wird gezeichnet
-            
-            g.DrawImage(StaticInfo.TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
+
+            g.DrawImage(TowerCanonImages[1], -(Hitbox.Width * 0.4f) / 2, -(Hitbox.Height * 0.4f) / 2, Hitbox.Width * 0.4f, Hitbox.Height * 0.4f);
 
             if (justShotSomeUglyAss)
             {
@@ -75,10 +86,15 @@ namespace NoPasaranTD.Model.Towers
                     (centerX - lastBalloonPos.X) * (centerX - lastBalloonPos.X)
                     + (centerY - lastBalloonPos.Y) * (centerY - lastBalloonPos.Y),
                     0.5) < Range)
+                {
                     //g.DrawLine(penRed, barrel.X + barrel.Width/2,barrel.Y+barrel.Height,lastBalloonPos.X - centerX ,lastBalloonPos.Y - centerY);
                     g.FillEllipse(Brushes.Orange, -barrel.Width + barrel.Width / 4, barrel.Height - 5, 15 * time % 30, 15 * time % 30); // Feueranimation als Ellipse
+                }
 
-                if (timeLastShot + Delay * SHOT_ANIMATION_LENGTH < time) justShotSomeUglyAss = false;
+                if (timeLastShot + Delay * SHOT_ANIMATION_LENGTH < time)
+                {
+                    justShotSomeUglyAss = false;
+                }
             }
 
             // Die Originalmatrix wird wieder angewandt
@@ -100,12 +116,19 @@ namespace NoPasaranTD.Model.Towers
                     game.DamageBalloon(targetIndex.segment, targetIndex.index, (int)Strength, this); // TODO: uint to int could be an oof conversion
                 }
             }
-            if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index) lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);
+            if (lastBalloonIndex.segment != -1 && game.Balloons[lastBalloonIndex.segment].Count > lastBalloonIndex.index)
+            {
+                lastBalloonPos = game.CurrentMap.GetPathPosition(StaticEngine.RenderWidth, StaticEngine.RenderHeight, game.Balloons[lastBalloonIndex.segment][lastBalloonIndex.index].PathPosition);
+            }
 
             if (currentAngle < aimAngle && time % 9 == 0 && aimAngle - currentAngle > 5)
+            {
                 currentAngle += 4.5F;
+            }
             else if (currentAngle > aimAngle && time % 9 == 0 && currentAngle - aimAngle > 5)
+            {
                 currentAngle -= 4.5F;
+            }
         }
 
         // Weißt dem Tower einen neuen Ziel-Rotationswinkel zu
@@ -116,6 +139,9 @@ namespace NoPasaranTD.Model.Towers
             aimAngle = (90 + (float)(vecCenterTarget.Angle / Math.PI) * 180) * -1; // Berechnen des Winkels des Vekors zu den Achsen und Umrechung von RAD zu DEG
         }
 
-        public override string ToString() => "Canon";
+        public override string ToString()
+        {
+            return "Canon";
+        }
     }
 }
