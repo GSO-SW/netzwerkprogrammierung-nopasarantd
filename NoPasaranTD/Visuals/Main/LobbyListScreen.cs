@@ -11,8 +11,10 @@ namespace NoPasaranTD.Visuals.Main
     {
 
         private readonly ListContainer<NetworkLobby, LobbyItemContainer> lobbyList;
+        private readonly TextBoxContainer txtNameContainer;
         private readonly ButtonContainer btnUpdatePlayer;
         private readonly ButtonContainer btnCreateLobby;
+       
 
         private readonly GuiLobbyMenu parent;
         public LobbyListScreen(GuiLobbyMenu parent)
@@ -31,11 +33,20 @@ namespace NoPasaranTD.Visuals.Main
             };
             lobbyList.SelectionChanged += JoinLobby;
 
-            // Aktualisiere Spielerinformationen
-            btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(5, 5, 100, 30));
+            txtNameContainer = new TextBoxContainer
+            {
+                Background = new SolidBrush(Color.White),
+                Foreground = new SolidBrush(Color.Black),
+                BorderBrush = new SolidBrush(Color.Black),
+                Margin = 2,
+                TextFont = StandartText2Font
+            };
+            txtNameContainer.Bounds = new Rectangle(5, 5 , 230, 30);
 
+            // Aktualisiere Spielerinformationen
+            btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(240, 5, 100, 30));
             // TODO: Mit TextBox aktualisieren
-            btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient("SKRR" + Environment.TickCount));
+            btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient(txtNameContainer.Text));
 
             // Erstelle neue Lobby
             btnCreateLobby = GuiLobbyMenu.CreateButton("Create Lobby", new Rectangle(
@@ -68,21 +79,21 @@ namespace NoPasaranTD.Visuals.Main
             {
                 return;
             }
-
             parent.LocalPlayer = client;
             if (parent.DiscoveryClient.LoggedIn)
             {
                 parent.DiscoveryClient.UpdatePlayerAsync(client);
+               
             }
             else
             {
                 parent.DiscoveryClient.LoginAsync(client);
             }
-
             // Ursprünglich ist Content auf Login, da diese methode noch nicht ausgeführt wurde
             // Sobald der sich jedoch eingeloggt hat, soll ein anderer Content angezeigt werden
-            btnUpdatePlayer.Content = "Update Info";
+            btnUpdatePlayer.Content = "Update Info"; 
         }
+
 
         private void CreateLobby(NetworkClient host)
         { // Befehl zum erstellen einer neuen lobby
@@ -93,7 +104,7 @@ namespace NoPasaranTD.Visuals.Main
             }
 
             parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
-                host, "Lobby Name (By textbox)" + Environment.TickCount, "spentagon"
+                host, txtNameContainer.Text + "´s Room" , "spentagon"
             ));
         }
 
@@ -112,13 +123,16 @@ namespace NoPasaranTD.Visuals.Main
         public override void Update()
         {
             lobbyList.Update();
+            txtNameContainer.Update();
         }
 
         public override void Render(Graphics g)
         {
+            txtNameContainer.Render(g);
             btnUpdatePlayer.Render(g);
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
+           
 
             if (parent.LocalPlayer != null)
             { // Render Login Zeichenkette
@@ -138,7 +152,8 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void KeyDown(KeyEventArgs e)
         {
-            lobbyList.KeyUp(e);
+            lobbyList.KeyDown(e);
+            txtNameContainer.KeyDown(e);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -151,16 +166,24 @@ namespace NoPasaranTD.Visuals.Main
             btnUpdatePlayer.MouseDown(e);
             btnCreateLobby.MouseDown(e);
             lobbyList.MouseDown(e);
+            txtNameContainer.MouseDown(e);
         }
 
+        public override void KeyPress(KeyPressEventArgs e)
+        {
+            txtNameContainer.KeyPress(e);
+            
+        }
         public override void MouseMove(MouseEventArgs e)
         {
             lobbyList.MouseMove(e);
+            txtNameContainer.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
             lobbyList.MouseWheel(e);
+            txtNameContainer.MouseWheel(e);
         }
         #endregion
 
