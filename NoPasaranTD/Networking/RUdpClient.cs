@@ -84,7 +84,10 @@ namespace NoPasaranTD.Networking
         public RUdpPacketInfo(RUdpPacket packet, IPEndPoint[] endpoints)
         {
             Packet = packet;
-            Endpoints = new List<IPEndPoint>(endpoints);
+            EndpointInfos = new ConcurrentDictionary<IPEndPoint, uint>();
+            foreach (IPEndPoint endpoint in endpoints)
+                EndpointInfos[endpoint] = 0; // Anzahl von Verbindungsversuchen auf 0 initialisieren
+
             TickCreated = Environment.TickCount;
             TickSent = Environment.TickCount;
         }
@@ -105,9 +108,10 @@ namespace NoPasaranTD.Networking
         public RUdpPacket Packet { get; }
 
         /// <summary>
-        /// Endpunkte an dem das Paket noch zugestellt werden muss
+        /// Endpunkte an dem das Paket noch zugestellt werden muss 
+        /// und die zum senden dafür verbrauchten Versuche
         /// </summary>
-        public List<IPEndPoint> Endpoints { get; }
+        public ConcurrentDictionary<IPEndPoint, uint> EndpointInfos { get; }
     }
 
     internal class RUdpClientInfo
@@ -132,11 +136,25 @@ namespace NoPasaranTD.Networking
     public class RUdpClient : IDisposable
     {
 
-        internal const byte CODE_PKG = 0x01;
-        internal const byte CODE_ACK = 0x02;
-        internal const byte CODE_SYN = 0x03;
+        /// <summary>
+        /// Anzahl an Paketen die verloren gehen dürfen,
+        /// bis der Endpunkt als nicht erreichbar gilt
+        /// </summary>
+        private const uint MAX_PACKET_LOSS = 15;
 
+        private const byte CODE_PKG = 0x01;
+        private const byte CODE_ACK = 0x02;
+        private const byte CODE_SYN = 0x03;
+
+        /// <summary>
+        /// Höchster Ping von allen noch verbundenen Endpunkten
+        /// </summary>
         public uint HighestPing => remoteClients.Values.Select(c => c.Ping).Max();
+
+        /// <summary>
+        /// Event welches aufgerufen wird, sobald ein Client nicht mehr erreichbar ist
+        /// </summary>
+        public Action<IPEndPoint> OnRemoteTimeout;
 
         private readonly RUdpClientInfo localClient;
         private readonly ConcurrentDictionary<IPEndPoint, RUdpClientInfo> remoteClients;
@@ -199,13 +217,32 @@ namespace NoPasaranTD.Networking
                     for (int i = packetsSent.Count - 1; i >= 0; i--)
                     {
                         RUdpPacketInfo info = packetsSent.Values.ElementAt(i);
-                        for (int j = info.Endpoints.Count - 1; j >= 0; j--)
+                        for (int j = info.EndpointInfos.Count - 1; j >= 0; j--)
                         {
-                            RUdpClientInfo client = GetRemoteClient(info.Endpoints[j]);
+                            // Suche nach Endpunkt in diesem Index
+                            IPEndPoint endpoint = info.EndpointInfos.Keys.ElementAt(j);
+                            RUdpClientInfo client = GetRemoteClient(endpoint);
+
                             if (tick - info.TickSent >= Math.Max(100, client.Ping))
                             { // Sende das Paket erneut nach einer bestimmten Zeit
-                                await SendPacketAsync(info.Packet, info.Endpoints[j]);
+                                await SendPacketAsync(info.Packet, endpoint);
                                 info.TickSent = Environment.TickCount;
+
+                                info.EndpointInfos[endpoint]++; // Inkrementiere die anzahl an versuchen für diesen Endpunkt
+                                if(info.EndpointInfos[endpoint] >= MAX_PACKET_LOSS)
+                                {
+                                    remoteClients.TryRemove(endpoint, out _); // Entferne Endpunkt
+                                    RemovePacketOf(endpoint, info.Packet); // Entferne Paket aus dem Verlauf
+
+                                    try
+                                    {
+                                        OnRemoteTimeout?.Invoke(endpoint);
+                                    }
+                                    catch (Exception ex) 
+                                    {
+                                        Console.WriteLine(ex);
+                                    }
+                                }
                             }
                         }
                     }
@@ -250,27 +287,10 @@ namespace NoPasaranTD.Networking
 
         private void AcceptACK(RUdpPacketCombo combo)
         {
-            if (!packetsSent.TryGetValue(combo.Packet.Sequence, out RUdpPacketInfo info))
-            {
-                throw new IOException("Packet was already acknowledged");
-            }
-
-            // Entferne den Endpunkt aus der Liste
-            if (!info.Endpoints.Remove(combo.Endpoint))
-            {
-                throw new IOException("Packet was already acknowledged");
-            }
+            RUdpPacketInfo info = RemovePacketOf(combo.Endpoint, combo.Packet);
 
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
             client.Ping = (uint)(Environment.TickCount - info.TickCreated);
-
-            if (info.Endpoints.Count == 0)
-            { // Wenn es niemanden mehr zum Informieren gibt, lösche das Paket aus dem Verlauf
-                if (!packetsSent.TryRemove(combo.Packet.Sequence, out _))
-                {
-                    throw new IOException("How tf did this happen now?");
-                }
-            }
         }
 
         private async Task AcceptSYN(RUdpPacketCombo combo)
@@ -280,7 +300,7 @@ namespace NoPasaranTD.Networking
                 throw new IOException("Packet was already acknowledged");
             }
 
-            if (!info.Endpoints.Contains(combo.Endpoint))
+            if (!info.EndpointInfos.ContainsKey(combo.Endpoint))
             {
                 throw new IOException("Packet was already acknowledged");
             }
@@ -291,6 +311,34 @@ namespace NoPasaranTD.Networking
         #endregion
 
         #region Utility region
+        /// <summary>
+        /// Entfernt das Paket welches zum Endpunkt gesendet wird, aus dem Verlauf.
+        /// Gibt die Paketinformationen zurück, die aktualisiert wurden.
+        /// </summary>
+        private RUdpPacketInfo RemovePacketOf(IPEndPoint endpoint, RUdpPacket packet)
+        {
+            if (!packetsSent.TryGetValue(packet.Sequence, out RUdpPacketInfo info))
+            {
+                throw new IOException("Packet was already acknowledged");
+            }
+
+            // Entferne den Endpunkt aus der Liste
+            if (!info.EndpointInfos.TryRemove(endpoint, out _))
+            {
+                throw new IOException("Packet was already acknowledged");
+            }
+
+            if (info.EndpointInfos.Count == 0)
+            { // Wenn es niemanden mehr zum Informieren gibt, lösche das Paket aus dem Verlauf
+                if (!packetsSent.TryRemove(packet.Sequence, out _))
+                {
+                    throw new IOException("How tf did this happen now?");
+                }
+            }
+
+            return info;
+        }
+
         private RUdpClientInfo GetRemoteClient(IPEndPoint endpoint)
         { // Suche nach dem Empfänger, wenn nicht gefunden, erstelle einen neuen
             if (!remoteClients.TryGetValue(endpoint, out RUdpClientInfo client))

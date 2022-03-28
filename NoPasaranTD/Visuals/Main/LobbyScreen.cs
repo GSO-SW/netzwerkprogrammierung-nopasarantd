@@ -112,7 +112,7 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
-            if (mapList.Count == 0)
+            if (!mapList.ContainsKey(Lobby.MapName))
             {
                 return;
             }

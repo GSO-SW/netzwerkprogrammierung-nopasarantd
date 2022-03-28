@@ -128,7 +128,7 @@ namespace NoPasaranTD.Engine
                     Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
                     if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
                     {
-                        if (!GodMode)
+                        if (!GodMode && NetworkHandler.IsHost)
                         {
                             NetworkHandler.InvokeEvent("UpdateHealth", (int)(HealthPoints - Balloons[i][j].Strength));
                         }

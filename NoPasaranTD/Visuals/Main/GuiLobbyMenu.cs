@@ -148,8 +148,7 @@ namespace NoPasaranTD.Visuals.Main
             }
             Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
                 DiscoveryClient.UdpClient, participants, LocalPlayer
-            )
-            { Lobby = CurrentLobby });
+            ));
         }
 
         private void UpdateInfo()

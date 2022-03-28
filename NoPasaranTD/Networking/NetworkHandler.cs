@@ -83,8 +83,6 @@ namespace NoPasaranTD.Networking
 
         public bool Resyncing { get; private set; } = false;
 
-        public NetworkLobby Lobby { get; set; }
-
         /// <summary>
         /// Speichert die restliche Zeit die das Spiel pausiert sein soll bei einem resync damit alle Clients gleichzeitig starten
         /// </summary>
@@ -93,20 +91,21 @@ namespace NoPasaranTD.Networking
         #endregion
         #region Konstruktor
 
-        public readonly List<NetworkTask> TaskQueue;
+        private readonly List<NetworkTask> taskQueue = new List<NetworkTask>();
         private readonly List<NetworkTask> resyncPackageL = new List<NetworkTask>();
 
         // Offlinemodus des Networkhandlers
         public NetworkHandler()
         {
             EventHandlers = new Dictionary<string, Action<object>>();
-            TaskQueue = new List<NetworkTask>();
         }
 
         // Onlinemodus des Networkhandlers
         public NetworkHandler(RUdpClient socket, List<NetworkClient> participants, NetworkClient localPlayer)
         {
             Socket = socket;
+            Socket.OnRemoteTimeout = RemoteTimeout;
+
             Participants = participants;
             LocalPlayer = localPlayer;
 
@@ -115,12 +114,10 @@ namespace NoPasaranTD.Networking
                 { "ResyncReceive", ResyncReceive },
                 { "ResyncReq", ResyncRequest }
             };
-            TaskQueue = new List<NetworkTask>();
 
             // Eröffnet einen neuen Thread für das Abhören neuer Nachrichten
             new Thread(ReceiveBroadcast).Start();
         }
-
         #endregion
         #region Methoden
 
@@ -129,35 +126,35 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public void Update()
         {
-            for (int i = TaskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
+            for (int i = taskQueue.Count - 1; i >= 0; i--) // Alle Aufgaben in der Queue kontrollieren
             {
                 try
                 {
-                    if (TaskQueue[i].TickToPerform == Game.CurrentTick
-                        || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)TaskQueue[i].Parameter).Handler == "AddTower")
-                        || (TaskQueue[i].TickToPerform < Game.CurrentTick && TaskQueue[i].Handler == "AddTower")
-                        || TaskQueue[i].Handler == "AddBalloon"
-                        || TaskQueue[i].Handler == "ResyncReceive"
+                    if (taskQueue[i].TickToPerform == Game.CurrentTick
+                        || (taskQueue[i].TickToPerform < Game.CurrentTick && taskQueue[i].Handler == "ReliableUDP" && ((NetworkTask)taskQueue[i].Parameter).Handler == "AddTower")
+                        || (taskQueue[i].TickToPerform < Game.CurrentTick && taskQueue[i].Handler == "AddTower")
+                        || taskQueue[i].Handler == "AddBalloon"
+                        || taskQueue[i].Handler == "ResyncReceive"
                         || OfflineMode) // Checken ob die Task ausgeführt werden soll
                     {
-                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
-                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
-                        handler(TaskQueue[i].Parameter); // Task ausführen
-                        if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                        Console.WriteLine(taskQueue[i].Handler + "   " + taskQueue[i].TickToPerform);
+                        EventHandlers.TryGetValue(taskQueue[i].Handler, out Action<object> handler);
+                        handler(taskQueue[i].Parameter); // Task ausführen
+                        if (taskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
                         {
-                            TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                            taskQueue.RemoveAt(i); // Task aus der Queue entfernen
                         }
                     }
-                    else if (TaskQueue[i].TickToPerform < Game.CurrentTick)
+                    else if (taskQueue[i].TickToPerform < Game.CurrentTick)
                     {
-                        Console.WriteLine(TaskQueue[i].Handler + "   " + TaskQueue[i].TickToPerform);
-                        EventHandlers.TryGetValue(TaskQueue[i].Handler, out Action<object> handler);
-                        handler(TaskQueue[i].Parameter); // Task ausführen
-                        Console.WriteLine("Desync detected  " + TaskQueue[i].Handler);
+                        Console.WriteLine(taskQueue[i].Handler + "   " + taskQueue[i].TickToPerform);
+                        EventHandlers.TryGetValue(taskQueue[i].Handler, out Action<object> handler);
+                        handler(taskQueue[i].Parameter); // Task ausführen
+                        Console.WriteLine("Desync detected  " + taskQueue[i].Handler);
                         InvokeEvent("ResyncReq", 0, false);
-                        if (TaskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
+                        if (taskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
                         {
-                            TaskQueue.RemoveAt(i); // Task aus der Queue entfernen
+                            taskQueue.RemoveAt(i); // Task aus der Queue entfernen
                         }
                     }
                 }
@@ -198,7 +195,7 @@ namespace NoPasaranTD.Networking
             // Führe event im Client aus
             if (!resend)
             {
-                TaskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
+                taskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
             }
         }
 
@@ -246,6 +243,18 @@ namespace NoPasaranTD.Networking
         }
 
         /// <summary>
+        /// Methode, welche für den Verbindungsabbau von verlorenen Endpunkten verantwortlich ist.
+        /// Erkennt der RUdpSocket, dass ein bestimmter Client nicht mehr erreichbar ist, führt er diese Methode aus
+        /// </summary>
+        private void RemoteTimeout(IPEndPoint obj)
+        {
+            // Suche nach Teilnehmer anhand von Endpunkt
+            int index = Participants.FindIndex(p => !p.Equals(LocalPlayer) && p.EndPoint.Equals(obj));
+            if (index != -1) // Wenn gefunden, entferne ihn
+                Participants.RemoveAt(index);
+        }
+
+        /// <summary>
         /// Sendet alle entscheidenden Daten, wenn ein anderer Client desynchronisiert wurde, um wieder zu synchronisieren.
         /// Das senden geht nur vom Host aus.
         /// </summary>
@@ -255,7 +264,7 @@ namespace NoPasaranTD.Networking
             ResyncDelay = 6000 * (int)StaticEngine.TickAcceleration;
             if (IsHost) // Nur der Host soll Synchronisierungspakete senden
             {
-                TaskQueue.Clear(); // Alle Tasks sollen beendet werden wenn ein desync festgestellt wurde
+                taskQueue.Clear(); // Alle Tasks sollen beendet werden wenn ein desync festgestellt wurde
                 Resyncing = true;
                 List<NetworkTask> tasks = new List<NetworkTask>();
                 uint currentTick = Game.CurrentTick;
@@ -350,7 +359,7 @@ namespace NoPasaranTD.Networking
 
                     foreach (NetworkTask item in sortedList)
                     {
-                        TaskQueue.Add(item);
+                        taskQueue.Add(item);
                     }
 
                     resyncPackageL.Clear();
