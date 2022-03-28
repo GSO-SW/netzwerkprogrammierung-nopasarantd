@@ -28,7 +28,7 @@ namespace NoPasaranTD.Engine
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
 		private StaticDisplay StaticDisplay { get; } = null;
-		private int MouseSendInterval = 300;
+		private int MouseSendInterval = 200;
 
         /// <summary>
         /// Initialisiert ein neues Spiel
@@ -60,7 +60,6 @@ namespace NoPasaranTD.Engine
 			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
 			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
 			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-			NetworkHandler.EventHandlers.Add("ReceiveServerTick", StaticDisplay.ReceiveServerTick);
 			NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
 		}
 
@@ -131,7 +130,7 @@ namespace NoPasaranTD.Engine
 				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
 				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
 				
-				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, true);
+				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage);
 
 				if (CurrentTick % 1000 == 0)
 					for (int i = 0; i < usersMousePos.Count; i++)

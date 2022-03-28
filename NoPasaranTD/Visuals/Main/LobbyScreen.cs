@@ -117,6 +117,15 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
 
+
+            // TODO temporäre Lösung für die ab und zu aufkommende KeyNotFoundException im Falle dass die Liste leer ist
+            if (mapList.Count == 0)
+            {
+                Console.WriteLine("@LobbyScreen: Error catched");
+                return;
+            }
+
+
             // Map preview
             g.DrawImage(mapList[Lobby.MapName].BackgroundImage,
                 StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,

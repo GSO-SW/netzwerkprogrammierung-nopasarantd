@@ -59,7 +59,7 @@ namespace NoPasaranTD.Visuals.Main
             // Lade Spielszene
             Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
             
-            backgroundGame = new Game(map, new NetworkHandler(), StaticDisplay.itself);
+            backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Visible = false;
