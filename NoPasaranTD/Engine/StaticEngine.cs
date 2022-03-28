@@ -33,7 +33,7 @@ namespace NoPasaranTD.Engine
             // TODO: Ändern zu jetzige Server-Ticks
             int currTick = Environment.TickCount;
             int deltaTick = currTick - lastTick;
-            ElapsedTicks += ((ulong)deltaTick)*TickAcceleration;
+            ElapsedTicks += ((ulong)deltaTick) * TickAcceleration;
             lastTick = currTick;
         }
         #endregion

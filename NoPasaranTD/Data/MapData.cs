@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.IO;
-using System.Collections.Generic;
-using System.Drawing;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace NoPasaranTD.Data
 {
@@ -16,17 +16,17 @@ namespace NoPasaranTD.Data
     public class MapData
     {
         /// <summary>
-        /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
-        /// Die Methode erlaubt keine parallele zugriffe und läuft synchron!
+        /// Übergibt ein Map Objekt mithilfe von Angabe eines Dateipfades.</br>
+        /// Die Methode erlaubt keine parallelen zugriffe und läuft synchron!
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
-        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        /// <returns>Die deserialisierte Map</returns>
+        /// <exception cref="Exception">Wenn die Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn die Datei nicht gefunden wird</exception>
         public static Map GetMapByFileName(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
+            string resourceName = "NoPasaranTD.Resources.Maps." + fileName + ".json";
 
             Map obj;
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
@@ -42,17 +42,17 @@ namespace NoPasaranTD.Data
         }
 
         /// <summary>
-        /// Übergiebt ein Map Objekt bei der Angabe dessen jeweiligen File-Pfades.</br>
-        /// Die Methode erlaubt keine parallele zugriffe und läuft asynchron!
+        /// Übergibt ein Map Objekt mithilfe von Angabe eines Dateipfades.</br>
+        /// Die Methode erlaubt keine parallelen zugriffe und läuft asynchron!
         /// </summary>
         /// <param name="fullPath">Pfad des gespeicherten Map-Modells</param>
-        /// <returns></returns>
-        /// <exception cref="Exception">Wenn Datei fehlerhaft ist</exception>
-        /// <exception cref="FileNotFoundException">Wenn Datei nicht gefunden wird</exception>
+        /// <returns>Die deserialisierte Map</returns>
+        /// <exception cref="Exception">Wenn die Datei fehlerhaft ist</exception>
+        /// <exception cref="FileNotFoundException">Wenn die Datei nicht gefunden wird</exception>
         public static async Task<Map> GetMapByFileNameAsync(string fileName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "NoPasaranTD.Resources." + fileName + ".json";
+            string resourceName = "NoPasaranTD.Resources.Maps." + fileName + ".json";
 
             Map obj;
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
@@ -77,12 +77,11 @@ namespace NoPasaranTD.Data
         {
             string savePath = Environment.CurrentDirectory + "\\" + fileName + ".json";
 
-            FileStream fileStream;
-            // Prüft ob die Datei bereits existiert
-            if (!File.Exists(savePath))
-                fileStream = File.Create(savePath);
-            else
-                fileStream = new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite);
+            // Wenn die Datei existiert, öffne einen Stream.
+            // Andernfalls erstelle sie und öffne dann den Stream
+            FileStream fileStream = File.Exists(savePath) ?
+                new FileStream(savePath, FileMode.Open, FileAccess.ReadWrite) :
+                File.Create(savePath);
 
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
@@ -92,9 +91,9 @@ namespace NoPasaranTD.Data
         }
 
         /// <summary>
-        /// Erstellt aus einem JObject dynamisch eine Map
+        /// Erstellt aus einem dynamischen JsonObject eine Map
         /// </summary>
-        /// <param name="rawData"></param>
+        /// <param name="rawData">Das dynamische JsonObject</param>
         /// <returns>Die ausgelesene Map</returns>
         private static Map GetMapFromJson(object rawData)
         {
@@ -107,7 +106,7 @@ namespace NoPasaranTD.Data
                 Name = dataMap.Name,
                 Dimension = dataMap.Dimension,
                 Obstacles = new List<Obstacle>(),
-                PathWidth = dataMap.PathWidth,
+                PathRadius = dataMap.PathRadius,
                 BackgroundPath = dataMap.BackgroundPath,
                 BalloonPath = new Vector2D[dataMap.BalloonPath.Count]
             };
@@ -126,9 +125,9 @@ namespace NoPasaranTD.Data
             {
                 float x = dataMap.BalloonPath[i].X;
                 float y = dataMap.BalloonPath[i].Y;
-                mapObj.BalloonPath[i] = new Vector2D(x,y);
+                mapObj.BalloonPath[i] = new Vector2D(x, y);
             }
             return mapObj;
         }
-    }  
+    }
 }

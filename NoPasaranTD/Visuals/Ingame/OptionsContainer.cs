@@ -1,7 +1,7 @@
-﻿using System.Drawing;
+﻿using NoPasaranTD.Engine;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NoPasaranTD.Engine;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
@@ -29,10 +29,10 @@ namespace NoPasaranTD.Visuals.Ingame
         // Die genutzte Gameinstanz
         private Game currentGame;
         // Der Abstand zwischen den Steuerelementen
-        private int buttonMargin = 5;
+        public int ButtonMargin = 5;
 
         // Ist das Control ein- oder ausgeklappt
-        private bool isExpanded = true;
+        public bool IsExpanded = true;
 
         #endregion
         #region GUI Components
@@ -74,11 +74,11 @@ namespace NoPasaranTD.Visuals.Ingame
             Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
             BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
             Margin = 1,
-            StringFont = StandartHeader2Font,          
+            StringFont = StandartHeader2Font,
         };
 
         // Button zum ein- ausklappen des Menüs
-        private readonly ButtonContainer expandButton = new ButtonContainer()
+        public readonly ButtonContainer expandButton = new ButtonContainer()
         {
             Content = "⬅",
             Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
@@ -87,10 +87,10 @@ namespace NoPasaranTD.Visuals.Ingame
             StringFont = StandartHeader2Font,
         };
 
-        // Button zum verlassen der Lobby
-        private readonly ButtonContainer homeButton = new ButtonContainer()
+        // Button zum öffnen des Chates
+        private readonly ButtonContainer chatButton = new ButtonContainer()
         {
-            Content = "⌂",
+            Content = "✉",
             Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
             BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
             Margin = 1,
@@ -102,23 +102,28 @@ namespace NoPasaranTD.Visuals.Ingame
 
         public override void Render(Graphics g)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             g.FillRectangle(Background, Bounds);
 
             // Zeigt den Startbutton nur wenn die Runde pausuert ist
-            if (currentGame.WaveManager.IsRoundCompleted && isExpanded)
+            if (currentGame.WaveManager.IsRoundCompleted && IsExpanded)
+            {
                 startButton.Render(g);
+            }
 
             // Zeigt die anderen Buttons nur wenn das Menu expandiert ist
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Render(g);
                 playersButton.Render(g);
                 accelerationButton.Render(g);
-                homeButton.Render(g);
-            }          
-            
+                chatButton.Render(g);
+            }
+
             // Zeigt den ein- ausklappen Button ummer
             expandButton.Render(g);
         }
@@ -128,58 +133,66 @@ namespace NoPasaranTD.Visuals.Ingame
             accelerationButton.Content = "►►\n " + StaticEngine.TickAcceleration + "x";
 
             if (currentGame.WaveManager.AutoStart)
+            {
                 autoStartButton.Content = "⤻";
+            }
             else
+            {
                 autoStartButton.Content = "⭯";
+            }
 
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.Update();
                 playersButton.Update();
                 accelerationButton.Update();
                 startButton.Update();
-                homeButton.Update();
-            }           
+                chatButton.Update();
+            }
             expandButton.Update();
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (isExpanded)
+            if (IsExpanded)
             {
                 autoStartButton.MouseDown(e);
                 playersButton.MouseDown(e);
                 startButton.MouseDown(e);
                 accelerationButton.MouseDown(e);
-                homeButton.MouseDown(e);
-            }            
+                chatButton.MouseDown(e);
+            }
             expandButton.MouseDown(e);
         }
 
         #endregion
         #region Init
 
-        public void Init(Game gamer)
+        /// <summary>
+        /// Initialisiert alle Komponenten
+        /// </summary>
+        /// <param name="game">Eine Spielinstanz in der diese Komponente laufen soll</param>
+        public void Init(Game game)
         {
-            int buttonWidth = (Bounds.Width - 7 * buttonMargin)/6;
-            int buttonHeight = Bounds.Height - buttonMargin*2;
+            int buttonWidth = (Bounds.Width - 7 * ButtonMargin) / 6;
+            int buttonHeight = Bounds.Height - ButtonMargin * 2;
 
-            currentGame = gamer;
+            currentGame = game;
 
             // Initialisiert die Grenzen der Buttons
-            startButton.Bounds = new Rectangle(Bounds.X + buttonMargin, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            accelerationButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 2 + buttonWidth, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            autoStartButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 3 + buttonWidth * 2, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            playersButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 4 + buttonWidth * 3, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            homeButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 5 + buttonWidth * 4, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
-            expandButton.Bounds = new Rectangle(Bounds.X + buttonMargin * 6 + buttonWidth * 5, Bounds.Y + buttonMargin, buttonWidth, buttonHeight);
+            startButton.Bounds = new Rectangle(Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            accelerationButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 2 + buttonWidth, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            autoStartButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 3 + buttonWidth * 2, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            playersButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 4 + buttonWidth * 3, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            chatButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 5 + buttonWidth * 4, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
+            expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 6 + buttonWidth * 5, Bounds.Y + ButtonMargin, buttonWidth, buttonHeight);
 
             // Initilialisiert die Schriftfarben des Buttons
             startButton.Foreground = Foreground;
             autoStartButton.Foreground = Foreground;
             playersButton.Foreground = Foreground;
             expandButton.Foreground = Foreground;
-            homeButton.Foreground = Foreground;
+            chatButton.Foreground = Foreground;
             accelerationButton.Foreground = Foreground;
 
             // Initilisiert die Clickevents der Buttons
@@ -187,67 +200,99 @@ namespace NoPasaranTD.Visuals.Ingame
             autoStartButton.ButtonClicked += AutoStartButton_ButtonClicked;
             playersButton.ButtonClicked += PlayersButton_ButtonClicked; ;
             expandButton.ButtonClicked += ExpandButton_ButtonClicked;
-            homeButton.ButtonClicked += HomeButton_ButtonClicked;
+            chatButton.ButtonClicked += ChatButton_ButtonClicked;
             accelerationButton.ButtonClicked += AccelerationButton_ButtonClicked;
         }
-        
+
         #endregion
         #region Event Methoden
 
         // Öffnet die Spielerliste
-        private void PlayersButton_ButtonClicked() =>
+        private void PlayersButton_ButtonClicked()
+        {
             currentGame.UILayout.PlayerListContainer.Visible = !currentGame.UILayout.PlayerListContainer.Visible;
+        }
 
         // Vergrößert oder verkleinert das Optionsmeu
         private async void ExpandButton_ButtonClicked()
-        {           
-            if (!isExpanded)
-                await ExpandToAsync(expandButton.Bounds.Width * 6 + buttonMargin * 8);
+        {
+            if (IsExpanded)
+            {
+                await ExpandCollapseAsync(false);
+            }
             else
-                await CollapseToAsync(expandButton.Bounds.Width + buttonMargin*8);           
+            {
+                await ExpandCollapseAsync(true);
+            }
         }
 
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
         private void AutoStartButton_ButtonClicked()
-        {           
-            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
+        {
+            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0, false);
         }
 
         // Startet das Spawning der Ballons beim betätigen des Buttons
-        private void StartButton_ButtonClicked() =>
-            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0);
+        private void StartButton_ButtonClicked()
+        {
+            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0, false);
+        }
 
-        private void HomeButton_ButtonClicked() =>
-            currentGame.TogglePauseMenu();
+        private void ChatButton_ButtonClicked()
+        {
+            currentGame.UILayout.ChatContainer.Visible = !currentGame.UILayout.ChatContainer.Visible;
+        }
 
-        private void AccelerationButton_ButtonClicked() =>
-            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0);
+        private void AccelerationButton_ButtonClicked()
+        {
+            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0, false);
+        }
 
         #endregion
         #region Async Methoden
 
-        // Vergrößert das Fenster zur angegebenen Breite
-        private async Task ExpandToAsync(int aimSize)
+        public async Task ExpandCollapseAsync(bool expanding)
         {
-            isExpanded = !isExpanded;
-            while (Bounds.Width <= aimSize)
+            if (expanding)
             {
-                Bounds= new Rectangle(Bounds.X -10,Bounds.Y,Bounds.Width+20,Bounds.Height);
-                expandButton.Bounds = new Rectangle(expandButton.Bounds.X + 10, expandButton.Bounds.Y, expandButton.Bounds.Width, expandButton.Bounds.Height);
-                await Task.Delay(5);
+                await ExpandToAsync(expandButton.Bounds.Width * 6 + ButtonMargin * 7);
+            }
+            else
+            {
+                await CollapseToAsync(expandButton.Bounds.Width + ButtonMargin * 3);
             }
         }
 
-        // Verkleinert das Fenster zur angegebenen Breite
-        private async Task CollapseToAsync(int aimSize)
+        // Vergrößert das Fenster zur angegebenen Breite
+        public async Task ExpandToAsync(int aimSize)
         {
-            isExpanded = !isExpanded;
+            int startPos = Bounds.X;
+            int startWidth = Bounds.Width;
+
+            IsExpanded = true;
+
+            while (Bounds.Width <= aimSize)
+            {
+                Bounds = new Rectangle(Bounds.X - 10, Bounds.Y, Bounds.Width + 20, Bounds.Height);
+                expandButton.Bounds = new Rectangle(expandButton.Bounds.X + 10, expandButton.Bounds.Y, expandButton.Bounds.Width, expandButton.Bounds.Height);
+                await Task.Delay(5);
+            }
+            expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin * 6 + expandButton.Bounds.Width * 5, Bounds.Y + ButtonMargin, expandButton.Bounds.Width, expandButton.Bounds.Height);
+        }
+
+        // Verkleinert das Fenster zur angegebenen Breite
+        public async Task CollapseToAsync(int aimSize)
+        {
+            int startPos = Bounds.X;
+            int startWidth = Bounds.Width;
+            IsExpanded = false;
             while (Bounds.Width >= aimSize)
             {
                 Bounds = new Rectangle(Bounds.X + 10, Bounds.Y, Bounds.Width - 20, Bounds.Height);
                 expandButton.Bounds = new Rectangle(expandButton.Bounds.X - 10, expandButton.Bounds.Y, expandButton.Bounds.Width, expandButton.Bounds.Height);
                 await Task.Delay(5);
             }
+            expandButton.Bounds = new Rectangle(Bounds.X + ButtonMargin, Bounds.Y + ButtonMargin, expandButton.Bounds.Width, expandButton.Bounds.Height);
         }
 
         #endregion

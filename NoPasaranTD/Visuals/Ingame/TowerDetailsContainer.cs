@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using System.Drawing;
 using System.Windows.Forms;
@@ -16,7 +17,7 @@ namespace NoPasaranTD.Visuals.Ingame
         /// <summary>
         /// Der ausgewählte Tower
         /// </summary>
-        public Tower Context 
+        public Tower Context
         {
             get => context;
             set
@@ -58,13 +59,9 @@ namespace NoPasaranTD.Visuals.Ingame
         #endregion
 
         private Game currentGame;
-        public ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
+        private ListContainer<TowerTargetMode, TowerModeItemContainer> TargetModesList;
 
-
-        public TowerDetailsContainer()
-        {
-            
-        }
+        private readonly SolidBrush normalBorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122));
 
         public override void Render(Graphics g)
         {
@@ -72,6 +69,15 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 // Zeichnet den Hintergrund des Fensters
                 g.FillRectangle(Background, Bounds);
+
+                if (Context.Level == StaticInfo.GetTowerLevelCap(Context.GetType()) && !currentGame.GodMode)
+                {
+                    upgradeButton.BorderBrush = Brushes.Red;
+                }
+                else
+                {
+                    upgradeButton.BorderBrush = normalBorderBrush;
+                }
 
                 closeButton.Render(g);
                 upgradeButton.Content = "Upgrade: " + Context.UpgradePrice + "₿";
@@ -122,7 +128,7 @@ namespace NoPasaranTD.Visuals.Ingame
             // Init UpgradeButton
             upgradeButton = new ButtonContainer()
             {
-                Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10,30),
+                Bounds = new Rectangle(Bounds.X + 5, Bounds.Y + Bounds.Height - 35, Bounds.Width / 2 - 10, 30),
                 Content = "Upgrade",
                 Background = new SolidBrush(Color.FromArgb(159, 161, 166)),
                 BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
@@ -161,37 +167,42 @@ namespace NoPasaranTD.Visuals.Ingame
         private void TargetModesList_SelectionChanged()
         {
             Context.TargetMode = TargetModesList.SelectedItem;
-            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("ModeChangeTower", Context, false);
         }
 
         // Wenn der Tower verkauft wird soll das Fenster geschlossen werden.
         private void SellButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context);
+            currentGame.NetworkHandler.InvokeEvent("RemoveTower", Context, false);
         }
 
         // Logik wenn der Tower geupgraded werden soll
         private void UpgradeButton_ButtonClicked()
         {
-            if ((currentGame.Money >= Context.UpgradePrice && Context.LevelCap) || currentGame.GodMode)
-                currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context);
+            if ((currentGame.Money >= Context.UpgradePrice && Context.CanLevelUp()) || currentGame.GodMode)
+            {
+                currentGame.NetworkHandler.InvokeEvent("UpgradeTower", Context, false);
+            }
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             closeButton.MouseDown(e);
             sellButton.MouseDown(e);
             upgradeButton.MouseDown(e);
             TargetModesList.MouseDown(e);
         }
-           
+
         // Versteckt das Fenster wenn der Schließenbutton betätigt wird
         private void CloseButton_ButtonClicked()
         {
             Visible = false;
             Context.IsSelected = false;
-        } 
-            
+        }
     }
 }
