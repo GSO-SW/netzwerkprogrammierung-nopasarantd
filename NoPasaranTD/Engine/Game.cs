@@ -164,12 +164,12 @@ namespace NoPasaranTD.Engine
 
 				var networkPackage = new NetworkPackageMousePosition();
 				networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
-				networkPackage.currentTick = (int)CurrentTick;
+				networkPackage.CurrentTick = (int)CurrentTick;
 
 				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
 				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
 				
-				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
+				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage,false);
 
 				if (CurrentTick % 1000 == 0)
                 {
@@ -662,9 +662,9 @@ namespace NoPasaranTD.Engine
             return null;
         }
 				
-		private void TransferMousePosition(object m)
+		private void TransferMousePosition(object t)
         {
-			var networkPackage = m as NetworkPackageMousePosition;
+			var networkPackage = t as NetworkPackageMousePosition;
 			if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
 				|| networkPackage.Username == NetworkHandler.LocalPlayer.Name) return;
 
@@ -673,14 +673,14 @@ namespace NoPasaranTD.Engine
 				if (usersMouseTag[i] == networkPackage.Username)
                 {
 					hasFound = true;
-					if (usersMousePos[i].currentTick < networkPackage.currentTick)
+					if (usersMousePos[i].currentTick < networkPackage.CurrentTick)
 						usersMousePos[i] =
-							(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick);
+							(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick);
 				}
 			if (!hasFound)
             {
 				usersMousePos.Add(
-					(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick));
+					(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick));
 				usersMouseTag.Add(networkPackage.Username);
 			}
         }
@@ -690,7 +690,8 @@ namespace NoPasaranTD.Engine
         {
             public (int X, int Y) Pos = (0, 0);
             public string Username = String.Empty;
-            public int currentTick = 0;
+
+            public int CurrentTick = 0;
             public int TTL = 2000; // wird nicht überschrieben und in ms
         }
     }
