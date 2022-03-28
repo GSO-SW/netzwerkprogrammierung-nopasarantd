@@ -32,8 +32,6 @@ namespace NoPasaranTD.Engine
 
         public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
 
-		private StaticDisplay StaticDisplay { get; } = null;
-
         // Mouse Cursor Packeteinstellungen
 		private int MouseSendInterval = 200;
         private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos = new List<(int X, int Y, int TTL, int currentTick)>();           
@@ -142,37 +140,41 @@ namespace NoPasaranTD.Engine
 
             CheckVTower();
             for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
+            { 
+                Towers[i].Update(this);
+            }
 
-				Towers[i].Update(this);
+
 
             // eigene Maus schicken
-			if (CurrentTick % MouseSendInterval == 0)
-            {
-				if (NetworkHandler.LocalPlayer == null) return;
-
-				var networkPackage = new NetworkPackageMousePosition();
-				networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
-				networkPackage.CurrentTick = (int)CurrentTick;
-
-				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
-				networkPackage.Username = NetworkHandler.LocalPlayer.Name;  
-				
-				NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage,false);
-
-				if (CurrentTick % 1000 == 0)
+            if (CurrentTick % MouseSendInterval == 0)
+            {              
+                if (NetworkHandler.LocalPlayer != null)
                 {
-                    for (int i = 0; i < usersMousePos.Count; i++)
+                    var networkPackage = new NetworkPackageMousePosition();
+                    networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
+                    networkPackage.CurrentTick = (int)CurrentTick;
+
+                    // TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
+                    networkPackage.Username = NetworkHandler.LocalPlayer.Name;
+
+                    NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
+
+                    if (CurrentTick % 1000 == 0)
                     {
-                        if (usersMousePos[i].TTL < Environment.TickCount)
+                        for (int i = 0; i < usersMousePos.Count; i++)
                         {
-                            usersMousePos.RemoveAt(i);
-                            usersMouseTag.RemoveAt(i);
+                            if (usersMousePos[i].TTL < Environment.TickCount)
+                            {
+                                usersMousePos.RemoveAt(i);
+                                usersMouseTag.RemoveAt(i);
+                            }
                         }
                     }
-                }					
-			}
+                }              
+            }
 
-			UILayout.Update();
+            UILayout.Update();
 			CurrentTick++;
 		}
 
