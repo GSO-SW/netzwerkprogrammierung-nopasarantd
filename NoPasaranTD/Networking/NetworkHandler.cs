@@ -2,6 +2,8 @@
 using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 
@@ -182,16 +184,8 @@ namespace NoPasaranTD.Networking
                 byte[] encodedMessage = Encoding.ASCII.GetBytes(message); // Die Nachricht wird zu einem Bytearray umgewandelt
 
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
-                for (int i = Participants.Count - 1; i >= 0; i--)
-                {
-                    if (Participants[i].Equals(LocalPlayer))
-                    {
-                        continue;
-                    }
-
-                    try { await Socket.SendAsync(encodedMessage, Participants[i].EndPoint); } // Versuche Nachricht an Empfänger zu Senden
-                    catch (Exception ex) { Console.WriteLine(ex); Participants.RemoveAt(i); } // Gebe Fehlermeldung aus und lösche den Empfänger aus der Liste
-                }
+                IPEndPoint[] endpoints = Participants.Where(p => !p.Equals(LocalPlayer)).Select(p => p.EndPoint).ToArray();
+                await Socket.SendAsync(encodedMessage, endpoints);
             }
 
             // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
