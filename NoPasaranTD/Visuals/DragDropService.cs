@@ -10,12 +10,14 @@ namespace NoPasaranTD.Visuals
     public class DragDropService
     {
         public delegate void DragDropFinishHandler(DragDropArgs args);
+        public delegate void DragDropLeftHandler(DragDropArgs args);
 
         /// <summary>
         /// Dieses Event wird beim beenden eines DragDrop Vorganges ausgelöst
         /// </summary>
         public event DragDropFinishHandler DragDropFinish;
 
+        public event DragDropLeftHandler DragDropLeft;
         /// <summary>
         /// Wie kann der Drag Vorgang als Drop bestätigt werden?
         /// </summary>
@@ -80,6 +82,8 @@ namespace NoPasaranTD.Visuals
         public void Leave()
         {
             IsMoving = false;
+            DragDropLeft?.Invoke(new DragDropArgs() { MovedObject = MovedObject, Context = Context });
+            Context = null;
         }
 
         public void MouseDown(MouseEventArgs args)

@@ -3,247 +3,284 @@ using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
+using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Threading.Tasks;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Visuals.Main
 {
     public class GuiMainMenu : GuiComponent
     {
+        #region Buttons
 
-        private static readonly SolidBrush BACKGROUND_COLOR = new SolidBrush(Color.FromArgb(75, Color.Black));
+        private ButtonContainer singleplayerButton;
+        private ButtonContainer multiplayerButton;
+        private ButtonContainer tutorialButton;
+
+        private ButtonContainer optionsButton;
+        private ButtonContainer creditsButton;
+
+        private ButtonContainer closeButton;
+
+        private Game backgroundGame;
+
+        private Rectangle transparancyLayer = new Rectangle(0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
+        private Rectangle randomTextRegion = new Rectangle(50, 60, 200, 200);
+
+        private readonly string randomText = "";
+
+        // Option Werte für die Random Title Animation
+        private float scaleFactor = 1f; // Um welchen Faktor soll zurzeit skaliert werden
+        private readonly float scaleVelocity = 0.001f; // Die Skaliergeschwindigkeit
+        private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
+
+        // Flying Meme Optionen
+        private int memeCounter = 1;
+        private float memePositionX = 0;
+        private float memePositionY = 0;
+        private readonly float memeVelocity = 0.1f;
+        private float memeRotation = -10;
+        private float memeSlope = 0;
+
+        private readonly Random random;
+        private readonly List<Image> memes = ResourceLoader.LoadMemes();
+        #endregion
 
         /// <summary>
-        /// Der aktuelle Status zum Server.<br/>
-        /// Ist eine null-Referenz wenn es keine Probleme gibt
+        /// Der Einheitliche Button wird als Button Design für alle Buttons genutzt
         /// </summary>
-        public string DiscoveryStatus { get; private set; }
+        /// <param name="content"></param>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        public ButtonContainer InitButton(string content, Rectangle bounds)
+        {
+            return new ButtonContainer()
+            {
+                Background = new SolidBrush(Color.FromArgb(132, 140, 156)),
+                BorderBrush = new SolidBrush(Color.FromArgb(108, 113, 122)),
+                Foreground = new SolidBrush(Color.Black),
+                Margin = 3,
+                StringFont = StandartHeader2Font,
+                Bounds = bounds,
+                Content = content,
+            };
+        }
 
-        /// <summary>
-        /// Instanz zum Kommunizieren mit dem Vermittlungsserver
-        /// </summary>
-        public DiscoveryClient DiscoveryClient { get; private set; }
-
-        /// <summary>
-        /// Die jetzig beigetretene Lobby
-        /// </summary>
-        public NetworkLobby CurrentLobby { get; private set; }
-
-        /// <summary>
-        /// Der Spieler als der man eingeloggt ist.<br/>
-        /// Ist eine null-Referenz, wenn der Spieler nicht eingeloggt ist
-        /// </summary>
-        public NetworkClient LocalPlayer { get; set; }
-
-        /// <summary>
-        /// Der vom Menu angezeigte Screen
-        /// </summary>
-        public GuiComponent ForegroundScreen { get; set; }
-
-        /// <summary>
-        /// Screen zum Managen der Liste von Lobbies
-        /// </summary>
-        public LobbyListScreen LobbyListScreen { get; }
-
-        /// <summary>
-        /// Screen zum Managen einer einzelnen Lobby
-        /// </summary>
-        public LobbyScreen LobbyScreen { get; }
-
-        private readonly Game backgroundGame;
         public GuiMainMenu()
         {
-            // Lade Spielszene
-            Map map = MapData.GetMapByFileName("spentagon"); map.Initialize();
+            StaticEngine.TickAcceleration = 1;
+
+            random = new Random();
+            List<string> list = ResourceLoader.DichterUndDenker();
+            randomText = list[random.Next(list.Count - 1)];
+
+            memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
+            memeSlope = (float)1 / random.Next(-30, 30);
+            Decorate();
+        }
+
+        private void Decorate()
+        {
+            // Standartgrößen der Buttons
+            int margin = 10;
+            int buttonHeight = 50;
+            int buttonWidth = 300;
+
+            // Buttons werden initialisiert
+            singleplayerButton = InitButton("Singleplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 - buttonHeight - margin, buttonWidth, buttonHeight));
+            multiplayerButton = InitButton("Multiplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2, buttonWidth, buttonHeight));
+            tutorialButton = InitButton("Tutorial", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight + margin, buttonWidth, buttonHeight));
+
+            optionsButton = InitButton("Options", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin / 2, buttonHeight));
+            creditsButton = InitButton("Credits", new Rectangle(StaticEngine.RenderWidth / 2 + margin, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin, buttonHeight));
+
+            closeButton = InitButton("X", new Rectangle(StaticEngine.RenderWidth - 45, 5, 40, 40));
+
+            // Events werden Aboniiert
+            singleplayerButton.ButtonClicked += SingleplayerButton_ButtonClicked;
+            multiplayerButton.ButtonClicked += MultiplayerButton_ButtonClicked;
+            tutorialButton.ButtonClicked += TutorialButton_ButtonClicked;
+
+            optionsButton.ButtonClicked += OptionsButton_ButtonClicked;
+            creditsButton.ButtonClicked += CreditsButton_ButtonClicked;
+
+            closeButton.ButtonClicked += CloseButton_ButtonClicked;
+
+            Map map = MapData.GetMapByFileName("spentagon");
+            map.Initialize();
+
             backgroundGame = new Game(map, new NetworkHandler());
             {
                 // UILayout unsichtbar und inaktiv schalten
                 backgroundGame.UILayout.Visible = false;
                 backgroundGame.GodMode = true;
+                backgroundGame.WaveManager.AutoStart = true;
 
-                // Spawne Türme in Spielszene
+                // Größe der Türme der Hintergrundspielszene
                 Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(460, 30), towerSize) });
+                Size towerAtillerySize = StaticInfo.GetTowerSize(typeof(TowerArtillery));
+
+                // Setzt die Tower in das Hintergrundspiel ein
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize), Level = 2, }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(460, 30), towerSize), Level = 2 }, true);
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(800, 630), towerSize), Level = 2 }, true);
             }
-
-            LobbyScreen = new LobbyScreen(this);
-            LobbyListScreen = new LobbyListScreen(this);
-            ForegroundScreen = LobbyListScreen;
-            Task.Run(OpenDiscovery);
-        }
-
-        private void OpenDiscovery()
-        { // Verbinde mit Vermittlungsserver
-            try
-            {
-                DiscoveryStatus = "Connecting to server...";
-                DiscoveryClient = new DiscoveryClient(Program.SERVER_ADDRESS, Program.SERVER_PORT)
-                {
-                    OnGameStart = StartGame,
-                    OnInfoUpdate = UpdateInfo
-                };
-                DiscoveryStatus = "Login required!";
-            }
-            catch (Exception ex)
-            {
-                DiscoveryStatus = "Connection failed: " + ex.Message;
-            }
-        }
-
-        public override void Dispose()
-        {
-            LobbyScreen?.Dispose();
-            LobbyListScreen?.Dispose();
-            DiscoveryClient?.Dispose();
-            backgroundGame?.Dispose();
-        }
-
-        #region Discovery event region
-        private void StartGame()
-        { // Befehl zum Starten des Spiels
-            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn)
-            {
-                return;
-            }
-
-            List<NetworkClient> participants = new List<NetworkClient>();
-            { // Baue Mitspieler Liste auf (Host auf index 0)
-                string playerStr;
-                string hostStr = NetworkClient.Serialize(CurrentLobby.Host);
-                foreach (NetworkClient player in DiscoveryClient.Clients)
-                { // Alle Endpunkte (Außer lokaler Spieler)
-                    // Serialisiere den Spieler in ein String
-                    playerStr = NetworkClient.Serialize(player);
-
-                    if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
-                    {
-                        participants.Insert(0, player);
-                    }
-                    else // Wenn kein Host, einfach hinzufügen
-                    {
-                        participants.Add(player);
-                    }
-                }
-
-                // Lokaler Spieler
-                playerStr = NetworkClient.Serialize(LocalPlayer);
-                if (hostStr.Equals(playerStr)) // Wenn Host, dann auf Index 0 setzen
-                {
-                    participants.Insert(0, LocalPlayer);
-                }
-                else
-                {
-                    participants.Add(LocalPlayer); // Wenn kein Host, einfach hinzufügen
-                }
-            }
-            Program.LoadGame(CurrentLobby.MapName, new NetworkHandler(
-                DiscoveryClient.UdpClient, participants, LocalPlayer
-            )
-            { Lobby = CurrentLobby });
-        }
-
-        private void UpdateInfo()
-        { // Befehl zum aktualisieren der Lobbyinformationen
-            if (DiscoveryClient == null || !DiscoveryClient.LoggedIn)
-            {
-                return;
-            }
-
-            CurrentLobby = null;
-            foreach (NetworkLobby lobby in DiscoveryClient.Lobbies)
-            {
-                if (lobby.PlayerExists(LocalPlayer))
-                {
-                    CurrentLobby = lobby;
-                }
-            }
-
-            DiscoveryStatus = null;
-            LobbyListScreen.UpdateLobbies(DiscoveryClient.Lobbies);
-            LobbyScreen.Lobby = CurrentLobby;
-
-            // Wenn in keiner lobby, zeige die lobby liste
-            // andernfalls, zeige die lobby informationen
-            ForegroundScreen = CurrentLobby == null ?
-                (GuiComponent)LobbyListScreen : LobbyScreen;
-        }
-        #endregion
-
-        #region Implementation region
-        public override void Update()
-        {
-            backgroundGame.Update();
-            ForegroundScreen.Update();
         }
 
         public override void Render(Graphics g)
         {
-            // Spielszene rendern und dimmen
+
+            // Der Titel
+            string title = "No Pasaran! TD";
+            Size titleSize = TextRenderer.MeasureText(title, StandartTitle1Font);
+
+            // Rendert das Hintergrundspiel
             backgroundGame.Render(g);
-            g.FillRectangle(BACKGROUND_COLOR,
-                0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight);
-            ForegroundScreen.Render(g);
 
-            if (DiscoveryStatus != null)
-            { // Zeichne den Status zum Vermittlungsserver
-                Size textSize = TextRenderer.MeasureText(DiscoveryStatus, StandartText1Font);
-                g.DrawString(DiscoveryStatus, StandartText1Font, Brushes.Red, 0, StaticEngine.RenderHeight - textSize.Height);
-            }
-        }
+            Matrix currentTransform = g.Transform;
 
-        public override void KeyUp(KeyEventArgs e)
-        {
-            ForegroundScreen.KeyUp(e);
-        }
+            g.TranslateTransform(memePositionX, memePositionY);
+            g.RotateTransform(memeRotation);
 
-        public override void KeyDown(KeyEventArgs e)
-        {
-            ForegroundScreen.KeyDown(e);
-        }
+            g.DrawImage(memes[memeCounter], 0, 0, 150, 100);
 
-        public override void MouseUp(MouseEventArgs e)
-        {
-            ForegroundScreen.MouseUp(e);
+            g.Transform = currentTransform;
+
+            // Zeichnet das Transparency Layer
+            g.FillRectangle(new SolidBrush(Color.FromArgb(150, 150, 150, 150)), transparancyLayer);
+
+            // Rendert den Title
+            g.DrawString(title, StandartTitle1Font, Brushes.Black, StaticEngine.RenderWidth / 2 - titleSize.Width / 2, StaticEngine.RenderHeight / 4 - titleSize.Height);
+
+            // Rendert alle UI Elemente           
+            singleplayerButton.Render(g);
+            multiplayerButton.Render(g);
+            tutorialButton.Render(g);
+
+            optionsButton.Render(g);
+            creditsButton.Render(g);
+
+            closeButton.Render(g);
+
+
+            g.TranslateTransform(randomTextRegion.X + randomTextRegion.Width / 2, randomTextRegion.Y + randomTextRegion.Height / 2);
+            g.RotateTransform(-25);
+            g.ScaleTransform(scaleFactor, scaleFactor);
+
+            g.DrawString(randomText, StandartHeader2Font, Brushes.Yellow, randomTextRegion);
+
+            g.Transform = currentTransform;
         }
 
         public override void MouseDown(MouseEventArgs e)
         {
-            ForegroundScreen.MouseDown(e);
+            singleplayerButton.MouseDown(e);
+            multiplayerButton.MouseDown(e);
+            tutorialButton.MouseDown(e);
+
+            optionsButton.MouseDown(e);
+            creditsButton.MouseDown(e);
+
+            closeButton.MouseDown(e);
         }
 
-        public override void MouseMove(MouseEventArgs e)
+        public override void Update()
         {
-            ForegroundScreen.MouseMove(e);
-        }
+            backgroundGame.Update();
 
-        public override void MouseWheel(MouseEventArgs e)
-        {
-            ForegroundScreen.MouseWheel(e);
-        }
-        #endregion
+            singleplayerButton.Update();
+            multiplayerButton.Update();
+            tutorialButton.Update();
 
-        internal static ButtonContainer CreateButton(string text, Rectangle bounds)
-        {
-            return new ButtonContainer
+            optionsButton.Update();
+            creditsButton.Update();
+
+            closeButton.Update();
+
+            // Skaliert den Random Text nach innen
+            if (currentDirection == 0 && StaticEngine.ElapsedTicks % 5 == 0)
             {
-                Bounds = bounds,
-                Content = text,
-                StringFont = StandartText1Font,
-                Foreground = Brushes.Black,
-                Background = Brushes.LightGray,
-                BorderBrush = Brushes.Blue,
-                Margin = 2
-            };
+                scaleFactor -= scaleVelocity;
+                if (scaleFactor <= 0.9)
+                {
+                    currentDirection = 1;
+                }
+            }
+            else if (currentDirection == 1 && StaticEngine.ElapsedTicks % 5 == 0) // Skaliert den Random Text nach aussen
+            {
+                scaleFactor += scaleVelocity;
+                if (scaleFactor >= 1)
+                {
+                    currentDirection = 0;
+                }
+            }
+
+            // Aktualisiert die Memebild Position
+            memePositionX += memeVelocity;
+            memePositionY += memeSlope;
+            memeRotation += 0.01f;
+
+            // Überprüft ob das derzeitige Meme noch valide ist
+            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
+            {
+                memeCounter++;
+                if (memeCounter == memes.Count)
+                {
+                    memeCounter = 1;
+                }
+
+                memePositionY = random.Next(200, StaticEngine.RenderHeight - 200);
+                memePositionX = -memes[memeCounter].Width;
+                memeSlope = (float)1 / random.Next(-30, 30);
+                memeRotation = random.Next(-40, 40);
+
+            }
         }
 
+        // Öffnet die Multiplayerfunktion des Spieles
+        private void MultiplayerButton_ButtonClicked()
+        {
+            Program.LoadScreen(new GuiLobbyMenu());
+        }
+
+        // Öffnet die Singleplayerfunktionen des Spieles
+        private void SingleplayerButton_ButtonClicked()
+        {
+            Program.LoadScreen(new GuiSelectMap());
+        }
+
+        // Schließt die Applikation
+        private void CloseButton_ButtonClicked()
+        {
+            Program.Shutdown();
+        }
+
+        private void CreditsButton_ButtonClicked()
+        {
+            // TODO: Credits Screen
+        }
+
+        private void OptionsButton_ButtonClicked()
+        {
+            // TODO: Options Screen
+        }
+
+        private void TutorialButton_ButtonClicked()
+        {
+            // TODO: Tutorial Screen
+        }
+
+        public override void Dispose()
+        {
+            backgroundGame.Dispose();
+        }
     }
 }

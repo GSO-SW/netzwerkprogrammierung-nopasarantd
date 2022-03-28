@@ -22,17 +22,17 @@ namespace NoPasaranTD.Visuals.Main
         public GuiSelectMap()
         {
             mapList = ResourceLoader.LoadAllMaps();
-            btnPreviousMap = GuiMainMenu.CreateButton("Previous Map", new Rectangle(
+            btnPreviousMap = GuiLobbyMenu.CreateButton("Previous Map", new Rectangle(
                 StaticEngine.RenderWidth / 4 - 100, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
             ));
             btnPreviousMap.ButtonClicked += () => currentMap = Math.Abs(--currentMap % mapList.Count);
 
-            btnStartGame = GuiMainMenu.CreateButton("Start Game", new Rectangle(
+            btnStartGame = GuiLobbyMenu.CreateButton("Start Game", new Rectangle(
                 StaticEngine.RenderWidth / 2 - 100, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
             ));
             btnStartGame.ButtonClicked += () => Program.LoadGame(mapList.Keys.ElementAt(currentMap));
 
-            btnNextMap = GuiMainMenu.CreateButton("Next Map", new Rectangle(
+            btnNextMap = GuiLobbyMenu.CreateButton("Next Map", new Rectangle(
                 StaticEngine.RenderWidth / 2 + 200, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
             ));
             btnNextMap.ButtonClicked += () => currentMap = ++currentMap % mapList.Count;
@@ -50,6 +50,10 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Render(Graphics g)
         {
+            if (mapList.Count == 0)
+            {
+                return;
+            }
             // Zeichne Karte
             g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
@@ -65,6 +69,14 @@ namespace NoPasaranTD.Visuals.Main
             btnNextMap.MouseDown(e);
             btnPreviousMap.MouseDown(e);
             btnStartGame.MouseDown(e);
+        }
+
+        public override void KeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Program.LoadGame(null);
+            }
         }
 
     }

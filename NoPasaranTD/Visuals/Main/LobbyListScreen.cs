@@ -12,11 +12,10 @@ namespace NoPasaranTD.Visuals.Main
 
         private readonly ListContainer<NetworkLobby, LobbyItemContainer> lobbyList;
         private readonly ButtonContainer btnUpdatePlayer;
-        private readonly ButtonContainer btnPlayLocalGame;
         private readonly ButtonContainer btnCreateLobby;
 
-        private readonly GuiMainMenu parent;
-        public LobbyListScreen(GuiMainMenu parent)
+        private readonly GuiLobbyMenu parent;
+        public LobbyListScreen(GuiLobbyMenu parent)
         {
             this.parent = parent;
             lobbyList = new ListContainer<NetworkLobby, LobbyItemContainer>()
@@ -33,27 +32,18 @@ namespace NoPasaranTD.Visuals.Main
             lobbyList.SelectionChanged += JoinLobby;
 
             // Aktualisiere Spielerinformationen
-            btnUpdatePlayer = GuiMainMenu.CreateButton("Login", new Rectangle(5, 5, 100, 30));
+            btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(5, 5, 100, 30));
 
             // TODO: Mit TextBox aktualisieren
             btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient("SKRR" + Environment.TickCount));
 
             // Erstelle neue Lobby
-            btnCreateLobby = GuiMainMenu.CreateButton("Create Lobby", new Rectangle(
-                lobbyList.Position.X + lobbyList.ContainerSize.Width - 305,
-                lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
-                150, 30
-            ));
-            btnCreateLobby.ButtonClicked += () => CreateLobby(parent.LocalPlayer);
-
-            // Lade privates Spiel
-            btnPlayLocalGame = GuiMainMenu.CreateButton("Play Local Game", new Rectangle(
+            btnCreateLobby = GuiLobbyMenu.CreateButton("Create Lobby", new Rectangle(
                 lobbyList.Position.X + lobbyList.ContainerSize.Width - 150,
                 lobbyList.Position.Y + lobbyList.ContainerSize.Height + 5,
                 150, 30
             ));
-
-            btnPlayLocalGame.ButtonClicked += () => Program.LoadScreen(new GuiSelectMap());
+            btnCreateLobby.ButtonClicked += () => CreateLobby(parent.LocalPlayer);
         }
 
         /// <summary>
@@ -127,7 +117,6 @@ namespace NoPasaranTD.Visuals.Main
         public override void Render(Graphics g)
         {
             btnUpdatePlayer.Render(g);
-            btnPlayLocalGame.Render(g);
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
 
@@ -160,7 +149,6 @@ namespace NoPasaranTD.Visuals.Main
         public override void MouseDown(MouseEventArgs e)
         {
             btnUpdatePlayer.MouseDown(e);
-            btnPlayLocalGame.MouseDown(e);
             btnCreateLobby.MouseDown(e);
             lobbyList.MouseDown(e);
         }

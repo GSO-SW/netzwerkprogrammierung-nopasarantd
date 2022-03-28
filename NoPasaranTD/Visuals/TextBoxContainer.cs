@@ -8,10 +8,17 @@ namespace NoPasaranTD.Visuals
     {
         public string Text { get; set; } = "";
         public int Margin { get; set; }
+
+        public SolidBrush HighlightedBorderBrush { get; set; } = new SolidBrush(Color.DodgerBlue);
         public SolidBrush BorderBrush { get; set; } = new SolidBrush(Color.Gray);
         public SolidBrush Foreground { get; set; } = new SolidBrush(Color.Black);
         public SolidBrush Background { get; set; } = new SolidBrush(Color.White);
         public Font TextFont { get; set; } = StandartText2Font;
+
+
+        /// <summary>
+        /// Die Position an dem das Caret stehen soll (Die Cursorposition in der Textbox)
+        /// </summary>
         public int CaretIndex { get; set; }
         public bool IsFocused { get; set; }
 
@@ -22,14 +29,18 @@ namespace NoPasaranTD.Visuals
         {
             if (IsFocused)
             {
-                if (e.KeyChar == '\b' && CaretIndex > 0 && Text.Length >= 0)
+                if (e.KeyChar == '\b' && CaretIndex > 0 && Text.Length >= 0) // Backspace 
                 {
                     string left = Text.Substring(0, CaretIndex - 1);
                     string right = Text.Substring(CaretIndex, Text.Length - CaretIndex);
                     Text = left + right;
                     CaretIndex--;
                 }
-                else
+                else if (e.KeyChar == (char)Keys.Enter || e.KeyChar == '\n') // Sobald ein Enter-Char eingegeben wird, wird nichts eingetragen
+                {
+                    return;
+                }
+                else // Sonstige Zeichen, die nicht Backspace sind
                 {
                     if (e.KeyChar == '\b')
                     {
@@ -78,7 +89,15 @@ namespace NoPasaranTD.Visuals
 
         public override void Render(Graphics g)
         {
-            g.FillRectangle(BorderBrush, Bounds);
+            if (IsFocused)
+            {
+                g.FillRectangle(HighlightedBorderBrush, Bounds);
+            }
+            else
+            {
+                g.FillRectangle(BorderBrush, Bounds);
+            }
+
             g.FillRectangle(Background, innerBound);
 
             Matrix current = g.Transform;
@@ -86,15 +105,22 @@ namespace NoPasaranTD.Visuals
 
             g.SetClip(innerBound);
             g.TranslateTransform(offsetX, 0);
-            g.DrawString(Text, TextFont, Foreground, innerBound.X, innerBound.Y, new StringFormat(StringFormatFlags.NoWrap));
-            g.Clip = currentClip;
+            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y, StringFormat.GenericDefault);
 
+            g.Clip = currentClip;
             g.Transform = current;
 
             if (Text != "" && IsFocused)
             {
-                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), TextFont);
+                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point));
+                leftTextSize.Width -= 2;
+
+                g.SetClip(innerBound);
+                g.TranslateTransform(offsetX, 0);
                 g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width, Bounds.Y + 1, Bounds.X + leftTextSize.Width, Bounds.Y + leftTextSize.Height - 2);
+
+                g.Clip = currentClip;
+                g.Transform = current;
 
                 if (leftTextSize.Width >= innerBound.Width)
                 {
@@ -103,7 +129,7 @@ namespace NoPasaranTD.Visuals
             }
             else if (IsFocused)
             {
-                g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 10);
+                g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 15);
             }
         }
     }

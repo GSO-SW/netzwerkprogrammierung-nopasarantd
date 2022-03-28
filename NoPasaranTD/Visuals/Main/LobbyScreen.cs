@@ -26,8 +26,8 @@ namespace NoPasaranTD.Visuals.Main
 
         private readonly Dictionary<string, Map> mapList;
 
-        private readonly GuiMainMenu parent;
-        public LobbyScreen(GuiMainMenu parent)
+        private readonly GuiLobbyMenu parent;
+        public LobbyScreen(GuiLobbyMenu parent)
         {
             this.parent = parent;
             mapList = ResourceLoader.LoadAllMaps();
@@ -37,20 +37,20 @@ namespace NoPasaranTD.Visuals.Main
                 Alignment = StringAlignment.Center
             };
 
-            btnLeaveLobby = GuiMainMenu.CreateButton("Leave Lobby", new Rectangle(
+            btnLeaveLobby = GuiLobbyMenu.CreateButton("Leave Lobby", new Rectangle(
                 5, StaticEngine.RenderHeight - 35,
                 150, 30
             ));
             btnLeaveLobby.ButtonClicked += LeaveLobby;
 
-            btnStartGame = GuiMainMenu.CreateButton("Start Game", new Rectangle(
+            btnStartGame = GuiLobbyMenu.CreateButton("Start Game", new Rectangle(
                 StaticEngine.RenderWidth - 155,
                 StaticEngine.RenderHeight - 35,
                 150, 30
             ));
             btnStartGame.ButtonClicked += StartGame;
 
-            btnPreviousMap = GuiMainMenu.CreateButton("<", new Rectangle(
+            btnPreviousMap = GuiLobbyMenu.CreateButton("<", new Rectangle(
                 StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3 + 5, StaticEngine.RenderHeight / 3 + 5, 100, 30
             ));
 
@@ -63,7 +63,7 @@ namespace NoPasaranTD.Visuals.Main
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
             };
 
-            btnNextMap = GuiMainMenu.CreateButton(">", new Rectangle(
+            btnNextMap = GuiLobbyMenu.CreateButton(">", new Rectangle(
                StaticEngine.RenderWidth - 105, StaticEngine.RenderHeight / 3 + 5, 100, 30
             ));
 
@@ -112,6 +112,11 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
+            if (mapList.Count == 0)
+            {
+                return;
+            }
+
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);

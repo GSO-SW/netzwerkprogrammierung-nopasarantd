@@ -22,13 +22,11 @@ namespace NoPasaranTD.Engine
 
         private void Display_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Game backupGame = currentGame; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
+            currentGame?.Dispose();
             currentGame = null;
-            backupGame?.Dispose(); // Game instanz freigeben
 
-            GuiComponent backupScreen = currentScreen; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
+            currentScreen?.Dispose();
             currentScreen = null;
-            backupScreen?.Dispose(); // Screen instanz freigeben
         }
 
         /// <summary>
@@ -51,8 +49,7 @@ namespace NoPasaranTD.Engine
         /// <param name="handler">Dementsprechender Netzwerkmanager</param>
         public void LoadGame(string mapFile, NetworkHandler handler)
         {
-            Game backupGame = currentGame; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
-
+            currentGame?.Dispose();
             if (mapFile == null)
             {
                 currentGame = null; // Entlade Spiel
@@ -65,8 +62,6 @@ namespace NoPasaranTD.Engine
                 currentGame = new Game(map, handler);
                 LoadScreen(null); // Screen entladen
             }
-
-            backupGame?.Dispose(); // Game instanz freigeben
         }
 
         /// <summary>
@@ -77,9 +72,8 @@ namespace NoPasaranTD.Engine
         /// <param name="screen">Der zu ladende Screen</param>
         public void LoadScreen(GuiComponent screen)
         {
-            GuiComponent backupScreen = currentScreen; // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
+            currentScreen?.Dispose(); // Zwischengespeichert für Fehlervorbeugung beim Aktualisieren
             currentScreen = screen;
-            backupScreen?.Dispose();
         }
 
         #region Mouse region
