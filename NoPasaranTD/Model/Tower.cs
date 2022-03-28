@@ -23,9 +23,9 @@ namespace NoPasaranTD.Model
         public List<Vector2D> NotVisibleSpots { get; private set; }
 
         public uint Strength => StaticInfo.GetTowerDamage(GetType()) * Level;
-        public uint Delay => StaticInfo.GetTowerDelay(GetType()) / (Level * 2);
-        public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.3;
-        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level;
+        public uint Delay => (uint) (StaticInfo.GetTowerDelay(GetType()) / (Level * 1.75));
+        public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.2;
+        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level*2;
         public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
         public Guid ID { get; } = Guid.NewGuid();
 
