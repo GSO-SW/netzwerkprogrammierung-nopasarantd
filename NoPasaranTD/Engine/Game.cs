@@ -27,8 +27,13 @@ namespace NoPasaranTD.Engine
 		public bool GodMode { get; set; } = true;
 		public bool Paused { get; set; } = false;
 		public int Round { get; set; } = 1;
+
 		private StaticDisplay StaticDisplay { get; } = null;
+
+        // Mouse Cursor Packeteinstellungen
 		private int MouseSendInterval = 200;
+        private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos = new List<(int X, int Y, int TTL, int currentTick)>();           
+        private static List<string> usersMouseTag = new List<string>();
 
         /// <summary>
         /// Initialisiert ein neues Spiel
@@ -123,8 +128,8 @@ namespace NoPasaranTD.Engine
             {
 				if (NetworkHandler.LocalPlayer == null) return;
 
-				var networkPackage = new NetworkPackage_MousePosition();
-				networkPackage.pos = (StaticEngine.MouseX, StaticEngine.MouseY);
+				var networkPackage = new NetworkPackageMousePosition();
+				networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
 				networkPackage.currentTick = (int)CurrentTick;
 
 				// TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
@@ -510,22 +515,10 @@ namespace NoPasaranTD.Engine
 
             throw new Exception("Tower not found");
         }
-
-
-		[Serializable]
-		private class NetworkPackage_MousePosition
-		{
-			public (int X, int Y) pos = (0, 0);
-			public string Username = String.Empty;
-			public int currentTick = 0;
-			public int TTL = 2000; // wird nicht überschrieben und in ms
-		}
-		private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos
-			= new List<(int X, int Y, int TTL, int currentTick)>();
-		private static List<string> usersMouseTag = new List<string>();
+				
 		private void TransferMousePosition(object m)
         {
-			var networkPackage = m as NetworkPackage_MousePosition;
+			var networkPackage = m as NetworkPackageMousePosition;
 			if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
 				|| networkPackage.Username == NetworkHandler.LocalPlayer.Name) return;
 
@@ -536,16 +529,24 @@ namespace NoPasaranTD.Engine
 					hasFound = true;
 					if (usersMousePos[i].currentTick < networkPackage.currentTick)
 						usersMousePos[i] =
-							(networkPackage.pos.X, networkPackage.pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick);
+							(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick);
 				}
 			if (!hasFound)
             {
 				usersMousePos.Add(
-					(networkPackage.pos.X, networkPackage.pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick));
+					(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.currentTick));
 				usersMouseTag.Add(networkPackage.Username);
 			}
         }
 
+        [Serializable]
+        private class NetworkPackageMousePosition
+        {
+            public (int X, int Y) Pos = (0, 0);
+            public string Username = String.Empty;
+            public int currentTick = 0;
+            public int TTL = 2000; // wird nicht überschrieben und in ms
+        }
     }
 }
 
