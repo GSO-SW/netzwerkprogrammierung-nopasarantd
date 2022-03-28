@@ -54,18 +54,6 @@ namespace NoPasaranTD.Engine
             InitBalloons();
         }
 
-		private void InitNetworkHandler()
-		{
-			NetworkHandler.EventHandlers.Add("AddTower", AddTower);
-			NetworkHandler.EventHandlers.Add("RemoveTower", RemoveTower);
-			NetworkHandler.EventHandlers.Add("UpgradeTower", UpgradeTower);
-			NetworkHandler.EventHandlers.Add("ModeChangeTower", ModeChangeTower);
-			NetworkHandler.EventHandlers.Add("Accelerate", AccelerateGame);
-			NetworkHandler.EventHandlers.Add("ContinueRound", StartRound);
-			NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
-            NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
-            
-        }
         private void InitNetworkHandler()
         {
             NetworkHandler.EventHandlers.Add("AddTower", AddVTower);
@@ -77,6 +65,7 @@ namespace NoPasaranTD.Engine
             NetworkHandler.EventHandlers.Add("ToggleAutoStart", ToggelAutoStart);
             NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
             NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
+            NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
         }
 
         /// <summary>
@@ -141,11 +130,7 @@ namespace NoPasaranTD.Engine
                     {
                         if (!GodMode)
                         {
-                            HealthPoints -= (int)Balloons[i][j].Strength;
-                            if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
-                            {
-                                Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
-                            }
+                            NetworkHandler.InvokeEvent("UpdateHealth", (int)(HealthPoints - Balloons[i][j].Strength));
                         }
                         Balloons[i].RemoveAt(j);
                     }
@@ -157,29 +142,6 @@ namespace NoPasaranTD.Engine
                     }
                 }
             }
-			WaveManager.Update();
-			for (int i = 0; i < Balloons.Length; i++)
-			{
-				for (int j = Balloons[i].Count - 1; j >= 0; j--)
-				{ // Aktualisiere Ballons
-					Balloons[i][j].PathPosition += 0.045f * StaticInfo.GetBalloonVelocity(Balloons[i][j].Type);
-					if (Balloons[i][j].PathPosition >= CurrentMap.PathLength)
-					{
-						if (!GodMode)
-						{
-							
-                            NetworkHandler.InvokeEvent("UpdateHealth", (int)(HealthPoints - Balloons[i][j].Strength));
-                        }
-
-						Balloons[i].RemoveAt(j);
-					}
-					else if (CurrentMap.CheckBalloonPosFragment(Balloons[i][j].PathPosition, (uint)i))
-					{
-						Balloons[i + 1].Add(Balloons[i][j]); // Einfügen des Ballons in das nächste Pfadsegment
-						Balloons[i].RemoveAt(j); // Entfernen des Ballons aus dem letzten Pfadsegment
-					}
-				}
-			}
 
             CheckVTower();
             for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
@@ -555,7 +517,6 @@ namespace NoPasaranTD.Engine
                 Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
         }
 
-		public void UpgradeTower(object t)
         /// <summary>
         /// Upgraded die lokale Vesion des übergebenen Turmes
         /// </summary>
