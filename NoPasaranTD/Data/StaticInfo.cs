@@ -10,7 +10,7 @@ namespace NoPasaranTD.Data
     public static class StaticInfo
     {
         #region Startwerte
-        public static readonly int StartMoney = 125;
+        public static readonly int StartMoney = 200;
         public static readonly int StartHP = 100;
         #endregion
 
@@ -157,10 +157,10 @@ namespace NoPasaranTD.Data
             {BalloonType.None,     0},
             {BalloonType.Red,      1},
             {BalloonType.Green,    2},
-            {BalloonType.Blue,     3},
-            {BalloonType.Purple,   4},
-            {BalloonType.Black,    5},
-            {BalloonType.Gold,     6}
+            {BalloonType.Blue,     4},
+            {BalloonType.Purple,   6},
+            {BalloonType.Black,    8},
+            {BalloonType.Gold,     10}
         };
         #endregion  // Dictionary für die Ballons
 
