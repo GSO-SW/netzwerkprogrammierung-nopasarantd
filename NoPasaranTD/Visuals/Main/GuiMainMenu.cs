@@ -79,6 +79,8 @@ namespace NoPasaranTD.Visuals.Main
 
             memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
             memeSlope = (float)1 / random.Next(-30, 30);
+            memeCounter = random.Next(0, memes.Count - 1);
+
             Decorate();
         }
 
@@ -231,11 +233,8 @@ namespace NoPasaranTD.Visuals.Main
             // Überprüft ob das derzeitige Meme noch valide ist
             if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
             {
-                memeCounter++;
-                if (memeCounter == memes.Count)
-                {
-                    memeCounter = 1;
-                }
+                memeCounter = random.Next(0, memes.Count - 1);
+                
 
                 memePositionY = random.Next(200, StaticEngine.RenderHeight - 200);
                 memePositionX = -memes[memeCounter].Width;
@@ -281,6 +280,10 @@ namespace NoPasaranTD.Visuals.Main
         public override void Dispose()
         {
             backgroundGame.Dispose();
+            for (int i = memes.Count-1; i >= 0; i--)
+            {
+                memes[i].Dispose();
+            }
         }
     }
 }
