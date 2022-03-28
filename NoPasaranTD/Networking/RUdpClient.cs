@@ -12,6 +12,12 @@ namespace NoPasaranTD.Networking
 {
     internal struct RUdpPacket
     {
+
+        public const byte CODE_UDP = 0x00;
+        public const byte CODE_PKG = 0x01;
+        public const byte CODE_ACK = 0x02;
+        public const byte CODE_SYN = 0x03;
+
         public RUdpPacket(byte type, ulong sequence, byte[] data)
         {
             Type = type;
@@ -39,6 +45,7 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public static byte[] Serialize(RUdpPacket packet)
         {
+            if (packet.Type == CODE_UDP) return packet.Data;
             byte[] data = new byte[17 + packet.Data.Length];
 
             data[0] = packet.Type;
@@ -56,6 +63,10 @@ namespace NoPasaranTD.Networking
             byte type = data[0];
             ulong id = BitConverter.ToUInt64(data, 1);
             long length = BitConverter.ToInt64(data, 9);
+
+            // UDP validität prüfen
+            if (type < CODE_UDP || type > CODE_SYN || 17 + length != data.LongLength)
+                return new RUdpPacket(CODE_UDP, 0, data);
 
             byte[] packet = new byte[length];
             Array.Copy(data, 17, packet, 0, length);
@@ -142,10 +153,6 @@ namespace NoPasaranTD.Networking
         /// </summary>
         private const uint MAX_PACKET_LOSS = 15;
 
-        private const byte CODE_PKG = 0x01;
-        private const byte CODE_ACK = 0x02;
-        private const byte CODE_SYN = 0x03;
-
         /// <summary>
         /// Höchster Ping von allen noch verbundenen Endpunkten
         /// </summary>
@@ -182,9 +189,15 @@ namespace NoPasaranTD.Networking
             packetsSent?.Clear();
         }
 
-        public async Task SendAsync(byte[] data, params IPEndPoint[] endpoints)
+        public async Task SendUnreliableAsync(byte[] data, params IPEndPoint[] endpoints)
         {
-            RUdpPacket packet = new RUdpPacket(CODE_PKG, localClient.SequenceID, data);
+            foreach (IPEndPoint endpoint in endpoints)
+                await udpClient.SendAsync(data, data.Length, endpoint);
+        }
+
+        public async Task SendReliableAsync(byte[] data, params IPEndPoint[] endpoints)
+        {
+            RUdpPacket packet = new RUdpPacket(RUdpPacket.CODE_PKG, localClient.SequenceID, data);
             packetsSent[packet.Sequence] = new RUdpPacketInfo(packet, endpoints);
 
             foreach (IPEndPoint endpoint in endpoints)
@@ -252,9 +265,10 @@ namespace NoPasaranTD.Networking
                         RUdpPacketCombo combo = await ReceivePacketAsync();
                         switch (combo.Packet.Type)
                         {
-                            case CODE_PKG: await AcceptPKG(combo); break;
-                            case CODE_ACK: AcceptACK(combo); break;
-                            case CODE_SYN: await AcceptSYN(combo); break;
+                            case RUdpPacket.CODE_UDP: AcceptUDP(combo); break;
+                            case RUdpPacket.CODE_PKG: await AcceptPKG(combo); break;
+                            case RUdpPacket.CODE_ACK: AcceptACK(combo); break;
+                            case RUdpPacket.CODE_SYN: await AcceptSYN(combo); break;
                             default: throw new IOException("Invalid Packet received");
                         }
                     }
@@ -266,6 +280,11 @@ namespace NoPasaranTD.Networking
             }
         }
 
+        private void AcceptUDP(RUdpPacketCombo combo)
+        {
+            packetsReceived.Enqueue(combo);
+        }
+
         private async Task AcceptPKG(RUdpPacketCombo combo)
         {
             RUdpClientInfo client = GetRemoteClient(combo.Endpoint);
@@ -275,12 +294,12 @@ namespace NoPasaranTD.Networking
             }
             else if (combo.Packet.Sequence > client.SequenceID)
             { // Client hinkt hinterher, frage das Paket erneut an
-                await SendPacketAsync(new RUdpPacket(CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
+                await SendPacketAsync(new RUdpPacket(RUdpPacket.CODE_SYN, client.SequenceID, new byte[0]), combo.Endpoint);
                 return;
             }
 
             // Akzeptiere das Paket
-            await SendPacketAsync(new RUdpPacket(CODE_ACK, client.SequenceID, new byte[0]), combo.Endpoint);
+            await SendPacketAsync(new RUdpPacket(RUdpPacket.CODE_ACK, client.SequenceID, new byte[0]), combo.Endpoint);
             packetsReceived.Enqueue(combo);
             client.SequenceID++;
         }

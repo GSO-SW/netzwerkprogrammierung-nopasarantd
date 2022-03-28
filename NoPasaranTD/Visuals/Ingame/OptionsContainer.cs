@@ -229,13 +229,13 @@ namespace NoPasaranTD.Visuals.Ingame
         // Aktiviert oder Deaktiviert das Autospawning der Ballons
         private void AutoStartButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0, false);
+            currentGame.NetworkHandler.InvokeEvent("ToggleAutoStart", 0);
         }
 
         // Startet das Spawning der Ballons beim betätigen des Buttons
         private void StartButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0, false);
+            currentGame.NetworkHandler.InvokeEvent("ContinueRound", 0);
         }
 
         private void ChatButton_ButtonClicked()
@@ -245,7 +245,7 @@ namespace NoPasaranTD.Visuals.Ingame
 
         private void AccelerationButton_ButtonClicked()
         {
-            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0, false);
+            currentGame.NetworkHandler.InvokeEvent("Accelerate", 0);
         }
 
         #endregion

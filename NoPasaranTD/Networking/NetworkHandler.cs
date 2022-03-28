@@ -151,7 +151,7 @@ namespace NoPasaranTD.Networking
                         EventHandlers.TryGetValue(taskQueue[i].Handler, out Action<object> handler);
                         handler(taskQueue[i].Parameter); // Task ausführen
                         Console.WriteLine("Desync detected  " + taskQueue[i].Handler);
-                        InvokeEvent("ResyncReq", 0, false);
+                        InvokeEvent("ResyncReq", 0);
                         if (taskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
                         {
                             taskQueue.RemoveAt(i); // Task aus der Queue entfernen
@@ -171,7 +171,7 @@ namespace NoPasaranTD.Networking
         /// </summary>
         /// <param name="message">Die Nachricht als String</param>
         /// <param resend="resend">Soll das Paket selbst ausgeführt werden</param>
-        public async void InvokeEvent(string command, object param, bool resend = false)
+        public async void InvokeEvent(string command, object param, bool reliable = true)
         {
             if (!OfflineMode)
             {
@@ -182,7 +182,11 @@ namespace NoPasaranTD.Networking
 
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
                 IPEndPoint[] endpoints = Participants.Where(p => !p.Equals(LocalPlayer)).Select(p => p.EndPoint).ToArray();
-                await Socket.SendAsync(encodedMessage, endpoints);
+
+                if(reliable)
+                    await Socket.SendReliableAsync(encodedMessage, endpoints);
+                else
+                    await Socket.SendUnreliableAsync(encodedMessage, endpoints);
             }
 
             // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
@@ -193,10 +197,7 @@ namespace NoPasaranTD.Networking
             }
 
             // Führe event im Client aus
-            if (!resend)
-            {
-                taskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
-            }
+            taskQueue.Add(new NetworkTask(command, param, Game.CurrentTick + 1));
         }
 
         /// <summary>
@@ -293,7 +294,7 @@ namespace NoPasaranTD.Networking
 
                 foreach (NetworkTask item in tasks)
                 {
-                    InvokeEvent("ResyncReceive", item, false);
+                    InvokeEvent("ResyncReceive", item);
                 }
 
                 Console.WriteLine(tasks.Count + "");
