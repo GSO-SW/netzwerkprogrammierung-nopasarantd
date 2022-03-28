@@ -91,8 +91,7 @@ namespace NoPasaranTD.Model
         /// <param name="map"></param>
         public void SearchSegments(Map map)
         {
-            Rectangle rectangle = map.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, Hitbox); // Das skallierte Rechteck des Turmes
-            Vector2D centreP = new Vector2D(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2); // Das Zentrum des Turmes welches als Anhaltspunkt für die Reichweite genommen wird
+            Vector2D centreP = new Vector2D(Hitbox.X + Hitbox.Width / 2, Hitbox.Y + Hitbox.Height / 2); // Das Zentrum des Turmes welches als Anhaltspunkt für die Reichweite genommen wird
             FindSegmentsInRange(map, centreP);
             FindObstaclesInTheWay(map, centreP);
         }
@@ -106,10 +105,12 @@ namespace NoPasaranTD.Model
             List<int> segments = new List<int>();
             for (int i = 0; i < map.BalloonPath.Length - 1; i++)
             {
-                Vector2D locationP = new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y);
-                Vector2D directionP = new Vector2D(map.BalloonPath[i + 1].X - locationP.X, map.BalloonPath[i + 1].Y - locationP.Y);
+                Vector2D locationP = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight,new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y)); // Ortsvektor des Pfadstücks
+                Vector2D locationP2 = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, new Vector2D(map.BalloonPath[i + 1].X, map.BalloonPath[i + 1].Y));
+                Vector2D directionP = locationP2 - locationP; // Richtungsvektor des Pfadstücks
+                // Lotfußpunktverfahren zur bestimmung des Abstands
                 float factor = -1 * (directionP.X * (locationP.X - centreP.X) + directionP.Y * (locationP.Y - centreP.Y)) / (directionP.X * directionP.X + directionP.Y * directionP.Y);
-                if (factor > 1)
+                if (factor > 1) // Sollte der nähste Punkt nicht auf der sichtbaren gerade liegen werden die Randwerte genommen
                 {
                     factor = 1;
                 }
@@ -118,8 +119,8 @@ namespace NoPasaranTD.Model
                     factor = 0;
                 }
 
-                Vector2D closestP = locationP + factor * directionP;
-                if ((closestP - centreP).Magnitude <= Range)
+                Vector2D closestP = locationP + factor * directionP; // Punkt ausrechnen
+                if ((closestP - centreP).Magnitude <= Range) // Abstand zum Punkt bestimmen und vergleichen
                 {
                     segments.Add(i);
                 }
@@ -134,26 +135,27 @@ namespace NoPasaranTD.Model
             {
                 foreach (Obstacle item in map.Obstacles) // Alle Hindernisse durchgehen
                 {
-                    Vector2D[] cornersV = map.GetRectangleCorners(item.Hitbox); // Alle Eckpunkte des Hindernisses bestimmen
+                    Vector2D[] cornersV = map.GetRectangleCorners(map.GetScaledRectUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight,item.Hitbox)); // Alle Eckpunkte des Hindernisses bestimmen
                     List<float> pathValues = new List<float>();
                     for (int i = 0; i < cornersV.Length; i++) // Alle Eckpunkte durchgehen
                     {
                         Vector2D connectionRecV = cornersV[i] - centreP; // Richtungsvektor zwischen Turm und der Ecke
-                        if ((centreP + connectionRecV).MagnitudeSquared < Range * Range) // Länge des Vektors quadrieren, um die Wurzeloperation zu sparen
+                        if (connectionRecV.MagnitudeSquared < Range * Range) // Länge des Vektors quadrieren, um die Wurzeloperation zu sparen
                         {
-                            Vector2D locationPathV = map.BalloonPath[SegmentsInRange[j]]; // Ortsvektor der Gerade für den Pfad
-                            Vector2D connectionPathV = map.BalloonPath[SegmentsInRange[j] + 1] - locationPathV; // Richtungsvektor der Gerade für den Pfad
+                            Vector2D locationPathV = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]); // Ortsvektor der Gerade für den Pfad
+                            Vector2D connectionPathV = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j] + 1]) - locationPathV; // Richtungsvektor der Gerade für den Pfad
                             float factorPath = Vector2D.Intersection(locationPathV, connectionPathV, centreP, connectionRecV);
                             float factorRec = Vector2D.Intersection(centreP, connectionRecV, locationPathV, connectionPathV);
                             if (factorPath > 0 && factorPath < 1 && factorRec > 1 && (connectionRecV * factorRec).MagnitudeSquared < Range * Range) // Der Schnittpunkt ist innerhalb des Intervals des Pfades und hinter dem Hindernis
                             {
-                                pathValues.Add((float)(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1) + (connectionPathV * factorPath).Magnitude));
+                                pathValues.Add((float)(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1) + (map.GetScaledVecDown(StaticEngine.RenderWidth, StaticEngine.RenderHeight, connectionPathV) * factorPath).Magnitude));
                             }
                         }
                     }
 
                     if (pathValues.Count == 0)
                     {
+                        // Kontrolliert, ob einer der Eckpunkte innerhalb der verdeckten Fläche ist
                         if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV) || CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j] + 1], centreP, cornersV))
                         {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), map.GetFragmentMagnitudeTo(SegmentsInRange[j]))); // j muss um 1 nach hinten verschoben werden, da immer die länge bis zum nächsten Stück berechnet wird
@@ -185,12 +187,12 @@ namespace NoPasaranTD.Model
                                 upperBound = pValue;
                             }
                         }
-                        if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j]], centreP, cornersV)) // Kontrollieren, dass die Enden des Pfades nicht verdeckt sind
+                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]), centreP, cornersV)) // Kontrollieren, dass die Enden des Pfades nicht verdeckt sind
                         {
                             lowerBound = (float)map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1);
                         }
 
-                        if (CheckPathPointBlock(map.BalloonPath[SegmentsInRange[j] + 1], centreP, cornersV))
+                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j] + 1]), centreP, cornersV))
                         {
                             upperBound = (float)map.GetFragmentMagnitudeTo(SegmentsInRange[j]);
                         }
@@ -211,7 +213,7 @@ namespace NoPasaranTD.Model
         /// <returns>Gibt true zurück wenn der Pfadpunkt im Schatten des Rechtecks liegt</returns>
         private bool CheckPathPointBlock(Vector2D pathLocV, Vector2D towerCentre, Vector2D[] cornersV)
         {
-            Vector2D towerPathV = pathLocV - towerCentre;
+            Vector2D towerPathV = towerCentre - pathLocV;
             for (int i = 0; i < cornersV.Length; i++)
             {
                 Vector2D connectionRecV;

@@ -112,10 +112,17 @@ namespace NoPasaranTD.Model
 
         public bool IsCollidingWithPath(int scaledWidth, int scaledHeight, Rectangle rect)
         {
-            return IsCollidingWithPath(GetScaledRect(scaledWidth, scaledHeight, rect));
+            return IsCollidingWithPath(GetScaledRectDown(scaledWidth, scaledHeight, rect));
         }
 
-        public Rectangle GetScaledRect(int scaledWidth, int scaledHeight, Rectangle rect)
+        /// <summary>
+        /// Skalliert ein Rechteck von der Bildschirmebene auf die Koodrinatenebene
+        /// </summary>
+        /// <param name="scaledWidth"></param>
+        /// <param name="scaledHeight"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public Rectangle GetScaledRectDown(int scaledWidth, int scaledHeight, Rectangle rect)
         {
             return new Rectangle(
                 (int)((float)rect.X / scaledWidth * Dimension.Width),
@@ -123,6 +130,40 @@ namespace NoPasaranTD.Model
                 (int)((float)rect.Width / scaledWidth * Dimension.Width),
                 (int)((float)rect.Height / scaledHeight * Dimension.Height)
             );
+        }
+
+        /// <summary>
+        /// Skalliert ein Rechteck von der Koordinatenebene auf die Bildschirmebene
+        /// </summary>
+        /// <param name="scaledWidth"></param>
+        /// <param name="scaledHeight"></param>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public Rectangle GetScaledRectUp(int scaledWidth, int scaledHeight, Rectangle rect)
+        {
+            return new Rectangle(
+                (int)((float)rect.X / Dimension.Width * scaledWidth),
+                (int)((float)rect.Y / Dimension.Height * scaledHeight),
+                (int)((float)rect.Width / Dimension.Width * scaledWidth),
+                (int)((float)rect.Height / Dimension.Height * scaledHeight)
+            );
+        }
+
+        /// <summary>
+        /// Skalliert einen Vektor von der Koordinatenebene auf die Bildschirmebene
+        /// </summary>
+        /// <param name="scaledWidth"></param>
+        /// <param name="scaledHeight"></param>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public Vector2D GetScaledVecUp(int scaledWidth, int scaledHeight, Vector2D vec)
+        {
+            return new Vector2D((float)(scaledWidth * vec.X) / Dimension.Width, (float)(scaledHeight * vec.Y) / Dimension.Height);
+        }
+
+        public Vector2D GetScaledVecDown(int scaledWidth, int scaledHeight, Vector2D vec)
+        {
+            return new Vector2D((float)(Dimension.Width * vec.X) / scaledWidth, (float)(Dimension.Height * vec.Y) / scaledHeight);
         }
 
         /// <summary>
