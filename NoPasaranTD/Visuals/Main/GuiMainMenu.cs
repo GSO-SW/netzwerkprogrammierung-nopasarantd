@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
@@ -18,10 +19,6 @@ namespace NoPasaranTD.Visuals.Main
 
         private ButtonContainer singleplayerButton;
         private ButtonContainer multiplayerButton;
-        private ButtonContainer tutorialButton;
-
-        private ButtonContainer optionsButton;
-        private ButtonContainer creditsButton;
 
         private ButtonContainer closeButton;
 
@@ -38,14 +35,14 @@ namespace NoPasaranTD.Visuals.Main
         private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
 
         // Flying Meme Optionen
-        private int memeCounter = 1;
         private float memePositionX = 0;
         private float memePositionY = 0;
         private readonly float memeVelocity = 0.1f;
         private float memeRotation = -10;
         private float memeSlope = 0;
+        private int memeIndex = 0;
 
-        private readonly Random random;
+        private readonly Random random = new Random();
         private readonly List<Image> memes = ResourceLoader.LoadMemes();
         #endregion
 
@@ -73,13 +70,21 @@ namespace NoPasaranTD.Visuals.Main
         {
             StaticEngine.TickAcceleration = 1;
 
-            random = new Random();
             List<string> list = ResourceLoader.DichterUndDenker();
             randomText = list[random.Next(list.Count - 1)];
 
+            memeIndex = random.Next(0, memes.Count);
             memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
             memeSlope = (float)1 / random.Next(-30, 30);
             Decorate();
+        }
+
+        public override void Dispose()
+        {
+            backgroundGame.Dispose();
+            foreach (Image meme in memes)
+                meme.Dispose();
+            memes.Clear();
         }
 
         private void Decorate()
@@ -92,20 +97,12 @@ namespace NoPasaranTD.Visuals.Main
             // Buttons werden initialisiert
             singleplayerButton = InitButton("Singleplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 - buttonHeight - margin, buttonWidth, buttonHeight));
             multiplayerButton = InitButton("Multiplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2, buttonWidth, buttonHeight));
-            tutorialButton = InitButton("Tutorial", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight + margin, buttonWidth, buttonHeight));
-
-            optionsButton = InitButton("Options", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin / 2, buttonHeight));
-            creditsButton = InitButton("Credits", new Rectangle(StaticEngine.RenderWidth / 2 + margin, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin, buttonHeight));
 
             closeButton = InitButton("X", new Rectangle(StaticEngine.RenderWidth - 45, 5, 40, 40));
 
             // Events werden Aboniiert
             singleplayerButton.ButtonClicked += SingleplayerButton_ButtonClicked;
             multiplayerButton.ButtonClicked += MultiplayerButton_ButtonClicked;
-            tutorialButton.ButtonClicked += TutorialButton_ButtonClicked;
-
-            optionsButton.ButtonClicked += OptionsButton_ButtonClicked;
-            creditsButton.ButtonClicked += CreditsButton_ButtonClicked;
 
             closeButton.ButtonClicked += CloseButton_ButtonClicked;
 
@@ -150,7 +147,7 @@ namespace NoPasaranTD.Visuals.Main
             g.TranslateTransform(memePositionX, memePositionY);
             g.RotateTransform(memeRotation);
 
-            g.DrawImage(memes[memeCounter], 0, 0, 150, 100);
+            g.DrawImage(memes[memeIndex], 0, 0, 150, 100);
 
             g.Transform = currentTransform;
 
@@ -163,10 +160,6 @@ namespace NoPasaranTD.Visuals.Main
             // Rendert alle UI Elemente           
             singleplayerButton.Render(g);
             multiplayerButton.Render(g);
-            tutorialButton.Render(g);
-
-            optionsButton.Render(g);
-            creditsButton.Render(g);
 
             closeButton.Render(g);
 
@@ -184,10 +177,6 @@ namespace NoPasaranTD.Visuals.Main
         {
             singleplayerButton.MouseDown(e);
             multiplayerButton.MouseDown(e);
-            tutorialButton.MouseDown(e);
-
-            optionsButton.MouseDown(e);
-            creditsButton.MouseDown(e);
 
             closeButton.MouseDown(e);
         }
@@ -198,10 +187,6 @@ namespace NoPasaranTD.Visuals.Main
 
             singleplayerButton.Update();
             multiplayerButton.Update();
-            tutorialButton.Update();
-
-            optionsButton.Update();
-            creditsButton.Update();
 
             closeButton.Update();
 
@@ -229,16 +214,11 @@ namespace NoPasaranTD.Visuals.Main
             memeRotation += 0.01f;
 
             // Überprüft ob das derzeitige Meme noch valide ist
-            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
+            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeIndex].Height <= 0)
             {
-                memeCounter++;
-                if (memeCounter == memes.Count)
-                {
-                    memeCounter = 1;
-                }
-
+                memeIndex = random.Next(0, memes.Count);
                 memePositionY = random.Next(200, StaticEngine.RenderHeight - 200);
-                memePositionX = -memes[memeCounter].Width;
+                memePositionX = -memes[memeIndex].Width;
                 memeSlope = (float)1 / random.Next(-30, 30);
                 memeRotation = random.Next(-40, 40);
 
@@ -276,11 +256,6 @@ namespace NoPasaranTD.Visuals.Main
         private void TutorialButton_ButtonClicked()
         {
             // TODO: Tutorial Screen
-        }
-
-        public override void Dispose()
-        {
-            backgroundGame.Dispose();
         }
     }
 }

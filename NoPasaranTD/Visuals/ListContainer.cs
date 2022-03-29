@@ -123,37 +123,43 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public void DefineItems()
         {
-            items.Clear();
-
-            int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
-            int factorY = Orientation == Orientation.Vertical ? 1 : 0;
-
-            int currentHeight = 0;
-
-            for (int i = 0; i < Items.Count; i++)
+            lock(items)
             {
-                // Platziert für jedes Model Objekt einen eigenen Container im List-Container
-                ItemContainer<T> item = (new R() as ItemContainer<T>);
+                items.Clear();
 
-                item.ParentBounds = Bounds;
-                item.DataContext = Items[i];
-                item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
-                item.ListArgs = ListArgs;
+                int factorX = Orientation == Orientation.Horizontal ? 1 : 0;
+                int factorY = Orientation == Orientation.Vertical ? 1 : 0;
 
-                item.Position = new Point(
-                    Position.X + i * (item.ItemSize.Width + Margin) * factorX + Margin,
-                    Position.Y + currentHeight * factorY + Margin);
-                currentHeight += (item.ItemSize.Height + Margin) * factorY;
+                int currentHeight = 0;
 
-                items.Add(item);
+                for (int i = 0; i < Items.Count; i++)
+                {
+                    // Platziert für jedes Model Objekt einen eigenen Container im List-Container
+                    ItemContainer<T> item = (new R() as ItemContainer<T>);
+
+                    item.ParentBounds = Bounds;
+                    item.DataContext = Items[i];
+                    item.ItemSize = new Size(ItemSize.Width, ItemSize.Height);
+                    item.ListArgs = ListArgs;
+
+                    item.Position = new Point(
+                        Position.X + i * (item.ItemSize.Width + Margin) * factorX + Margin,
+                        Position.Y + currentHeight * factorY + Margin);
+                    currentHeight += (item.ItemSize.Height + Margin) * factorY;
+
+                    items.Add(item);
+                }
             }
         }
 
         public override void Dispose()
         {
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].Dispose();
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].Dispose();
+                }
             }
         }
 
@@ -164,9 +170,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].Update();
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].Update();
+                }
             }
         }
 
@@ -182,10 +191,13 @@ namespace NoPasaranTD.Visuals
             Region clip = g.Clip; // Speichere ursprüngliche Region
             g.Clip = new Region(Bounds); // Entferne alles was außerhalb ist
 
-            // Render Items innerhalb dieser Region
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].Render(g);
+                // Render Items innerhalb dieser Region
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].Render(g);
+                }
             }
 
             g.Clip = clip; // Setze ursprüngliche Region zurück
@@ -198,9 +210,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].KeyUp(e);
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].KeyUp(e);
+                }
             }
         }
 
@@ -211,9 +226,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].KeyPress(e);
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].KeyPress(e);
+                }
             }
         }
 
@@ -224,9 +242,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].KeyDown(args);
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].KeyDown(args);
+                }
             }
         }
 
@@ -237,9 +258,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].MouseUp(e);
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].MouseUp(e);
+                }
             }
         }
 
@@ -247,15 +271,18 @@ namespace NoPasaranTD.Visuals
         {
             if (IsMouseOver && Visible)
             {
-                for (int i = items.Count - 1; i >= 0; i--)
+                lock(items)
                 {
-                    items[i].MouseDown(e);
-                    items[i].IsSelected = false;
-                    if (items[i].IsMouseOver)
+                    for (int i = items.Count - 1; i >= 0; i--)
                     {
-                        selectedItem = items[i];
-                        selectedItem.IsSelected = true;
-                        SelectionChanged?.Invoke();
+                        items[i].MouseDown(e);
+                        items[i].IsSelected = false;
+                        if (items[i].IsMouseOver)
+                        {
+                            selectedItem = items[i];
+                            selectedItem.IsSelected = true;
+                            SelectionChanged?.Invoke();
+                        }
                     }
                 }
             }
@@ -268,9 +295,12 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            for (int i = items.Count - 1; i >= 0; i--)
+            lock(items)
             {
-                items[i].MouseMove(e);
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].MouseMove(e);
+                }
             }
         }
 
@@ -328,13 +358,17 @@ namespace NoPasaranTD.Visuals
 
             int scrollX = Orientation == Orientation.Horizontal ? 1 : 0;
             int scrollY = Orientation == Orientation.Vertical ? 1 : 0;
-            for (int i = items.Count - 1; i >= 0; i--)
+
+            lock(items)
             {
-                items[i].MouseWheel(e);
-                items[i].TranslateTransform(
-                    delta * ScrollSteps * scrollX,
-                    delta * ScrollSteps * scrollY
-                );
+                for (int i = items.Count - 1; i >= 0; i--)
+                {
+                    items[i].MouseWheel(e);
+                    items[i].TranslateTransform(
+                        delta * ScrollSteps * scrollX,
+                        delta * ScrollSteps * scrollY
+                    );
+                }
             }
         }
 
@@ -386,13 +420,11 @@ namespace NoPasaranTD.Visuals
         public void Add(T item)
         {
             arrayList.Add(item);
-            OnListChanged();
         }
 
         public void Clear()
         {
             arrayList.Clear();
-            OnListChanged();
         }
 
         public bool Contains(T item)
@@ -407,18 +439,19 @@ namespace NoPasaranTD.Visuals
             return (IEnumerator<T>)arrayList.GetEnumerator();
         }
 
-        public bool Remove(T item)
+        public bool RemoveAt(int index)
         {
-            try
-            {
-                arrayList.Remove(item);
-                OnListChanged();
-                return true;
-            }
-            catch (Exception) { return false; }
+            arrayList.RemoveAt(index);
+            return true;
         }
 
-        protected virtual void OnListChanged()
+        public bool Remove(T item)
+        {
+            arrayList.Remove(item);
+            return true;
+        }
+
+        public void Notify()
         {
             if (CollectionChanged != null)
             {

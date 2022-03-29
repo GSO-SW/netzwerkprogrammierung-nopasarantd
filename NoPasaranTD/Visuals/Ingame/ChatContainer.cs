@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Engine;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Logic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -26,6 +27,8 @@ namespace NoPasaranTD.Visuals.Ingame
 
         // Das derzeitige Spiel
         private Game currentGame;
+
+        private long lastSendAt = 0;
 
         /// <summary>
         /// Initialisiert alle UI Elemente
@@ -56,7 +59,6 @@ namespace NoPasaranTD.Visuals.Ingame
         private void Messages_CollectionChanged()
         {
             chatObjects.Items = currentGame.Messages;
-            chatObjects.DefineItems();
         }
 
         #endregion
@@ -67,8 +69,9 @@ namespace NoPasaranTD.Visuals.Ingame
             inputBox.KeyDown(e);
             chatObjects.KeyDown(e);
 
-            if (e.KeyCode == Keys.Enter && inputBox.IsFocused && !currentGame.NetworkHandler.OfflineMode)
+            if (e.KeyCode == Keys.Enter && inputBox.IsFocused && !currentGame.NetworkHandler.OfflineMode && currentGame.CurrentTick - lastSendAt >= 500)
             {
+                lastSendAt = currentGame.CurrentTick;
                 currentGame.NetworkHandler.InvokeEvent("SendMessage", "[" + currentGame.NetworkHandler.LocalPlayer.Name + "]\n" + inputBox.Text);
                 inputBox.Text = "";
                 inputBox.CaretIndex = 0;

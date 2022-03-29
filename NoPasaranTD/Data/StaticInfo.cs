@@ -12,6 +12,7 @@ namespace NoPasaranTD.Data
         #region Startwerte
         public static readonly int StartMoney = 200;
         public static readonly int StartHP = 100;
+        public static readonly int MaxMessageCount = 80;
         #endregion
 
         #region GetObstacle Methoden
