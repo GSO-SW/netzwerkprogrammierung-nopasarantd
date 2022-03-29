@@ -25,7 +25,12 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap = GuiLobbyMenu.CreateButton("Previous Map", new Rectangle(
                 StaticEngine.RenderWidth / 4 - 100, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
             ));
-            btnPreviousMap.ButtonClicked += () => currentMap = Math.Abs(--currentMap % mapList.Count);
+
+            btnPreviousMap.ButtonClicked += () =>
+            {
+                currentMap--;
+                if (currentMap < 0) currentMap = mapList.Count - 1;
+            };
 
             btnStartGame = GuiLobbyMenu.CreateButton("Start Game", new Rectangle(
                 StaticEngine.RenderWidth / 2 - 100, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
@@ -35,7 +40,13 @@ namespace NoPasaranTD.Visuals.Main
             btnNextMap = GuiLobbyMenu.CreateButton("Next Map", new Rectangle(
                 StaticEngine.RenderWidth / 2 + 200, (int)(StaticEngine.RenderHeight / 1.5) - 30, 200, 60
             ));
-            btnNextMap.ButtonClicked += () => currentMap = ++currentMap % mapList.Count;
+
+            btnNextMap.ButtonClicked += () =>
+            {
+                currentMap++;
+                if (currentMap >= mapList.Count)
+                    currentMap = 0;
+            };
         }
 
         public override void Dispose()

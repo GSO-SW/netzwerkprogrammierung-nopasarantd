@@ -64,6 +64,7 @@
     <Compile Include="Utilities\ResourceLoader.cs" />
     <Compile Include="Visuals\Ingame\ChatContainer.cs" />
     <Compile Include="Visuals\Ingame\ChatItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\CursorLayout.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
@@ -86,7 +87,7 @@
     <Compile Include="Visuals\ItemContainer.cs" />
     <Compile Include="Visuals\Ingame\TowerDetailsContainer.cs" />
     <Compile Include="Visuals\Ingame\UILayout.cs" />
-    <Compile Include="Engine\Game.cs" />
+    <Compile Include="Logic\Game.cs" />
     <Compile Include="Model\Balloon.cs" />
     <Compile Include="Model\Map.cs" />
     <Compile Include="Engine\StaticEngine.cs" />
