@@ -118,21 +118,19 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
-            if (!mapList.ContainsKey(Lobby.MapName))
-            {
-                return;
-            }
-
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
-
-            // Map preview
-            g.DrawImage(mapList[Lobby.MapName].BackgroundImage,
-                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
-                StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
-            );
+            
+            if(mapList.TryGetValue(Lobby.MapName, out Map map))
+            {
+                // Map preview
+                g.DrawImage(map.BackgroundImage,
+                    StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
+                    StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
+                );
+            }
 
             // Lobby name
             g.DrawString(Lobby.Name, StandartHeader1Font, Brushes.Black, 0, 0);

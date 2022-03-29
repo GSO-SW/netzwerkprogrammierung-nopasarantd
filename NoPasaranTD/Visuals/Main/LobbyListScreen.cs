@@ -109,7 +109,7 @@ namespace NoPasaranTD.Visuals.Main
             }
 
             parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
-                host, txtNameContainer.Text + "´s Room", "spentagon"
+                host, host.Name + "´s Room", "spentagon"
             ));
         }
 
