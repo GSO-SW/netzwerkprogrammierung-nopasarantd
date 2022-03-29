@@ -55,25 +55,25 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
-            foreach (Map map in mapList?.Values)
+            lock(mapList)
             {
-                map.Dispose();
+                foreach (Map map in mapList.Values)
+                {
+                    map.Dispose();
+                }
+                mapList.Clear();
             }
-
-            mapList?.Clear();
         }
 
         public override void Render(Graphics g)
         {
-            if (currentMap >= mapList.Count)
+            lock(mapList)
             {
-                return;
+                // Zeichne Karte
+                g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,
+                    0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
+                );
             }
-
-            // Zeichne Karte
-            g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,
-                0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
-            );
 
             btnNextMap.Render(g);
             btnPreviousMap.Render(g);

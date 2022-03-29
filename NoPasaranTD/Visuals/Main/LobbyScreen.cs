@@ -85,12 +85,15 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
-            foreach (Map map in mapList?.Values)
+            lock(mapList)
             {
-                map.Dispose();
-            }
+                foreach (Map map in mapList.Values)
+                {
+                    map.Dispose();
+                }
 
-            mapList?.Clear();
+                mapList.Clear();
+            }
         }
 
         #region Event region
@@ -123,13 +126,16 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
 
-            if (mapList.TryGetValue(Lobby.MapName, out Map map))
+            lock(mapList)
             {
-                // Map preview
-                g.DrawImage(map.BackgroundImage,
-                    StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
-                    StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
-                );
+                if (mapList.TryGetValue(Lobby.MapName, out Map map))
+                {
+                    // Map preview
+                    g.DrawImage(map.BackgroundImage,
+                        StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
+                        StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
+                    );
+                }
             }
 
             // Lobby name
