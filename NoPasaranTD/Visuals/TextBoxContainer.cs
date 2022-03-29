@@ -126,7 +126,7 @@ namespace NoPasaranTD.Visuals
                 g.SetClip(innerBound);
                 g.TranslateTransform(offsetX, 0);
 
-                if (char.IsWhiteSpace(Text[CaretIndex]))
+                if (char.IsWhiteSpace(Text[Text.Length-1]))
                 {
                     g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 5, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 5, Bounds.Y + leftTextSize.Height - 2);
                 }
