@@ -1,4 +1,5 @@
-﻿using NoPasaranTD.Logic;
+﻿using NoPasaranTD.Data;
+using NoPasaranTD.Logic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -58,7 +59,7 @@ namespace NoPasaranTD.Visuals.Ingame
         private void Messages_CollectionChanged()
         {
             chatObjects.Items = currentGame.Messages;
-            if (currentGame.Messages.Count >= 80)
+            if (currentGame.Messages.Count >= StaticInfo.MaxMessageCount)
             {
                 currentGame.Messages.Remove(currentGame.Messages[0]);
             }
