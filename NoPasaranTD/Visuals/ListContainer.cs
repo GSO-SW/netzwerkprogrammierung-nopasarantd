@@ -168,7 +168,11 @@ namespace NoPasaranTD.Visuals
             {
                 try // Nötig, da teilweise asynchron auf die Methode zugegriffen wird und während dem Schleifendurchlauf die Werte geändert werden
                 {
-                    items[i]?.Update();
+                    if (i < items.Count && i >= 0)
+                    {
+                        items[i]?.Update();
+                    }
+                    
                 }
                 catch (Exception e)
                 {
@@ -192,7 +196,10 @@ namespace NoPasaranTD.Visuals
             // Render Items innerhalb dieser Region
             for (int i = items.Count - 1; i >= 0; i--)
             {
-                items[i]?.Render(g);
+                if (i < items.Count && i >= 0)
+                {
+                    items[i]?.Render(g);
+                }
             }
 
             g.Clip = clip; // Setze ursprüngliche Region zurück
