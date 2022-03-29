@@ -94,7 +94,6 @@ namespace NoPasaranTD.Visuals.Main
 
         private void CreateLobby(NetworkClient host)
         { // Befehl zum erstellen einer neuen lobby
-            // TODO: Ändern vom Lobbynamen via Textbox
             if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
             {
                 return;

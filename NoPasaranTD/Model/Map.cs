@@ -249,7 +249,7 @@ namespace NoPasaranTD.Model
                         closestPointDistance = 1;
                     }
 
-                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathRadius) // Länge des Verbindungsvektors überprüfen // TODO: Mit StaticInfo verbinden
+                    if ((cornersV[i] + closestPointDistance * connectionRecV - item).Magnitude < PathRadius) // Länge des Verbindungsvektors überprüfen
                     {
                         return false;
                     }

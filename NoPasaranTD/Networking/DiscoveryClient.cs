@@ -182,7 +182,7 @@ namespace NoPasaranTD.Networking
             Task.Run(async () =>
             { // Stelle sicher, dass der Vermittlungsserver die Nachricht erreicht
                 while (!GameStarted)
-                { // TODO: Auf Reliable UDP umsteigen
+                {
                     // Sende auf Serverendpunkt die gegebene ID
                     byte[] data = Encoding.ASCII.GetBytes(id.ToString());
                     rawClient.Send(data, data.Length, remoteEndpoint);
