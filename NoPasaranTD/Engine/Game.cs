@@ -32,6 +32,11 @@ namespace NoPasaranTD.Engine
 
         public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
 
+        // Mouse Cursor Packeteinstellungen
+		private int MouseSendInterval = 200;
+        private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos = new List<(int X, int Y, int TTL, int currentTick)>();           
+        private static List<string> usersMouseTag = new List<string>();
+
         /// <summary>
         /// Initialisiert ein neues Spiel
         /// </summary>
@@ -66,7 +71,9 @@ namespace NoPasaranTD.Engine
             NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
             NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
             NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
+            NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
         }
+
 
         /// <summary>
         /// Initialisiert die Eigenschaft der Ballons und löscht damit vorhandene Werte
@@ -90,8 +97,6 @@ namespace NoPasaranTD.Engine
 
         #region Game logic region
 
-        //private bool check = true; // TESTCODE
-        //private bool check2 = true; // TESTCODE
         public void Update()
         {
             if (NetworkHandler.ResyncDelay > 0)
@@ -108,16 +113,6 @@ namespace NoPasaranTD.Engine
             {
                 return; // Abfragen ob das Spiel vorbei ist
             }
-            //if (Round == 3 && check && NetworkHandler.IsHost) TESTCODE
-            //         {
-            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
-            //	check = false;
-            //         }
-            //if (Round == 4 && check2 && NetworkHandler.IsHost)
-            //{
-            //	NetworkHandler.ReliableUPD.SendReliableUDP("ResyncReq", 0);
-            //	check2 = false;
-            //}
             NetworkHandler.Update();
 
             WaveManager.Update();
@@ -145,13 +140,43 @@ namespace NoPasaranTD.Engine
 
             CheckVTower();
             for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
-            {
+            { 
                 Towers[i].Update(this);
             }
 
+
+
+            // eigene Maus schicken
+            if (CurrentTick % MouseSendInterval == 0)
+            {              
+                if (NetworkHandler.LocalPlayer != null)
+                {
+                    var networkPackage = new NetworkPackageMousePosition();
+                    networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
+                    networkPackage.CurrentTick = (int)CurrentTick;
+
+                    // TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
+                    networkPackage.Username = NetworkHandler.LocalPlayer.Name;
+
+                    NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
+
+                    if (CurrentTick % 1000 == 0)
+                    {
+                        for (int i = 0; i < usersMousePos.Count; i++)
+                        {
+                            if (usersMousePos[i].TTL < Environment.TickCount)
+                            {
+                                usersMousePos.RemoveAt(i);
+                                usersMouseTag.RemoveAt(i);
+                            }
+                        }
+                    }
+                }              
+            }
+
             UILayout.Update();
-            CurrentTick++;
-        }
+			CurrentTick++;
+		}
 
         /// <summary>
         /// Kontrolliert alle nicht aktiven Türme, ob diese aktiviert werden müssen in dem Tick
@@ -180,7 +205,7 @@ namespace NoPasaranTD.Engine
                 {
                     Brush brush;
                     switch (item[i].Type)
-                    { // TODO: Ändern durch Texturen
+                    {
                         case BalloonType.Red: brush = Brushes.Red; break;
                         case BalloonType.Blue: brush = Brushes.Blue; break;
                         case BalloonType.Green: brush = Brushes.Green; break;
@@ -214,13 +239,12 @@ namespace NoPasaranTD.Engine
                     (float)item.Hitbox.Height / CurrentMap.Dimension.Height * StaticEngine.RenderHeight
                 );
             }
-            //Font fontArial = new Font("Arial", 10, FontStyle.Regular);
-            //g.DrawString(CurrentTick + "", fontArial,new SolidBrush(Color.Black), 0, 200);
 
             for (int i = Towers.Count - 1; i >= 0; i--)
             {
                 Towers[i].Render(g);
             }
+            UILayout.Render(g);
 
             for (int i = VTowers.Count - 1; i >= 0; i--)
             {
@@ -228,7 +252,18 @@ namespace NoPasaranTD.Engine
             }
 
             UILayout.Render(g);
-        }
+
+            // zeichne die Maus Positionen von anderen wenn online
+            if (!NetworkHandler.OfflineMode)
+            {
+                for (int i = 0; i < usersMousePos.Count; i++)
+                {
+                    g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
+                        usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
+                    g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
+                }
+            }
+		}
 
         public void KeyUp(KeyEventArgs e)
         {
@@ -339,7 +374,7 @@ namespace NoPasaranTD.Engine
 
             for (int i = CurrentMap.Obstacles.Count - 1; i >= 0; i--) //Überprüft, ob es eine Kollision mit einem Hindernis gibt
             {
-                if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRect(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
+                if (CurrentMap.Obstacles[i].Hitbox.IntersectsWith(CurrentMap.GetScaledRectDown(StaticEngine.RenderWidth, StaticEngine.RenderHeight, rect)))
                 {
                     return false;
                 }
@@ -616,7 +651,39 @@ namespace NoPasaranTD.Engine
             }
             return null;
         }
+				
+		private void TransferMousePosition(object t)
+        {
+			var networkPackage = t as NetworkPackageMousePosition;
+			if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
+				|| networkPackage.Username == NetworkHandler.LocalPlayer.Name) return;
 
+			bool hasFound = false;
+			for (int i = 0; i < usersMousePos.Count; i++)
+				if (usersMouseTag[i] == networkPackage.Username)
+                {
+					hasFound = true;
+					if (usersMousePos[i].currentTick < networkPackage.CurrentTick)
+						usersMousePos[i] =
+							(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick);
+				}
+			if (!hasFound)
+            {
+				usersMousePos.Add(
+					(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick));
+				usersMouseTag.Add(networkPackage.Username);
+			}
+        }
+
+        [Serializable]
+        private class NetworkPackageMousePosition
+        {
+            public (int X, int Y) Pos = (0, 0);
+            public string Username = String.Empty;
+
+            public int CurrentTick = 0;
+            public int TTL = 2000; // wird nicht überschrieben und in ms
+        }
     }
 }
 
