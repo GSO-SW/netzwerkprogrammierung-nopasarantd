@@ -65,13 +65,17 @@ namespace NoPasaranTD.Utilities
 
         public static List<Image> LoadMemes()
         {
+            string path = "NoPasaranTD.Resources.Memes.";
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            string[] names = assembly.GetManifestResourceNames()
+                .Where(x => x.StartsWith(path)).ToArray();
+
             List<Image> images = new List<Image>();
-
-            for (int i = 1; i <= 13; i++)
+            foreach (string name in names)
             {
-                images.Add(LoadBitmapResource("NoPasaranTD.Resources.Meme.meme_TD_" + i + ".jpg"));
+                images.Add(LoadBitmapResource(name));
             }
-
             return images;
         }
     }
