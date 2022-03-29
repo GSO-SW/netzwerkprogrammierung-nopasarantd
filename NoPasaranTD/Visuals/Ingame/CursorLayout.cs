@@ -61,7 +61,7 @@ namespace NoPasaranTD.Visuals.Ingame
                     g.FillEllipse(Brushes.White,
                         info.Position.X - CIRCLE_RADIUS, info.Position.Y - CIRCLE_RADIUS, 2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS
                     );
-                    
+
                     g.DrawLine(Pens.LightGray, info.Position.X - CROSS_RADIUS, info.Position.Y, info.Position.X + CROSS_RADIUS, info.Position.Y);
                     g.DrawLine(Pens.Gray, info.Position.X - CROSS_RADIUS, info.Position.Y - 1, info.Position.X - CROSS_RADIUS, info.Position.Y - 1);
                     g.DrawLine(Pens.Gray, info.Position.X - CROSS_RADIUS, info.Position.Y + 1, info.Position.X - CROSS_RADIUS, info.Position.Y + 1);
@@ -77,11 +77,11 @@ namespace NoPasaranTD.Visuals.Ingame
 
 
                     g.FillEllipse(Brushes.Purple,
-                        info.Position.X - (CIRCLE_RADIUS - 1), info.Position.Y - (CIRCLE_RADIUS - 1), 
+                        info.Position.X - (CIRCLE_RADIUS - 1), info.Position.Y - (CIRCLE_RADIUS - 1),
                         (CIRCLE_RADIUS - 1) * 2, (CIRCLE_RADIUS - 1) * 2
                     );
                     g.FillEllipse(Brushes.LightGray,
-                        info.Position.X - (CIRCLE_RADIUS - 5), info.Position.Y - (CIRCLE_RADIUS - 5), 
+                        info.Position.X - (CIRCLE_RADIUS - 5), info.Position.Y - (CIRCLE_RADIUS - 5),
                         (CIRCLE_RADIUS - 5) * 2, (CIRCLE_RADIUS - 5) * 2
                     );
 

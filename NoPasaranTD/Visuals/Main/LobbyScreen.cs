@@ -85,7 +85,7 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
-            lock(mapList)
+            lock (mapList)
             {
                 foreach (Map map in mapList.Values)
                 {
@@ -126,7 +126,7 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
 
-            lock(mapList)
+            lock (mapList)
             {
                 if (mapList.TryGetValue(Lobby.MapName, out Map map))
                 {

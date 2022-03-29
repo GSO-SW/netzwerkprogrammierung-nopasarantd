@@ -55,7 +55,7 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
-            lock(mapList)
+            lock (mapList)
             {
                 foreach (Map map in mapList.Values)
                 {
@@ -67,7 +67,7 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Render(Graphics g)
         {
-            lock(mapList)
+            lock (mapList)
             {
                 // Zeichne Karte
                 g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,

@@ -83,7 +83,10 @@ namespace NoPasaranTD.Visuals.Main
         {
             backgroundGame.Dispose();
             foreach (Image meme in memes)
+            {
                 meme.Dispose();
+            }
+
             memes.Clear();
         }
 

@@ -1,5 +1,4 @@
-﻿using NoPasaranTD.Data;
-using NoPasaranTD.Logic;
+﻿using NoPasaranTD.Logic;
 using System.Drawing;
 using System.Windows.Forms;
 

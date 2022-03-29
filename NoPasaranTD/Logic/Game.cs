@@ -595,7 +595,10 @@ namespace NoPasaranTD.Logic
         {
             Messages.Add(t as string);
             if (Messages.Count > StaticInfo.MaxMessageCount)
+            {
                 Messages.RemoveAt(0);
+            }
+
             Messages.Notify();
         }
 

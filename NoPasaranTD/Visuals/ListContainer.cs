@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -123,7 +122,7 @@ namespace NoPasaranTD.Visuals
         /// </summary>
         public void DefineItems()
         {
-            lock(items)
+            lock (items)
             {
                 items.Clear();
 
@@ -154,7 +153,7 @@ namespace NoPasaranTD.Visuals
 
         public override void Dispose()
         {
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -170,7 +169,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -191,7 +190,7 @@ namespace NoPasaranTD.Visuals
             Region clip = g.Clip; // Speichere ursprüngliche Region
             g.Clip = new Region(Bounds); // Entferne alles was außerhalb ist
 
-            lock(items)
+            lock (items)
             {
                 // Render Items innerhalb dieser Region
                 for (int i = items.Count - 1; i >= 0; i--)
@@ -210,7 +209,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -226,7 +225,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -242,7 +241,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -258,7 +257,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -271,7 +270,7 @@ namespace NoPasaranTD.Visuals
         {
             if (IsMouseOver && Visible)
             {
-                lock(items)
+                lock (items)
                 {
                     for (int i = items.Count - 1; i >= 0; i--)
                     {
@@ -295,7 +294,7 @@ namespace NoPasaranTD.Visuals
                 return;
             }
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {
@@ -359,7 +358,7 @@ namespace NoPasaranTD.Visuals
             int scrollX = Orientation == Orientation.Horizontal ? 1 : 0;
             int scrollY = Orientation == Orientation.Vertical ? 1 : 0;
 
-            lock(items)
+            lock (items)
             {
                 for (int i = items.Count - 1; i >= 0; i--)
                 {

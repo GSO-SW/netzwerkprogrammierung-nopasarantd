@@ -46,7 +46,7 @@ namespace NoPasaranTD.Visuals
                     {
                         return;
                     }
-                    
+
                     if (CaretIndex == Text.Length)
                     {
                         Text += e.KeyChar;
@@ -78,8 +78,11 @@ namespace NoPasaranTD.Visuals
         {
             if (Bounds.Contains(e.Location))
             {
-                if(!IsFocused)
+                if (!IsFocused)
+                {
                     CaretIndex = Text.Length;
+                }
+
                 IsFocused = true;
             }
             else
@@ -105,8 +108,8 @@ namespace NoPasaranTD.Visuals
                 SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex) + '_', TextFont);
                 leftTextSize.Width -= g.MeasureString("_", TextFont).Width;
 
-                g.DrawLine(new Pen(Foreground), 
-                    Bounds.X + leftTextSize.Width + 4, Bounds.Y + 1, 
+                g.DrawLine(new Pen(Foreground),
+                    Bounds.X + leftTextSize.Width + 4, Bounds.Y + 1,
                     Bounds.X + leftTextSize.Width + 4, Bounds.Y + leftTextSize.Height - 2);
 
                 if (leftTextSize.Width >= innerBound.Width)
