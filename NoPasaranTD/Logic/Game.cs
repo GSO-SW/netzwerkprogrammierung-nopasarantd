@@ -569,7 +569,7 @@ namespace NoPasaranTD.Engine
 
         public void AccelerateGame(object t)
         {
-            if (StaticEngine.TickAcceleration == 8)
+            if (StaticEngine.TickAcceleration == 256)
             {
                 StaticEngine.TickAcceleration = 1;
             }
