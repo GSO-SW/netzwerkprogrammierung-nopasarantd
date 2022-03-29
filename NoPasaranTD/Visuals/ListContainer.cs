@@ -166,7 +166,14 @@ namespace NoPasaranTD.Visuals
 
             for (int i = items.Count - 1; i >= 0; i--)
             {
-                items[i].Update();
+                try // Nötig, da teilweise asynchron auf die Methode zugegriffen wird und während dem Schleifendurchlauf die Werte geändert werden
+                {
+                    items[i]?.Update();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error while executing. Quit with error: " + e.Message);
+                }
             }
         }
 

@@ -15,8 +15,6 @@ namespace NoPasaranTD.Visuals
         public SolidBrush Background { get; set; } = new SolidBrush(Color.White);
         public Font TextFont { get; set; } = StandartText2Font;
 
-        public StringFormat Format = new StringFormat(StringFormat.GenericTypographic);
-
         /// <summary>
         /// Die Position an dem das Caret stehen soll (Die Cursorposition in der Textbox)
         /// </summary>
@@ -41,22 +39,22 @@ namespace NoPasaranTD.Visuals
                 {
                     return;
                 }
-                else // Sonstige Zeichen, die nicht Backspace sind
+                else
                 {
-                    if (e.KeyChar == '\b')
+                    // Nur erlaubte Zeichen durch lassen
+                    if (e.KeyChar < 32 || e.KeyChar > 126)
                     {
                         return;
                     }
-
+                    
                     if (CaretIndex == Text.Length)
                     {
                         Text += e.KeyChar;
                     }
                     else if (Text.Length > 0)
                     {
-                        string left = Text.Substring(0, CaretIndex);
+                        string left = Text.Substring(0, CaretIndex) + e.KeyChar;
                         string right = Text.Substring(CaretIndex, Text.Length - CaretIndex);
-                        left += e.KeyChar;
                         Text = left + right;
                     }
                     CaretIndex++;
@@ -70,7 +68,7 @@ namespace NoPasaranTD.Visuals
             {
                 CaretIndex--;
             }
-            else if (e.KeyCode == Keys.Right && CaretIndex <= Text.Length - 1)
+            else if (e.KeyCode == Keys.Right && CaretIndex < Text.Length)
             {
                 CaretIndex++;
             }
@@ -80,6 +78,8 @@ namespace NoPasaranTD.Visuals
         {
             if (Bounds.Contains(e.Location))
             {
+                if(!IsFocused)
+                    CaretIndex = Text.Length;
                 IsFocused = true;
             }
             else
@@ -90,53 +90,24 @@ namespace NoPasaranTD.Visuals
 
         public override void Render(Graphics g)
         {
-            if (IsFocused)
-            {
-                g.FillRectangle(HighlightedBorderBrush, Bounds);
-            }
-            else
-            {
-                g.FillRectangle(BorderBrush, Bounds);
-            }
-
+            g.FillRectangle(IsFocused ? HighlightedBorderBrush : BorderBrush, Bounds);
             g.FillRectangle(Background, innerBound);
 
-            Matrix current = g.Transform;
+            Matrix currentTransform = g.Transform;
             Region currentClip = g.Clip;
-
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
             g.SetClip(innerBound);
             g.TranslateTransform(offsetX, 0);
-            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y);
+            g.DrawString(Text, TextFont, Foreground, innerBound.Location);
 
-            g.Clip = currentClip;
-            g.Transform = current;
-
-            if (Text != "" && IsFocused)
+            if (!string.IsNullOrEmpty(Text) && IsFocused)
             {
-                Format.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0, Text.Substring(0, CaretIndex).Length) });
+                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex) + '_', TextFont);
+                leftTextSize.Width -= g.MeasureString("_", TextFont).Width;
 
-                Format.Trimming = StringTrimming.EllipsisCharacter;
-                Format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
-
-                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), int.MaxValue, StringFormat.GenericDefault);
-                leftTextSize.Width -= 2;
-
-                g.SetClip(innerBound);
-                g.TranslateTransform(offsetX, 0);
-
-                if (char.IsWhiteSpace(Text[Text.Length-1]))
-                {
-                    g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 5, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 5, Bounds.Y + leftTextSize.Height - 2);
-                }
-                else
-                {
-                    g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 1, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 1, Bounds.Y + leftTextSize.Height - 2);
-                }
-
-                g.Clip = currentClip;
-                g.Transform = current;
+                g.DrawLine(new Pen(Foreground), 
+                    Bounds.X + leftTextSize.Width + 4, Bounds.Y + 1, 
+                    Bounds.X + leftTextSize.Width + 4, Bounds.Y + leftTextSize.Height - 2);
 
                 if (leftTextSize.Width >= innerBound.Width)
                 {
@@ -147,6 +118,9 @@ namespace NoPasaranTD.Visuals
             {
                 g.DrawLine(new Pen(Foreground), Bounds.X + 2, Bounds.Y + 1, Bounds.X + 2, Bounds.Y + 15);
             }
+
+            g.Clip = currentClip;
+            g.Transform = currentTransform;
         }
     }
 }
