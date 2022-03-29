@@ -593,7 +593,10 @@ namespace NoPasaranTD.Logic
 
         public void SendMessage(object t)
         {
-            Messages.Add(t.ToString());
+            Messages.Add(t as string);
+            if (Messages.Count > StaticInfo.MaxMessageCount)
+                Messages.RemoveAt(0);
+            Messages.Notify();
         }
 
         /// <summary>

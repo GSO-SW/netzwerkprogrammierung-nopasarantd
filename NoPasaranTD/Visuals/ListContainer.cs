@@ -192,7 +192,7 @@ namespace NoPasaranTD.Visuals
             // Render Items innerhalb dieser Region
             for (int i = items.Count - 1; i >= 0; i--)
             {
-                items[i].Render(g);
+                items[i]?.Render(g);
             }
 
             g.Clip = clip; // Setze ursprüngliche Region zurück
@@ -393,13 +393,11 @@ namespace NoPasaranTD.Visuals
         public void Add(T item)
         {
             arrayList.Add(item);
-            OnListChanged();
         }
 
         public void Clear()
         {
             arrayList.Clear();
-            OnListChanged();
         }
 
         public bool Contains(T item)
@@ -414,18 +412,19 @@ namespace NoPasaranTD.Visuals
             return (IEnumerator<T>)arrayList.GetEnumerator();
         }
 
-        public bool Remove(T item)
+        public bool RemoveAt(int index)
         {
-            try
-            {
-                arrayList.Remove(item);
-                OnListChanged();
-                return true;
-            }
-            catch (Exception) { return false; }
+            arrayList.RemoveAt(index);
+            return true;
         }
 
-        protected virtual void OnListChanged()
+        public bool Remove(T item)
+        {
+            arrayList.Remove(item);
+            return true;
+        }
+
+        public void Notify()
         {
             if (CollectionChanged != null)
             {
