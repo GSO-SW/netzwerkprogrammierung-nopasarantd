@@ -187,5 +187,10 @@
     <EmbeddedResource Include="Resources\Memes\meme_TD_17.jpg" />
     <EmbeddedResource Include="Resources\Memes\meme_TD_18.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_19.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_20.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_21.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
