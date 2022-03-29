@@ -19,10 +19,6 @@ namespace NoPasaranTD.Visuals.Main
 
         private ButtonContainer singleplayerButton;
         private ButtonContainer multiplayerButton;
-        private ButtonContainer tutorialButton;
-
-        private ButtonContainer optionsButton;
-        private ButtonContainer creditsButton;
 
         private ButtonContainer closeButton;
 
@@ -101,20 +97,12 @@ namespace NoPasaranTD.Visuals.Main
             // Buttons werden initialisiert
             singleplayerButton = InitButton("Singleplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 - buttonHeight - margin, buttonWidth, buttonHeight));
             multiplayerButton = InitButton("Multiplayer", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2, buttonWidth, buttonHeight));
-            tutorialButton = InitButton("Tutorial", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight + margin, buttonWidth, buttonHeight));
-
-            optionsButton = InitButton("Options", new Rectangle(StaticEngine.RenderWidth / 2 - buttonWidth / 2, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin / 2, buttonHeight));
-            creditsButton = InitButton("Credits", new Rectangle(StaticEngine.RenderWidth / 2 + margin, StaticEngine.RenderHeight / 2 + buttonHeight * 2 + margin * 2, buttonWidth / 2 - margin, buttonHeight));
 
             closeButton = InitButton("X", new Rectangle(StaticEngine.RenderWidth - 45, 5, 40, 40));
 
             // Events werden Aboniiert
             singleplayerButton.ButtonClicked += SingleplayerButton_ButtonClicked;
             multiplayerButton.ButtonClicked += MultiplayerButton_ButtonClicked;
-            tutorialButton.ButtonClicked += TutorialButton_ButtonClicked;
-
-            optionsButton.ButtonClicked += OptionsButton_ButtonClicked;
-            creditsButton.ButtonClicked += CreditsButton_ButtonClicked;
 
             closeButton.ButtonClicked += CloseButton_ButtonClicked;
 
@@ -172,10 +160,6 @@ namespace NoPasaranTD.Visuals.Main
             // Rendert alle UI Elemente           
             singleplayerButton.Render(g);
             multiplayerButton.Render(g);
-            tutorialButton.Render(g);
-
-            optionsButton.Render(g);
-            creditsButton.Render(g);
 
             closeButton.Render(g);
 
@@ -193,10 +177,6 @@ namespace NoPasaranTD.Visuals.Main
         {
             singleplayerButton.MouseDown(e);
             multiplayerButton.MouseDown(e);
-            tutorialButton.MouseDown(e);
-
-            optionsButton.MouseDown(e);
-            creditsButton.MouseDown(e);
 
             closeButton.MouseDown(e);
         }
@@ -207,10 +187,6 @@ namespace NoPasaranTD.Visuals.Main
 
             singleplayerButton.Update();
             multiplayerButton.Update();
-            tutorialButton.Update();
-
-            optionsButton.Update();
-            creditsButton.Update();
 
             closeButton.Update();
 
