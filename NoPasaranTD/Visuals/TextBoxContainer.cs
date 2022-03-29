@@ -39,13 +39,14 @@ namespace NoPasaranTD.Visuals
                 {
                     return;
                 }
-                else // Sonstige Zeichen, die nicht Backspace sind
+                else
                 {
-                    if (e.KeyChar == '\b')
+                    // Nur erlaubte Zeichen durch lassen
+                    if (e.KeyChar < 32 || e.KeyChar > 126)
                     {
                         return;
                     }
-
+                    
                     if (CaretIndex == Text.Length)
                     {
                         Text += e.KeyChar;

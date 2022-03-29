@@ -47,9 +47,10 @@ namespace NoPasaranTD.Visuals.Main
             btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(240, 5, 100, 30));
             btnUpdatePlayer.ButtonClicked += () =>
             {
-                if (IsNameValid(txtNameContainer.Text))
+                string name = txtNameContainer.Text.Trim();
+                if (IsNameValid(name))
                 {
-                    UpdatePlayer(new NetworkClient(txtNameContainer.Text));
+                    UpdatePlayer(new NetworkClient(name));
                 }
             };
 
@@ -192,8 +193,8 @@ namespace NoPasaranTD.Visuals.Main
 
         private static bool IsNameValid(string text)
         {
-            return !string.IsNullOrWhiteSpace(text)
-                && !text.Contains("#") || !text.Contains("|");
+            return !string.IsNullOrWhiteSpace(text.Trim())
+                && !text.Contains("#") && !text.Contains("|");
         }
     }
 }
