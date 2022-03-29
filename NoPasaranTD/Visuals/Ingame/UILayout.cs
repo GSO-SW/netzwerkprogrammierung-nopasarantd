@@ -174,7 +174,7 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 tower = new TowerArtillery();
             }
-            // TODO: Towers Spezifizeiren
+
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
                 TowerBuildMenu.Visible = true;
@@ -210,8 +210,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 tower.Hitbox = new Rectangle(new Point(StaticEngine.MouseX, StaticEngine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
                 placingTowerDragDrop.Context = tower;
                 placingTowerDragDrop.Start(tower.Hitbox);
-            }
-            // TODO: Größe des Rechteckes auf TowerType spezifieren           
+            }   
         }
 
         public override async void Update()
