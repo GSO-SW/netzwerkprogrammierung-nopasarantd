@@ -46,5 +46,10 @@ namespace NoPasaranTD.Visuals.Ingame
             g.FillRectangle(Brushes.Beige, Bounds);
             g.DrawString(DataContext, StandartText3Font, Brushes.Black, Bounds);
         }
+
+        public override void Update()
+        {
+
+        }
     }
 }
