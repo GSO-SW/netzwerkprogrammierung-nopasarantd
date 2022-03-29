@@ -104,6 +104,8 @@ namespace NoPasaranTD.Visuals
             Matrix current = g.Transform;
             Region currentClip = g.Clip;
 
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+
             g.SetClip(innerBound);
             g.TranslateTransform(offsetX, 0);
             g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y);
@@ -123,7 +125,15 @@ namespace NoPasaranTD.Visuals
 
                 g.SetClip(innerBound);
                 g.TranslateTransform(offsetX, 0);
-                g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width, Bounds.Y + 1, Bounds.X + leftTextSize.Width, Bounds.Y + leftTextSize.Height - 2);
+
+                if (char.IsWhiteSpace(Text[CaretIndex]))
+                {
+                    g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 5, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 5, Bounds.Y + leftTextSize.Height - 2);
+                }
+                else
+                {
+                    g.DrawLine(new Pen(Foreground), Bounds.X + leftTextSize.Width + 1, Bounds.Y + 1, Bounds.X + leftTextSize.Width + 1, Bounds.Y + leftTextSize.Height - 2);
+                }
 
                 g.Clip = currentClip;
                 g.Transform = current;
