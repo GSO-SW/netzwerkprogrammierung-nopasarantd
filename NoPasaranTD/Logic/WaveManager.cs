@@ -3,7 +3,7 @@ using NoPasaranTD.Model;
 using System;
 using System.Collections.Generic;
 
-namespace NoPasaranTD.Engine
+namespace NoPasaranTD.Logic
 {
     /// <summary>
     /// Der Wellen-Manager bestimmt wann ein Ballon zu welcher Runde und in welcher Häufigkeit spawnen soll
@@ -100,7 +100,7 @@ namespace NoPasaranTD.Engine
 
             if (sumProbability == 0)
             {
-                probabilities[probabilities.Length - 1] = (values[probabilities.Length-1],1);
+                probabilities[probabilities.Length - 1] = (values[probabilities.Length - 1], 1);
             }
             else
             {
@@ -110,7 +110,7 @@ namespace NoPasaranTD.Engine
                     probabilities[i - 1] = (probabilities[i - 1].Item1, probabilities[i - 1].Item2 * (1 / sumProbability));
                 }
             }
-            
+
             // Fügt die Ballons hinzu
             for (int i = 0; i < probabilities.Length; i++)
             {

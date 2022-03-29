@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
@@ -137,7 +138,6 @@ namespace NoPasaranTD.Networking
                         || taskQueue[i].Handler == "ResyncReceive"
                         || OfflineMode) // Checken ob die Task ausgeführt werden soll
                     {
-                        Console.WriteLine(taskQueue[i].Handler + "   " + taskQueue[i].TickToPerform);
                         EventHandlers.TryGetValue(taskQueue[i].Handler, out Action<object> handler);
                         handler(taskQueue[i].Parameter); // Task ausführen
                         if (taskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
@@ -183,10 +183,14 @@ namespace NoPasaranTD.Networking
                 // Die Nachricht wird an alle Teilnehmer (außer einem selbst) versendet
                 IPEndPoint[] endpoints = Participants.Where(p => !p.Equals(LocalPlayer)).Select(p => p.EndPoint).ToArray();
 
-                if(reliable)
+                if (reliable)
+                {
                     await Socket.SendReliableAsync(encodedMessage, endpoints);
+                }
                 else
+                {
                     await Socket.SendUnreliableAsync(encodedMessage, endpoints);
+                }
             }
 
             // Übergibt die Methode die zum jeweiligen Command ausgeführt werden soll, wenn solch einer existiert
@@ -252,7 +256,9 @@ namespace NoPasaranTD.Networking
             // Suche nach Teilnehmer anhand von Endpunkt
             int index = Participants.FindIndex(p => !p.Equals(LocalPlayer) && p.EndPoint.Equals(obj));
             if (index != -1) // Wenn gefunden, entferne ihn
+            {
                 Participants.RemoveAt(index);
+            }
         }
 
         /// <summary>

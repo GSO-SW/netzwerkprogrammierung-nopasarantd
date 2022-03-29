@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine
+namespace NoPasaranTD.Logic
 {
     public class Game : IDisposable
     {
@@ -22,7 +23,10 @@ namespace NoPasaranTD.Engine
         public List<Balloon>[] Balloons { get; }
         public List<Tower> Towers { get; }
         public List<Tower> VTowers { get; } // Speichert die Türme die noch nicht aktiv sind und nur angezeigt werden
+
+        // Layouts
         public UILayout UILayout { get; }
+        public CursorLayout CursorLayout { get; }
 
         public int Money { get; set; } = StaticInfo.StartMoney;
         public int HealthPoints { get; set; } = StaticInfo.StartHP;
@@ -31,11 +35,6 @@ namespace NoPasaranTD.Engine
         public int Round { get; set; } = 1;
 
         public NotifyCollection<string> Messages { get; set; } = new NotifyCollection<string>();
-
-        // Mouse Cursor Packeteinstellungen
-		private int MouseSendInterval = 200;
-        private static List<(int X, int Y, int TTL, int currentTick)> usersMousePos = new List<(int X, int Y, int TTL, int currentTick)>();           
-        private static List<string> usersMouseTag = new List<string>();
 
         /// <summary>
         /// Initialisiert ein neues Spiel
@@ -53,7 +52,10 @@ namespace NoPasaranTD.Engine
             Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
             Towers = new List<Tower>();
             VTowers = new List<Tower>();
+
+            // Layouts
             UILayout = new UILayout(this);
+            CursorLayout = new CursorLayout(this);
 
             InitNetworkHandler();
             InitBalloons();
@@ -71,7 +73,6 @@ namespace NoPasaranTD.Engine
             NetworkHandler.EventHandlers.Add("AddBalloon", AddBalloon);
             NetworkHandler.EventHandlers.Add("SendMessage", SendMessage);
             NetworkHandler.EventHandlers.Add("UpdateHealth", UpdateHealth);
-            NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
         }
 
 
@@ -140,43 +141,14 @@ namespace NoPasaranTD.Engine
 
             CheckVTower();
             for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
-            { 
+            {
                 Towers[i].Update(this);
             }
 
-
-
-            // eigene Maus schicken
-            if (CurrentTick % MouseSendInterval == 0)
-            {              
-                if (NetworkHandler.LocalPlayer != null)
-                {
-                    var networkPackage = new NetworkPackageMousePosition();
-                    networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
-                    networkPackage.CurrentTick = (int)CurrentTick;
-
-                    // TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
-                    networkPackage.Username = NetworkHandler.LocalPlayer.Name;
-
-                    NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
-
-                    if (CurrentTick % 1000 == 0)
-                    {
-                        for (int i = 0; i < usersMousePos.Count; i++)
-                        {
-                            if (usersMousePos[i].TTL < Environment.TickCount)
-                            {
-                                usersMousePos.RemoveAt(i);
-                                usersMouseTag.RemoveAt(i);
-                            }
-                        }
-                    }
-                }              
-            }
-
             UILayout.Update();
-			CurrentTick++;
-		}
+            CursorLayout.Update();
+            CurrentTick++;
+        }
 
         /// <summary>
         /// Kontrolliert alle nicht aktiven Türme, ob diese aktiviert werden müssen in dem Tick
@@ -244,7 +216,6 @@ namespace NoPasaranTD.Engine
             {
                 Towers[i].Render(g);
             }
-            UILayout.Render(g);
 
             for (int i = VTowers.Count - 1; i >= 0; i--)
             {
@@ -252,18 +223,8 @@ namespace NoPasaranTD.Engine
             }
 
             UILayout.Render(g);
-
-            // zeichne die Maus Positionen von anderen wenn online
-            if (!NetworkHandler.OfflineMode)
-            {
-                for (int i = 0; i < usersMousePos.Count; i++)
-                {
-                    g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
-                        usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
-                    g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
-                }
-            }
-		}
+            CursorLayout.Render(g);
+        }
 
         public void KeyUp(KeyEventArgs e)
         {
@@ -531,7 +492,7 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         private void RemoveTower(object t)
         {
-            Tower tower = FindTowerID(t);
+            Tower tower = FindTowerByID(t);
             if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
                 Tower selectedTower = UILayout.TowerDetailsContainer.Context;
@@ -549,7 +510,9 @@ namespace NoPasaranTD.Engine
         {
             HealthPoints = (int)h;
             if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
+            {
                 Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
+            }
         }
 
         /// <summary>
@@ -558,8 +521,13 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         public void UpgradeTower(object t)
         {
-            Tower tower = FindTowerID(t);
-            if (tower != null && (tower.UpgradePrice <= Money || GodMode) && tower.CanLevelUp()) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
+            Tower tower = FindTowerByID(t);
+            if (tower == null)
+            {
+                return;
+            }
+
+            if ((tower.UpgradePrice <= Money && tower.CanLevelUp()) || GodMode) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat oder im GodMode ist und das der Turm weiter geupgraded werden kann
             {
                 if (!GodMode) // Im Godmode soll kein Geld abgezogen werden
                 {
@@ -577,7 +545,7 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         public void ModeChangeTower(object t)
         {
-            Tower tower = FindTowerID(t);
+            Tower tower = FindTowerByID(t);
             if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
                 tower.TargetMode = (t as Tower).TargetMode;
@@ -633,7 +601,7 @@ namespace NoPasaranTD.Engine
         /// </summary>
         /// <param name="t"></param>
         /// <returns>Gibt einen Verweis auf das Objekt des übersendeten Turmes zurück</returns>
-        private Tower FindTowerID(object t)
+        private Tower FindTowerByID(object t)
         {
             try // Falls kein Turm mehr gefunden wird, bsw bei mehrfachem Löschen soll das Program nicht crashen
             {
@@ -650,39 +618,6 @@ namespace NoPasaranTD.Engine
                 Console.WriteLine("The towersearch failed with following message: " + e.Message);
             }
             return null;
-        }
-				
-		private void TransferMousePosition(object t)
-        {
-			var networkPackage = t as NetworkPackageMousePosition;
-			if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
-				|| networkPackage.Username == NetworkHandler.LocalPlayer.Name) return;
-
-			bool hasFound = false;
-			for (int i = 0; i < usersMousePos.Count; i++)
-				if (usersMouseTag[i] == networkPackage.Username)
-                {
-					hasFound = true;
-					if (usersMousePos[i].currentTick < networkPackage.CurrentTick)
-						usersMousePos[i] =
-							(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick);
-				}
-			if (!hasFound)
-            {
-				usersMousePos.Add(
-					(networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick));
-				usersMouseTag.Add(networkPackage.Username);
-			}
-        }
-
-        [Serializable]
-        private class NetworkPackageMousePosition
-        {
-            public (int X, int Y) Pos = (0, 0);
-            public string Username = String.Empty;
-
-            public int CurrentTick = 0;
-            public int TTL = 2000; // wird nicht überschrieben und in ms
         }
     }
 }

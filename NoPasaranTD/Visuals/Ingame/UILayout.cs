@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using System.Drawing;
@@ -174,7 +175,7 @@ namespace NoPasaranTD.Visuals.Ingame
             {
                 tower = new TowerArtillery();
             }
-            // TODO: Towers Spezifizeiren
+
             if (tower != null && (StaticInfo.GetTowerPrice(tower.GetType()) <= game.Money || game.GodMode))
             {
                 TowerBuildMenu.Visible = true;
@@ -211,7 +212,6 @@ namespace NoPasaranTD.Visuals.Ingame
                 placingTowerDragDrop.Context = tower;
                 placingTowerDragDrop.Start(tower.Hitbox);
             }
-            // TODO: Größe des Rechteckes auf TowerType spezifieren           
         }
 
         public override async void Update()

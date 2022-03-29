@@ -56,8 +56,11 @@ namespace NoPasaranTD.Visuals.Main
 
             btnPreviousMap.ButtonClicked += () =>
             {
-                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName));
-                currentIndex = Math.Abs(--currentIndex % mapList.Count);
+                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName)) - 1;
+                if (currentIndex < 0)
+                {
+                    currentIndex = mapList.Count - 1;
+                }
 
                 Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
@@ -69,8 +72,11 @@ namespace NoPasaranTD.Visuals.Main
 
             btnNextMap.ButtonClicked += () =>
             {
-                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName));
-                currentIndex = ++currentIndex % mapList.Count;
+                int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName)) + 1;
+                if (currentIndex >= mapList.Count)
+                {
+                    currentIndex = 0;
+                }
 
                 Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
@@ -112,30 +118,19 @@ namespace NoPasaranTD.Visuals.Main
         #region Implementation region
         public override void Render(Graphics g)
         {
-            if (!mapList.ContainsKey(Lobby.MapName))
-            {
-                return;
-            }
-
             btnLeaveLobby.Render(g);
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
 
-
-            // TODO temporäre Lösung für die ab und zu aufkommende KeyNotFoundException im Falle dass die Liste leer ist
-            if (mapList.Count == 0)
+            if (mapList.TryGetValue(Lobby.MapName, out Map map))
             {
-                Console.WriteLine("@LobbyScreen: Error catched");
-                return;
+                // Map preview
+                g.DrawImage(map.BackgroundImage,
+                    StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
+                    StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
+                );
             }
-
-
-            // Map preview
-            g.DrawImage(mapList[Lobby.MapName].BackgroundImage,
-                StaticEngine.RenderWidth - StaticEngine.RenderWidth / 3, 0,
-                StaticEngine.RenderWidth / 3, StaticEngine.RenderHeight / 3
-            );
 
             // Lobby name
             g.DrawString(Lobby.Name, StandartHeader1Font, Brushes.Black, 0, 0);

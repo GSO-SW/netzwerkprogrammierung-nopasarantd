@@ -64,6 +64,7 @@
     <Compile Include="Utilities\ResourceLoader.cs" />
     <Compile Include="Visuals\Ingame\ChatContainer.cs" />
     <Compile Include="Visuals\Ingame\ChatItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\CursorLayout.cs" />
     <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
     <Compile Include="Logic\WaveManager.cs" />
     <Compile Include="Networking\DiscoveryClient.cs" />
@@ -86,7 +87,7 @@
     <Compile Include="Visuals\ItemContainer.cs" />
     <Compile Include="Visuals\Ingame\TowerDetailsContainer.cs" />
     <Compile Include="Visuals\Ingame\UILayout.cs" />
-    <Compile Include="Engine\Game.cs" />
+    <Compile Include="Logic\Game.cs" />
     <Compile Include="Model\Balloon.cs" />
     <Compile Include="Model\Map.cs" />
     <Compile Include="Engine\StaticEngine.cs" />
@@ -160,24 +161,31 @@
     <EmbeddedResource Include="Resources\dichter_und_denker.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Meme\meme_TD_1.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_2.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_3.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_4.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_5.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_6.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_7.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_8.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_1.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_2.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_3.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_4.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_5.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_6.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_7.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_8.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Meme\meme_TD_10.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_11.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_12.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_13.jpg" />
-    <EmbeddedResource Include="Resources\Meme\meme_TD_9.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_10.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_11.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_12.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_13.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_9.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Maps\flyway.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_14.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_15.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_16.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_17.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_18.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

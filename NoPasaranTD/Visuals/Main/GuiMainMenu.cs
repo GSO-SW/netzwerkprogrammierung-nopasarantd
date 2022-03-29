@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using NoPasaranTD.Networking;
@@ -38,14 +39,14 @@ namespace NoPasaranTD.Visuals.Main
         private byte currentDirection = 0; // Soll nach innen (0) oder nach aussen (1) skaliert werden
 
         // Flying Meme Optionen
-        private int memeCounter = 1;
         private float memePositionX = 0;
         private float memePositionY = 0;
         private readonly float memeVelocity = 0.1f;
         private float memeRotation = -10;
         private float memeSlope = 0;
+        private int memeIndex = 0;
 
-        private readonly Random random;
+        private readonly Random random = new Random();
         private readonly List<Image> memes = ResourceLoader.LoadMemes();
         #endregion
 
@@ -73,13 +74,21 @@ namespace NoPasaranTD.Visuals.Main
         {
             StaticEngine.TickAcceleration = 1;
 
-            random = new Random();
             List<string> list = ResourceLoader.DichterUndDenker();
             randomText = list[random.Next(list.Count - 1)];
 
+            memeIndex = random.Next(0, memes.Count);
             memePositionY = random.Next(100, StaticEngine.RenderHeight - 100);
             memeSlope = (float)1 / random.Next(-30, 30);
             Decorate();
+        }
+
+        public override void Dispose()
+        {
+            backgroundGame.Dispose();
+            foreach (Image meme in memes)
+                meme.Dispose();
+            memes.Clear();
         }
 
         private void Decorate()
@@ -120,18 +129,18 @@ namespace NoPasaranTD.Visuals.Main
                 backgroundGame.WaveManager.AutoStart = true;
 
                 // Größe der Türme der Hintergrundspielszene
-                Size towerSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
+                Size towerCanonSize = StaticInfo.GetTowerSize(typeof(TowerCanon));
                 Size towerAtillerySize = StaticInfo.GetTowerSize(typeof(TowerArtillery));
 
                 // Setzt die Tower in das Hintergrundspiel ein
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerSize), Level = 2, });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerSize) });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(460, 30), towerSize), Level = 2 });
-                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(800, 630), towerSize), Level = 2 });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(520, 260), towerCanonSize), Level = 2, });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(855, 320), towerCanonSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(590, 530), towerCanonSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(160, 160), towerCanonSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(740, 175), towerCanonSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerCanon() { Hitbox = new Rectangle(new Point(225, 390), towerCanonSize) });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(460, 5), towerAtillerySize), Level = 2 });
+                backgroundGame.NetworkHandler.InvokeEvent("AddTower", new TowerArtillery() { Hitbox = new Rectangle(new Point(800, 630), towerAtillerySize), Level = 2 });
             }
         }
 
@@ -150,7 +159,7 @@ namespace NoPasaranTD.Visuals.Main
             g.TranslateTransform(memePositionX, memePositionY);
             g.RotateTransform(memeRotation);
 
-            g.DrawImage(memes[memeCounter], 0, 0, 150, 100);
+            g.DrawImage(memes[memeIndex], 0, 0, 150, 100);
 
             g.Transform = currentTransform;
 
@@ -229,16 +238,11 @@ namespace NoPasaranTD.Visuals.Main
             memeRotation += 0.01f;
 
             // Überprüft ob das derzeitige Meme noch valide ist
-            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeCounter].Height <= 0)
+            if (memePositionX >= StaticEngine.RenderWidth || memePositionY >= StaticEngine.RenderHeight || memePositionY + memes[memeIndex].Height <= 0)
             {
-                memeCounter++;
-                if (memeCounter == memes.Count)
-                {
-                    memeCounter = 1;
-                }
-
+                memeIndex = random.Next(0, memes.Count);
                 memePositionY = random.Next(200, StaticEngine.RenderHeight - 200);
-                memePositionX = -memes[memeCounter].Width;
+                memePositionX = -memes[memeIndex].Width;
                 memeSlope = (float)1 / random.Next(-30, 30);
                 memeRotation = random.Next(-40, 40);
 
@@ -276,11 +280,6 @@ namespace NoPasaranTD.Visuals.Main
         private void TutorialButton_ButtonClicked()
         {
             // TODO: Tutorial Screen
-        }
-
-        public override void Dispose()
-        {
-            backgroundGame.Dispose();
         }
     }
 }

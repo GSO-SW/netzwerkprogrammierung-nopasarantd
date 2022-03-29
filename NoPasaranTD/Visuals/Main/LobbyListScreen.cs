@@ -14,7 +14,7 @@ namespace NoPasaranTD.Visuals.Main
         private readonly TextBoxContainer txtNameContainer;
         private readonly ButtonContainer btnUpdatePlayer;
         private readonly ButtonContainer btnCreateLobby;
-       
+
         private readonly GuiLobbyMenu parent;
         public LobbyListScreen(GuiLobbyMenu parent)
         {
@@ -34,17 +34,24 @@ namespace NoPasaranTD.Visuals.Main
 
             txtNameContainer = new TextBoxContainer
             {
+                Margin = 2,
+                Text = "MEEF" + (Environment.TickCount % 1337),
                 Background = new SolidBrush(Color.White),
                 Foreground = new SolidBrush(Color.Black),
                 BorderBrush = new SolidBrush(Color.Black),
-                Margin = 2,
+                Bounds = new Rectangle(5, 5, 230, 30),
                 TextFont = StandartText2Font
             };
-            txtNameContainer.Bounds = new Rectangle(5, 5 , 230, 30);
 
             // Aktualisiere Spielerinformationen
             btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(240, 5, 100, 30));
-            btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient(txtNameContainer.Text));
+            btnUpdatePlayer.ButtonClicked += () =>
+            {
+                if (IsNameValid(txtNameContainer.Text))
+                {
+                    UpdatePlayer(new NetworkClient(txtNameContainer.Text));
+                }
+            };
 
             // Erstelle neue Lobby
             btnCreateLobby = GuiLobbyMenu.CreateButton("Create Lobby", new Rectangle(
@@ -87,22 +94,22 @@ namespace NoPasaranTD.Visuals.Main
             {
                 parent.DiscoveryClient.LoginAsync(client);
             }
+
             // Ursprünglich ist Content auf Login, da diese methode noch nicht ausgeführt wurde
             // Sobald der sich jedoch eingeloggt hat, soll ein anderer Content angezeigt werden
-            btnUpdatePlayer.Content = "Update Info"; 
+            btnUpdatePlayer.Content = "Update Info";
+            txtNameContainer.Text = "";
         }
-
 
         private void CreateLobby(NetworkClient host)
         { // Befehl zum erstellen einer neuen lobby
-            // TODO: Ändern vom Lobbynamen via Textbox
             if (host == null || parent.DiscoveryClient == null || !parent.DiscoveryClient.LoggedIn)
             {
                 return;
             }
 
             parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
-                host, txtNameContainer.Text + "´s Room" , "spentagon"
+                host, host.Name + "´s Room", "spentagon"
             ));
         }
 
@@ -183,5 +190,10 @@ namespace NoPasaranTD.Visuals.Main
         }
         #endregion
 
+        private static bool IsNameValid(string text)
+        {
+            return !string.IsNullOrWhiteSpace(text)
+                && !text.Contains("#") || !text.Contains("|");
+        }
     }
 }
