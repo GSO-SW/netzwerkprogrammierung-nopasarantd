@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{25BB9DA6-1DE8-4723-888E-A6C34A6DCCCF}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>NoPasaranTD</RootNamespace>
     <AssemblyName>NoPasaranTD</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -32,7 +32,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,16 +52,59 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Display.cs">
+    <Compile Include="Data\MapData.cs" />
+    <Compile Include="Data\StaticInfo.cs" />
+    <Compile Include="Engine\StaticDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Display.Designer.cs">
-      <DependentUpon>Display.cs</DependentUpon>
+    <Compile Include="Engine\StaticDisplay.Designer.cs">
+      <DependentUpon>StaticDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="Networking\RUdpClient.cs" />
+    <Compile Include="Utilities\ResourceLoader.cs" />
+    <Compile Include="Visuals\Ingame\ChatContainer.cs" />
+    <Compile Include="Visuals\Ingame\ChatItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\CursorLayout.cs" />
+    <Compile Include="Visuals\Ingame\GuiGameOver.cs" />
+    <Compile Include="Logic\WaveManager.cs" />
+    <Compile Include="Networking\DiscoveryClient.cs" />
+    <Compile Include="Networking\NetworkLobby.cs" />
+    <Compile Include="Networking\NetworkHandler.cs" />
+    <Compile Include="Networking\NetworkClient.cs" />
+    <Compile Include="Utilities\Serializer.cs" />
+    <Compile Include="Visuals\Ingame\OptionsContainer.cs" />
+    <Compile Include="Visuals\Ingame\PlayerItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\PlayerListContainer.cs" />
+    <Compile Include="Visuals\Main\GuiSelectMap.cs" />
+    <Compile Include="Visuals\Ingame\TowerModeItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\GuiPauseMenu.cs" />
+    <Compile Include="Model\TowerArtillery.cs" />
+    <Compile Include="Visuals\ListContainer.cs" />
+    <Compile Include="Visuals\ButtonContainer.cs" />
+    <Compile Include="Visuals\DragDropService.cs" />
+    <Compile Include="Visuals\GuiComponent.cs" />
+    <Compile Include="Visuals\Ingame\TowerItemContainer.cs" />
+    <Compile Include="Visuals\ItemContainer.cs" />
+    <Compile Include="Visuals\Ingame\TowerDetailsContainer.cs" />
+    <Compile Include="Visuals\Ingame\UILayout.cs" />
+    <Compile Include="Logic\Game.cs" />
+    <Compile Include="Model\Balloon.cs" />
+    <Compile Include="Model\Map.cs" />
+    <Compile Include="Engine\StaticEngine.cs" />
+    <Compile Include="Model\Obstacle.cs" />
+    <Compile Include="Model\Tower.cs" />
+    <Compile Include="Model\TowerCanon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Display.resx">
-      <DependentUpon>Display.cs</DependentUpon>
+    <Compile Include="Utilities\Vector2D.cs" />
+    <Compile Include="Visuals\Main\GuiMainMenu.cs" />
+    <Compile Include="Visuals\Main\GuiLobbyMenu.cs" />
+    <Compile Include="Visuals\Main\LobbyItemContainer.cs" />
+    <Compile Include="Visuals\Main\LobbyListScreen.cs" />
+    <Compile Include="Visuals\Main\LobbyScreen.cs" />
+    <Compile Include="Visuals\TextBoxContainer.cs" />
+    <EmbeddedResource Include="Engine\StaticDisplay.resx">
+      <DependentUpon>StaticDisplay.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -66,6 +115,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -75,9 +125,72 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Resources\Maps\spentagon.json" />
+    <EmbeddedResource Include="Resources\Maps\house.json" />
+    <EmbeddedResource Include="Resources\Maps\flyway.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gameoverscreen.jpg" />
+    <EmbeddedResource Include="Resources\gameoversound.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\house.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Obstacles\pool.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\spentagon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Obstacles\factory.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Towers\canon_body.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Towers\canon_head.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Towers\canon_barrel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\dichter_und_denker.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_1.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_2.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_3.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_4.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_5.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_6.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_7.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_8.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_10.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_11.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_12.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_13.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_9.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Maps\flyway.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_14.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_15.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_16.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_17.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_18.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Memes\meme_TD_19.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_20.jpg" />
+    <EmbeddedResource Include="Resources\Memes\meme_TD_21.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
