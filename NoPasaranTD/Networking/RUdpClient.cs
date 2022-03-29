@@ -197,6 +197,9 @@ namespace NoPasaranTD.Networking
             packetsSent?.Clear();
         }
 
+        /// <summary>
+        /// Sende über das normale UDP-Protokoll
+        /// </summary>
         public async Task SendUnreliableAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             foreach (IPEndPoint endpoint in endpoints)
@@ -205,6 +208,9 @@ namespace NoPasaranTD.Networking
             }
         }
 
+        /// <summary>
+        /// Sende über das Reliable-UDP-Protokoll
+        /// </summary>
         public async Task SendReliableAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             RUdpPacket packet = new RUdpPacket(RUdpPacket.CODE_PKG, localClient.SequenceID, data);
@@ -218,6 +224,9 @@ namespace NoPasaranTD.Networking
             localClient.SequenceID++;
         }
 
+        /// <summary>
+        /// Erhalte ein UDP-Paket, sei es RUdp oder normales UDP
+        /// </summary>
         public async Task<UdpReceiveResult> ReceiveAsync()
         {
             while (packetsReceived.Count == 0)
