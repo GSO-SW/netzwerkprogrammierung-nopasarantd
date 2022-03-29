@@ -15,7 +15,6 @@ namespace NoPasaranTD.Visuals.Main
         private readonly ButtonContainer btnUpdatePlayer;
         private readonly ButtonContainer btnCreateLobby;
        
-
         private readonly GuiLobbyMenu parent;
         public LobbyListScreen(GuiLobbyMenu parent)
         {
@@ -45,7 +44,6 @@ namespace NoPasaranTD.Visuals.Main
 
             // Aktualisiere Spielerinformationen
             btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(240, 5, 100, 30));
-            // TODO: Mit TextBox aktualisieren
             btnUpdatePlayer.ButtonClicked += () => UpdatePlayer(new NetworkClient(txtNameContainer.Text));
 
             // Erstelle neue Lobby
@@ -79,11 +77,11 @@ namespace NoPasaranTD.Visuals.Main
             {
                 return;
             }
+
             parent.LocalPlayer = client;
             if (parent.DiscoveryClient.LoggedIn)
             {
                 parent.DiscoveryClient.UpdatePlayerAsync(client);
-               
             }
             else
             {
@@ -132,7 +130,6 @@ namespace NoPasaranTD.Visuals.Main
             btnUpdatePlayer.Render(g);
             btnCreateLobby.Render(g);
             lobbyList.Render(g);
-           
 
             if (parent.LocalPlayer != null)
             { // Render Login Zeichenkette
@@ -163,27 +160,26 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void MouseDown(MouseEventArgs e)
         {
+            txtNameContainer.MouseDown(e);
             btnUpdatePlayer.MouseDown(e);
             btnCreateLobby.MouseDown(e);
             lobbyList.MouseDown(e);
-            txtNameContainer.MouseDown(e);
         }
 
         public override void KeyPress(KeyPressEventArgs e)
         {
+            lobbyList.KeyPress(e);
             txtNameContainer.KeyPress(e);
-            
         }
+
         public override void MouseMove(MouseEventArgs e)
         {
             lobbyList.MouseMove(e);
-            txtNameContainer.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
             lobbyList.MouseWheel(e);
-            txtNameContainer.MouseWheel(e);
         }
         #endregion
 

@@ -184,7 +184,6 @@ namespace NoPasaranTD.Visuals.Main
         {
             backgroundGame.Update();
             ForegroundScreen.Update();
-            LobbyListScreen.Update();
         }
 
         public override void Render(Graphics g)
@@ -209,8 +208,9 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void KeyPress(KeyPressEventArgs e)
         {
-            LobbyListScreen.KeyPress(e);
+            ForegroundScreen.KeyPress(e);
         }
+
         public override void KeyDown(KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
@@ -219,7 +219,6 @@ namespace NoPasaranTD.Visuals.Main
             }
 
             ForegroundScreen.KeyDown(e);
-            LobbyListScreen.KeyDown(e);
         }
 
         public override void MouseUp(MouseEventArgs e)
@@ -230,19 +229,16 @@ namespace NoPasaranTD.Visuals.Main
         public override void MouseDown(MouseEventArgs e)
         {
             ForegroundScreen.MouseDown(e);
-            LobbyListScreen?.MouseDown(e);
         }
 
         public override void MouseMove(MouseEventArgs e)
         {
             ForegroundScreen.MouseMove(e);
-            LobbyListScreen.MouseMove(e);
         }
 
         public override void MouseWheel(MouseEventArgs e)
         {
             ForegroundScreen.MouseWheel(e);
-            LobbyListScreen.MouseWheel(e);
         }
         #endregion
 
