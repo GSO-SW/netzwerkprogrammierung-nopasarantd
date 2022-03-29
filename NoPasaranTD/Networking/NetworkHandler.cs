@@ -137,7 +137,6 @@ namespace NoPasaranTD.Networking
                         || taskQueue[i].Handler == "ResyncReceive"
                         || OfflineMode) // Checken ob die Task ausgeführt werden soll
                     {
-                        Console.WriteLine(taskQueue[i].Handler + "   " + taskQueue[i].TickToPerform);
                         EventHandlers.TryGetValue(taskQueue[i].Handler, out Action<object> handler);
                         handler(taskQueue[i].Parameter); // Task ausführen
                         if (taskQueue.Count != 0) // Sollte eine ResyncRequest gesendet werden, wird die ganze Liste gelöscht
