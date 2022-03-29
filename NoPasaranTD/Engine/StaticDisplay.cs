@@ -6,6 +6,8 @@ using NoPasaranTD.Visuals;
 using NoPasaranTD.Visuals.Main;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Windows.Forms;
 
 namespace NoPasaranTD.Engine
@@ -190,6 +192,9 @@ namespace NoPasaranTD.Engine
             float scaledHeight = (float)ClientSize.Height / StaticEngine.RenderHeight;
 
             Graphics g = e.Graphics;
+            g.TextRenderingHint = TextRenderingHint.AntiAlias;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
             g.ScaleTransform(scaledWidth, scaledHeight);
             { // Spiel rendern
                 currentGame?.Render(g);
