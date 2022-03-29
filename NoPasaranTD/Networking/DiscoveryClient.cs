@@ -155,7 +155,7 @@ namespace NoPasaranTD.Networking
         private async Task DoHolePunchingAsync()
         {
             IPEndPoint[] endpoints = Clients.Select(c => c.EndPoint).ToArray();
-            await UdpClient.SendAsync(new byte[0], endpoints); // Sende leeres Paket an alle Endpunkte
+            await UdpClient.SendReliableAsync(new byte[0], endpoints); // Sende leeres Paket an alle Endpunkte
 
             // Warte auf Antwort von jedem Endpunkt
             for (int i = 0; i < endpoints.Length; i++)

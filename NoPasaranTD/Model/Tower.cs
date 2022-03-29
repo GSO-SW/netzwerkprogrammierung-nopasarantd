@@ -24,8 +24,8 @@ namespace NoPasaranTD.Model
 
         public uint Strength => StaticInfo.GetTowerDamage(GetType()) * Level;
         public uint Delay => StaticInfo.GetTowerDelay(GetType()) / (Level * 2);
-        public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.3;
-        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level;
+        public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.2;
+        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level*4;
         public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
         public Guid ID { get; } = Guid.NewGuid();
         public long ActivateAtTick { get; set; } = 0;

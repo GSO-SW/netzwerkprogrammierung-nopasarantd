@@ -49,13 +49,9 @@ namespace NoPasaranTD.Visuals.Ingame
             };
 
             // Übergibt den Items den derzeitigen Host des Spieles
-            if (currentGame.NetworkHandler.Lobby != null)
+            if (!currentGame.NetworkHandler.OfflineMode)
             {
-                PlayersContainer.ListArgs = new object[] { currentGame.NetworkHandler.LocalPlayer, currentGame.NetworkHandler.Lobby.Host };
-            }
-
-            if (currentGame.NetworkHandler.Participants != null)
-            {
+                PlayersContainer.ListArgs = new object[] { currentGame.NetworkHandler.LocalPlayer, currentGame.NetworkHandler.Participants[0] };
                 PlayersContainer.DefineItems();
             }
         }

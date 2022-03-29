@@ -10,7 +10,7 @@ namespace NoPasaranTD.Data
     public static class StaticInfo
     {
         #region Startwerte
-        public static readonly int StartMoney = 150;
+        public static readonly int StartMoney = 200;
         public static readonly int StartHP = 100;
         #endregion
 
@@ -135,10 +135,10 @@ namespace NoPasaranTD.Data
             {BalloonType.None,     0},
             {BalloonType.Red,      1},
             {BalloonType.Green,    2},
-            {BalloonType.Blue,     3},
-            {BalloonType.Purple,   4},
-            {BalloonType.Black,    5},
-            {BalloonType.Gold,     6}
+            {BalloonType.Blue,     4},
+            {BalloonType.Purple,   6},
+            {BalloonType.Black,    8},
+            {BalloonType.Gold,     10}
         };
 
         private static readonly Dictionary<BalloonType, float> BalloonVelocity = new Dictionary<BalloonType, float>()
@@ -157,10 +157,10 @@ namespace NoPasaranTD.Data
             {BalloonType.None,     0},
             {BalloonType.Red,      1},
             {BalloonType.Green,    2},
-            {BalloonType.Blue,     3},
-            {BalloonType.Purple,   4},
-            {BalloonType.Black,    5},
-            {BalloonType.Gold,     6}
+            {BalloonType.Blue,     4},
+            {BalloonType.Purple,   6},
+            {BalloonType.Black,    8},
+            {BalloonType.Gold,     10}
         };
         #endregion  // Dictionary für die Ballons
 
@@ -179,7 +179,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, double> TowerRange = new Dictionary<Type, double>()
         {
-            {typeof(TowerCanon),     450},
+            {typeof(TowerCanon),     500},
             {typeof(TowerArtillery), 1000},
         };
 
@@ -191,7 +191,7 @@ namespace NoPasaranTD.Data
 
         private static readonly Dictionary<Type, uint> TowerDelay = new Dictionary<Type, uint>()
         {
-            {typeof(TowerCanon),     2500},
+            {typeof(TowerCanon),     3500},
             {typeof(TowerArtillery), 48000},
         };
 
@@ -215,11 +215,11 @@ namespace NoPasaranTD.Data
         private static readonly Dictionary<BalloonType, uint> PeekRoundBalloon = new Dictionary<BalloonType, uint>()
         {
             {BalloonType.Red,       0},
-            {BalloonType.Green,     10},
-            {BalloonType.Blue,      20},
-            {BalloonType.Purple,    30},
-            {BalloonType.Black,     40},
-            {BalloonType.Gold,      50}
+            {BalloonType.Green,     7},
+            {BalloonType.Blue,      14},
+            {BalloonType.Purple,    21},
+            {BalloonType.Black,     28},
+            {BalloonType.Gold,      35}
         };
 
         /// <summary>

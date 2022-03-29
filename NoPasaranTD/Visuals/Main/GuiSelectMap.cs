@@ -40,20 +40,21 @@ namespace NoPasaranTD.Visuals.Main
 
         public override void Dispose()
         {
-            foreach (Map map in mapList.Values)
+            foreach (Map map in mapList?.Values)
             {
                 map.Dispose();
             }
 
-            mapList.Clear();
+            mapList?.Clear();
         }
 
         public override void Render(Graphics g)
         {
-            if (mapList.Count == 0)
+            if (currentMap >= mapList.Count)
             {
                 return;
             }
+
             // Zeichne Karte
             g.DrawImage(mapList.Values.ElementAt(currentMap).BackgroundImage,
                 0, 0, StaticEngine.RenderWidth, StaticEngine.RenderHeight
