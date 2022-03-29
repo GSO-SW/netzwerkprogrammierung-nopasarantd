@@ -1,57 +1,48 @@
 ﻿using NoPasaranTD.Engine;
-using NoPasaranTD.Networking;
+using NoPasaranTD.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NoPasaranTD.Visuals.Ingame
 {
+    [Serializable]
+    public struct PlayerCursorInfo
+    {
+        public string Username { get; }
+        public Vector2D Position { get; }
+        public PlayerCursorInfo(string username, Vector2D pos)
+        {
+            Username = username;
+            Position = pos;
+        }
+    }
+
     public class CursorLayout : GuiComponent
     {
 
         // Mouse Cursor Paketeinstellungen
-        private int MouseSendInterval = 200;
-        private static List<(int X, int Y, int TTL, ulong currentTick)> usersMousePos = new List<(int X, int Y, int TTL, ulong currentTick)>();
-        private static List<string> usersMouseTag = new List<string>();
+        private const int MOUSE_SEND_INTERVAL = 50;
 
         private readonly Game game;
+        private readonly Dictionary<string, PlayerCursorInfo> playerCursors;
         public CursorLayout(Game game)
         {
             this.game = game;
+            playerCursors = new Dictionary<string, PlayerCursorInfo>();
             game.NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
         }
 
         public override void Update()
         {
             // eigene Maus schicken
-            if (game.CurrentTick % MouseSendInterval == 0)
+            if (!game.NetworkHandler.OfflineMode && game.CurrentTick % MOUSE_SEND_INTERVAL == 0)
             {
-                if (game.NetworkHandler.LocalPlayer != null)
-                {
-                    var networkPackage = new NetworkPackageMousePosition();
-                    networkPackage.Pos = (StaticEngine.MouseX, StaticEngine.MouseY);
-                    networkPackage.CurrentTick = game.CurrentTick;
-
-                    // TODO ergänzen: den Username mitschicken statt das id ding -26.3.2022 
-                    networkPackage.Username = game.NetworkHandler.LocalPlayer.Name;
-
-                    game.NetworkHandler.InvokeEvent("TransferMousePosition", networkPackage, false);
-
-                    if (game.CurrentTick % 1000 == 0)
-                    {
-                        for (int i = 0; i < usersMousePos.Count; i++)
-                        {
-                            if (usersMousePos[i].TTL < Environment.TickCount)
-                            {
-                                usersMousePos.RemoveAt(i);
-                                usersMouseTag.RemoveAt(i);
-                            }
-                        }
-                    }
-                }
+                game.NetworkHandler.InvokeEvent("TransferMousePosition", new PlayerCursorInfo(
+                    game.NetworkHandler.LocalPlayer.Name,
+                    new Vector2D(StaticEngine.MouseX, StaticEngine.MouseY)
+                ), false);
             }
         }
 
@@ -60,46 +51,26 @@ namespace NoPasaranTD.Visuals.Ingame
             // zeichne die Maus Positionen von anderen wenn online
             if (!game.NetworkHandler.OfflineMode)
             {
-                for (int i = 0; i < usersMousePos.Count; i++)
+                for (int i = playerCursors.Count - 1; i >= 0; i--)
                 {
-                    g.DrawString(usersMouseTag[i], SystemFonts.DefaultFont, Brushes.Black,
-                        usersMousePos[i].X + 15, usersMousePos[i].Y - 5);
-                    g.DrawRectangle(Pens.Red, usersMousePos[i].X - 5, usersMousePos[i].Y - 5, 10, 10);
+                    PlayerCursorInfo info = playerCursors.Values.ElementAt(i);
+                    g.DrawRectangle(Pens.Red,
+                        info.Position.X - 5, info.Position.Y - 5, 10, 10
+                    );
+
+                    g.DrawString(info.Username, StandartText1Font, Brushes.Black,
+                        info.Position.X + 15, info.Position.Y - 5);
                 }
             }
         }
 
         private void TransferMousePosition(object t)
         {
-            var networkPackage = t as NetworkPackageMousePosition;
-            if (networkPackage == null // aus irgend einem Grund ist das schon mal passiert und hat zu Null reference Excep. geführt. Wenn sehr viele Events empfangen werden könnte es passieren
-                || networkPackage.Username == game.NetworkHandler.LocalPlayer.Name) return;
-
-            bool hasFound = false;
-            for (int i = 0; i < usersMousePos.Count; i++)
-                if (usersMouseTag[i] == networkPackage.Username)
-                {
-                    hasFound = true;
-                    if (usersMousePos[i].currentTick < networkPackage.CurrentTick)
-                        usersMousePos[i] =
-                            (networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick);
-                }
-            if (!hasFound)
+            PlayerCursorInfo cursorInfo = (PlayerCursorInfo)t;
+            if (!cursorInfo.Username.Equals(game.NetworkHandler.LocalPlayer.Name))
             {
-                usersMousePos.Add(
-                    (networkPackage.Pos.X, networkPackage.Pos.Y, networkPackage.TTL + Environment.TickCount, networkPackage.CurrentTick));
-                usersMouseTag.Add(networkPackage.Username);
+                playerCursors[cursorInfo.Username] = cursorInfo;
             }
-        }
-
-        [Serializable]
-        private class NetworkPackageMousePosition
-        {
-            public (int X, int Y) Pos = (0, 0);
-            public string Username = string.Empty;
-
-            public ulong CurrentTick = 0;
-            public int TTL = 2000; // wird nicht überschrieben und in ms
         }
     }
 }
