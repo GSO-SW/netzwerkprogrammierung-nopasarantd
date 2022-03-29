@@ -1,2 +1,2 @@
-# netzwerkprogrammierung-nopasarantd
-netzwerkprogrammierung-nopasarantd created by GitHub Classroom
+# No Pasaran TD
+- Das ultimative Spiel ohne jegliches durchkommen -
