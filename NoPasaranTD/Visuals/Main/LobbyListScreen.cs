@@ -1,6 +1,5 @@
 ﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Networking;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -14,7 +13,7 @@ namespace NoPasaranTD.Visuals.Main
         private readonly TextBoxContainer txtNameContainer;
         private readonly ButtonContainer btnUpdatePlayer;
         private readonly ButtonContainer btnCreateLobby;
-       
+
         private readonly GuiLobbyMenu parent;
         public LobbyListScreen(GuiLobbyMenu parent)
         {
@@ -40,7 +39,7 @@ namespace NoPasaranTD.Visuals.Main
                 Margin = 2,
                 TextFont = StandartText2Font
             };
-            txtNameContainer.Bounds = new Rectangle(5, 5 , 230, 30);
+            txtNameContainer.Bounds = new Rectangle(5, 5, 230, 30);
 
             // Aktualisiere Spielerinformationen
             btnUpdatePlayer = GuiLobbyMenu.CreateButton("Login", new Rectangle(240, 5, 100, 30));
@@ -89,7 +88,7 @@ namespace NoPasaranTD.Visuals.Main
             }
             // Ursprünglich ist Content auf Login, da diese methode noch nicht ausgeführt wurde
             // Sobald der sich jedoch eingeloggt hat, soll ein anderer Content angezeigt werden
-            btnUpdatePlayer.Content = "Update Info"; 
+            btnUpdatePlayer.Content = "Update Info";
         }
 
 
@@ -102,7 +101,7 @@ namespace NoPasaranTD.Visuals.Main
             }
 
             parent.DiscoveryClient.CreateLobbyAsync(new NetworkLobby(
-                host, txtNameContainer.Text + "´s Room" , "spentagon"
+                host, txtNameContainer.Text + "´s Room", "spentagon"
             ));
         }
 

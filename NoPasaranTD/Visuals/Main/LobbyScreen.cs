@@ -57,7 +57,10 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap.ButtonClicked += () =>
             {
                 int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName)) - 1;
-                if (currentIndex < 0) currentIndex = mapList.Count - 1;
+                if (currentIndex < 0)
+                {
+                    currentIndex = mapList.Count - 1;
+                }
 
                 Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);
@@ -70,7 +73,10 @@ namespace NoPasaranTD.Visuals.Main
             btnNextMap.ButtonClicked += () =>
             {
                 int currentIndex = Array.FindIndex(mapList.Keys.ToArray(), s => s.Equals(Lobby.MapName)) + 1;
-                if (currentIndex >= mapList.Count) currentIndex = 0;
+                if (currentIndex >= mapList.Count)
+                {
+                    currentIndex = 0;
+                }
 
                 Lobby.MapName = mapList.Keys.ElementAt(currentIndex);
                 parent.DiscoveryClient.UpdateLobbyAsync(Lobby);

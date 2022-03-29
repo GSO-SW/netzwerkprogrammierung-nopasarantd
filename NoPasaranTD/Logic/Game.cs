@@ -22,6 +22,8 @@ namespace NoPasaranTD.Engine
         public List<Balloon>[] Balloons { get; }
         public List<Tower> Towers { get; }
         public List<Tower> VTowers { get; } // Speichert die Türme die noch nicht aktiv sind und nur angezeigt werden
+
+        // Layouts
         public UILayout UILayout { get; }
         public CursorLayout CursorLayout { get; }
 
@@ -49,6 +51,8 @@ namespace NoPasaranTD.Engine
             Balloons = new List<Balloon>[CurrentMap.BalloonPath.Length - 1];
             Towers = new List<Tower>();
             VTowers = new List<Tower>();
+
+            // Layouts
             UILayout = new UILayout(this);
             CursorLayout = new CursorLayout(this);
 
@@ -136,14 +140,14 @@ namespace NoPasaranTD.Engine
 
             CheckVTower();
             for (int i = Towers.Count - 1; i >= 0; i--) // Alle Türme die aktiv sind updaten
-            { 
+            {
                 Towers[i].Update(this);
             }
 
             UILayout.Update();
             CursorLayout.Update();
             CurrentTick++;
-		}
+        }
 
         /// <summary>
         /// Kontrolliert alle nicht aktiven Türme, ob diese aktiviert werden müssen in dem Tick
@@ -211,7 +215,6 @@ namespace NoPasaranTD.Engine
             {
                 Towers[i].Render(g);
             }
-            UILayout.Render(g);
 
             for (int i = VTowers.Count - 1; i >= 0; i--)
             {
@@ -488,7 +491,7 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         private void RemoveTower(object t)
         {
-            Tower tower = FindTowerID(t);
+            Tower tower = FindTowerByID(t);
             if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
                 Tower selectedTower = UILayout.TowerDetailsContainer.Context;
@@ -506,7 +509,9 @@ namespace NoPasaranTD.Engine
         {
             HealthPoints = (int)h;
             if (HealthPoints <= 0) // Fragt ab ob der Spieler gerade verloren hat
+            {
                 Program.LoadScreen(new GuiGameOver()); // Lade GuiGameOver falls dies der Fall ist
+            }
         }
 
         /// <summary>
@@ -515,8 +520,13 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         public void UpgradeTower(object t)
         {
-            Tower tower = FindTowerID(t);
-            if (tower != null && tower.UpgradePrice <= Money && tower.CanLevelUp()) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
+            Tower tower = FindTowerByID(t);
+            if(tower == null)
+            {
+                return;
+            }
+
+            if ((tower.UpgradePrice <= Money && tower.CanLevelUp()) || GodMode) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat oder im GodMode ist und das der Turm weiter geupgraded werden kann
             {
                 if (!GodMode) // Im Godmode soll kein Geld abgezogen werden
                 {
@@ -534,7 +544,7 @@ namespace NoPasaranTD.Engine
         /// <param name="t"></param>
         public void ModeChangeTower(object t)
         {
-            Tower tower = FindTowerID(t);
+            Tower tower = FindTowerByID(t);
             if (tower != null) // Kontrollieren, dass ein Turm existiert
             {
                 tower.TargetMode = (t as Tower).TargetMode;
@@ -590,7 +600,7 @@ namespace NoPasaranTD.Engine
         /// </summary>
         /// <param name="t"></param>
         /// <returns>Gibt einen Verweis auf das Objekt des übersendeten Turmes zurück</returns>
-        private Tower FindTowerID(object t)
+        private Tower FindTowerByID(object t)
         {
             try // Falls kein Turm mehr gefunden wird, bsw bei mehrfachem Löschen soll das Program nicht crashen
             {

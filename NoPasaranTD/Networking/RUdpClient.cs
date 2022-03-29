@@ -45,7 +45,11 @@ namespace NoPasaranTD.Networking
         /// </summary>
         public static byte[] Serialize(RUdpPacket packet)
         {
-            if (packet.Type == CODE_UDP) return packet.Data;
+            if (packet.Type == CODE_UDP)
+            {
+                return packet.Data;
+            }
+
             byte[] data = new byte[17 + packet.Data.Length];
 
             data[0] = packet.Type;
@@ -66,7 +70,9 @@ namespace NoPasaranTD.Networking
 
             // UDP validität prüfen
             if (type < CODE_UDP || type > CODE_SYN || 17 + length != data.LongLength)
+            {
                 return new RUdpPacket(CODE_UDP, 0, data);
+            }
 
             byte[] packet = new byte[length];
             Array.Copy(data, 17, packet, 0, length);
@@ -97,7 +103,9 @@ namespace NoPasaranTD.Networking
             Packet = packet;
             EndpointInfos = new ConcurrentDictionary<IPEndPoint, uint>();
             foreach (IPEndPoint endpoint in endpoints)
+            {
                 EndpointInfos[endpoint] = 0; // Anzahl von Verbindungsversuchen auf 0 initialisieren
+            }
 
             TickCreated = Environment.TickCount;
             TickSent = Environment.TickCount;
@@ -192,7 +200,9 @@ namespace NoPasaranTD.Networking
         public async Task SendUnreliableAsync(byte[] data, params IPEndPoint[] endpoints)
         {
             foreach (IPEndPoint endpoint in endpoints)
+            {
                 await udpClient.SendAsync(data, data.Length, endpoint);
+            }
         }
 
         public async Task SendReliableAsync(byte[] data, params IPEndPoint[] endpoints)
@@ -242,7 +252,7 @@ namespace NoPasaranTD.Networking
                                 info.TickSent = Environment.TickCount;
 
                                 info.EndpointInfos[endpoint]++; // Inkrementiere die anzahl an versuchen für diesen Endpunkt
-                                if(info.EndpointInfos[endpoint] >= MAX_PACKET_LOSS)
+                                if (info.EndpointInfos[endpoint] >= MAX_PACKET_LOSS)
                                 {
                                     remoteClients.TryRemove(endpoint, out _); // Entferne Endpunkt
                                     RemovePacketOf(endpoint, info.Packet); // Entferne Paket aus dem Verlauf
@@ -251,7 +261,7 @@ namespace NoPasaranTD.Networking
                                     {
                                         OnRemoteTimeout?.Invoke(endpoint);
                                     }
-                                    catch (Exception ex) 
+                                    catch (Exception ex)
                                     {
                                         Console.WriteLine(ex);
                                     }

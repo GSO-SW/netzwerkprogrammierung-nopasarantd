@@ -1,7 +1,6 @@
 ﻿using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -29,7 +28,10 @@ namespace NoPasaranTD.Visuals.Main
             btnPreviousMap.ButtonClicked += () =>
             {
                 currentMap--;
-                if (currentMap < 0) currentMap = mapList.Count - 1;
+                if (currentMap < 0)
+                {
+                    currentMap = mapList.Count - 1;
+                }
             };
 
             btnStartGame = GuiLobbyMenu.CreateButton("Start Game", new Rectangle(
@@ -45,7 +47,9 @@ namespace NoPasaranTD.Visuals.Main
             {
                 currentMap++;
                 if (currentMap >= mapList.Count)
+                {
                     currentMap = 0;
+                }
             };
         }
 

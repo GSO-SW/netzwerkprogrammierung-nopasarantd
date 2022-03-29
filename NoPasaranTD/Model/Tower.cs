@@ -25,9 +25,10 @@ namespace NoPasaranTD.Model
         public uint Strength => StaticInfo.GetTowerDamage(GetType()) * Level;
         public uint Delay => StaticInfo.GetTowerDelay(GetType()) / (Level * 2);
         public double Range => StaticInfo.GetTowerRange(GetType()) * Level * 0.2;
-        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level*4;
+        public uint UpgradePrice => StaticInfo.GetTowerUpgradePrice(GetType()) * Level * 4;
         public uint SellPrice => (uint)(StaticInfo.GetTowerPrice(GetType()) * 0.5) + StaticInfo.GetTowerUpgradePrice(GetType()) * (Level - 1);
         public Guid ID { get; } = Guid.NewGuid();
+
         public long ActivateAtTick { get; set; } = 0;
 
         public Func<Balloon, Balloon, bool> GetBalloonFunc
@@ -105,7 +106,7 @@ namespace NoPasaranTD.Model
             List<int> segments = new List<int>();
             for (int i = 0; i < map.BalloonPath.Length - 1; i++)
             {
-                Vector2D locationP = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight,new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y)); // Ortsvektor des Pfadstücks
+                Vector2D locationP = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, new Vector2D(map.BalloonPath[i].X, map.BalloonPath[i].Y)); // Ortsvektor des Pfadstücks
                 Vector2D locationP2 = map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, new Vector2D(map.BalloonPath[i + 1].X, map.BalloonPath[i + 1].Y));
                 Vector2D directionP = locationP2 - locationP; // Richtungsvektor des Pfadstücks
                 // Lotfußpunktverfahren zur bestimmung des Abstands
@@ -135,7 +136,7 @@ namespace NoPasaranTD.Model
             {
                 foreach (Obstacle item in map.Obstacles) // Alle Hindernisse durchgehen
                 {
-                    Vector2D[] cornersV = map.GetRectangleCorners(map.GetScaledRectUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight,item.Hitbox)); // Alle Eckpunkte des Hindernisses bestimmen
+                    Vector2D[] cornersV = map.GetRectangleCorners(map.GetScaledRectUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, item.Hitbox)); // Alle Eckpunkte des Hindernisses bestimmen
                     List<float> pathValues = new List<float>();
                     for (int i = 0; i < cornersV.Length; i++) // Alle Eckpunkte durchgehen
                     {
@@ -156,7 +157,7 @@ namespace NoPasaranTD.Model
                     if (pathValues.Count == 0)
                     {
                         // Kontrolliert, ob einer der Eckpunkte innerhalb der verdeckten Fläche ist
-                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]), centreP, cornersV) 
+                        if (CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j]]), centreP, cornersV)
                            || CheckPathPointBlock(map.GetScaledVecUp(StaticEngine.RenderWidth, StaticEngine.RenderHeight, map.BalloonPath[SegmentsInRange[j] + 1]), centreP, cornersV))
                         {
                             blindSpots.Add(new Vector2D(map.GetFragmentMagnitudeTo(SegmentsInRange[j] - 1), map.GetFragmentMagnitudeTo(SegmentsInRange[j]))); // j muss um 1 nach hinten verschoben werden, da immer die länge bis zum nächsten Stück berechnet wird
