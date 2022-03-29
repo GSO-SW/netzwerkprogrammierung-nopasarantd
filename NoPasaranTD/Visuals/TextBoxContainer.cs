@@ -117,8 +117,8 @@ namespace NoPasaranTD.Visuals
 
                 Format.Trimming = StringTrimming.EllipsisCharacter;
                 Format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
-                              
-                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point),int.MaxValue,StringFormat.GenericDefault);
+
+                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), int.MaxValue, StringFormat.GenericDefault);
                 leftTextSize.Width -= 2;
 
                 g.SetClip(innerBound);

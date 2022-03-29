@@ -1,4 +1,5 @@
 ﻿using NoPasaranTD.Data;
+using NoPasaranTD.Engine;
 using NoPasaranTD.Model;
 using NoPasaranTD.Networking;
 using NoPasaranTD.Utilities;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace NoPasaranTD.Engine
+namespace NoPasaranTD.Logic
 {
     public class Game : IDisposable
     {
@@ -521,7 +522,7 @@ namespace NoPasaranTD.Engine
         public void UpgradeTower(object t)
         {
             Tower tower = FindTowerByID(t);
-            if(tower == null)
+            if (tower == null)
             {
                 return;
             }

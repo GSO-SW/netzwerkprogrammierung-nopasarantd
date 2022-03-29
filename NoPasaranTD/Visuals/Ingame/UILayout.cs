@@ -1,5 +1,6 @@
 ﻿using NoPasaranTD.Data;
 using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Model;
 using NoPasaranTD.Model.Towers;
 using System.Drawing;
@@ -210,7 +211,7 @@ namespace NoPasaranTD.Visuals.Ingame
                 tower.Hitbox = new Rectangle(new Point(StaticEngine.MouseX, StaticEngine.MouseY), StaticInfo.GetTowerSize(tower.GetType()));
                 placingTowerDragDrop.Context = tower;
                 placingTowerDragDrop.Start(tower.Hitbox);
-            }   
+            }
         }
 
         public override async void Update()
