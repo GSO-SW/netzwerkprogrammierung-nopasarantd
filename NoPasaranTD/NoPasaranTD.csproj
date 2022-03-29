@@ -179,5 +179,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Maps\flyway.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Meme\meme_TD_14.jpg" />
+    <Content Include="Resources\Meme\meme_TD_15.jpg" />
+    <Content Include="Resources\Meme\meme_TD_16.jpg" />
+    <Content Include="Resources\Meme\meme_TD_17.jpg" />
+    <Content Include="Resources\Meme\meme_TD_18.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

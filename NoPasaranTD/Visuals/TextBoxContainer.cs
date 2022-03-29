@@ -15,6 +15,7 @@ namespace NoPasaranTD.Visuals
         public SolidBrush Background { get; set; } = new SolidBrush(Color.White);
         public Font TextFont { get; set; } = StandartText2Font;
 
+        public StringFormat Format = new StringFormat(StringFormat.GenericTypographic);
 
         /// <summary>
         /// Die Position an dem das Caret stehen soll (Die Cursorposition in der Textbox)
@@ -105,14 +106,19 @@ namespace NoPasaranTD.Visuals
 
             g.SetClip(innerBound);
             g.TranslateTransform(offsetX, 0);
-            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y, StringFormat.GenericDefault);
+            g.DrawString(Text, new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point), Foreground, innerBound.X, innerBound.Y);
 
             g.Clip = currentClip;
             g.Transform = current;
 
             if (Text != "" && IsFocused)
             {
-                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point));
+                Format.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0, Text.Substring(0, CaretIndex).Length) });
+
+                Format.Trimming = StringTrimming.EllipsisCharacter;
+                Format.HotkeyPrefix = System.Drawing.Text.HotkeyPrefix.Show;
+                              
+                SizeF leftTextSize = g.MeasureString(Text.Substring(0, CaretIndex), new Font(TextFont.Name, TextFont.Size, TextFont.Style, GraphicsUnit.Point),int.MaxValue,StringFormat.GenericDefault);
                 leftTextSize.Width -= 2;
 
                 g.SetClip(innerBound);
