@@ -26,7 +26,7 @@ namespace NoPasaranTD.Engine
 
         public int Money { get; set; } = StaticInfo.StartMoney;
         public int HealthPoints { get; set; } = StaticInfo.StartHP;
-        public bool GodMode { get; set; } = false;
+        public bool GodMode { get; set; } = true;
         public bool Paused { get; set; } = false;
         public int Round { get; set; } = 1;
 
@@ -559,7 +559,7 @@ namespace NoPasaranTD.Engine
         public void UpgradeTower(object t)
         {
             Tower tower = FindTowerID(t);
-            if (tower != null && tower.UpgradePrice <= Money && tower.CanLevelUp()) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
+            if (tower != null && (tower.UpgradePrice <= Money || GodMode) && tower.CanLevelUp()) // Kontrollieren, dass ein Turm existiert, dass der Spieler genug Geld hat und das der Turm weiter geupgraded werden kann
             {
                 if (!GodMode) // Im Godmode soll kein Geld abgezogen werden
                 {
@@ -602,7 +602,7 @@ namespace NoPasaranTD.Engine
 
         public void AccelerateGame(object t)
         {
-            if (StaticEngine.TickAcceleration == 8)
+            if (StaticEngine.TickAcceleration == 256)
             {
                 StaticEngine.TickAcceleration = 1;
             }

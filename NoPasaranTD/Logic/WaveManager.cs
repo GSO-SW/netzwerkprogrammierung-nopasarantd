@@ -55,8 +55,8 @@ namespace NoPasaranTD.Engine
         private int currentBalloonOfWave = 0;
 
         // Wellen-Parameter
-        private readonly double waveSensitivity = 0.0015; // Die Sensitivität der Wellen
-        private readonly double balloonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
+        private readonly decimal waveSensitivity = (decimal)0.0015; // Die Sensitivität der Wellen
+        private readonly decimal balloonStartValue = 50; // Die Anzahl der Ballons, die zum Beginn Spawnen
         private readonly uint waveSensitivityExponent = 2; // Der Exponent der den Spawn-Grad verändern kann
 
         private bool completed = false;
@@ -81,29 +81,36 @@ namespace NoPasaranTD.Engine
             Balloon[] balloons = new Balloon[numberBalloons];
 
             // Häufigkeiten eines Ballontypes
-            (BalloonType, double)[] probabilities = new (BalloonType, double)[Enum.GetNames(typeof(BalloonType)).Length];
+            (BalloonType, decimal)[] probabilities = new (BalloonType, decimal)[Enum.GetNames(typeof(BalloonType)).Length];
 
             // Alle möglichen Ballontypen
             BalloonType[] values = (BalloonType[])Enum.GetValues(typeof(BalloonType));
 
             // Summe aller Häufigkeiten
-            double sumProbability = 0;
+            decimal sumProbability = 0;
 
             // Berechnet die Häufigkeit eines Ballontypes innerhalb einer Welle 
             for (int i = 1; i < Enum.GetNames(typeof(BalloonType)).Length; i++)
             {
-                double probability = CalcProberbility(values[i]);
+                decimal probability = CalcProberbility(values[i]);
 
                 probabilities[i - 1] = (values[i], CalcProberbility(values[i]));
                 sumProbability += probability;
             }
 
-            // Berechnet den Anteil eines Ballontypes innerhalb einer Welle
-            for (int i = 1; i < Enum.GetNames(typeof(BalloonType)).Length; i++)
+            if (sumProbability == 0)
             {
-                probabilities[i - 1] = (probabilities[i - 1].Item1, probabilities[i - 1].Item2 * (1 / sumProbability));
+                probabilities[probabilities.Length - 1] = (values[probabilities.Length-1],1);
             }
-
+            else
+            {
+                // Berechnet den Anteil eines Ballontypes innerhalb einer Welle
+                for (int i = 1; i < Enum.GetNames(typeof(BalloonType)).Length; i++)
+                {
+                    probabilities[i - 1] = (probabilities[i - 1].Item1, probabilities[i - 1].Item2 * (1 / sumProbability));
+                }
+            }
+            
             // Fügt die Ballons hinzu
             for (int i = 0; i < probabilities.Length; i++)
             {
@@ -120,11 +127,11 @@ namespace NoPasaranTD.Engine
         }
 
         // Berechnet die Häufigkeit eines Ballontypes innerhalb einer Welle
-        private double CalcProberbility(BalloonType type)
+        private decimal CalcProberbility(BalloonType type)
         {
             // Funktion: e^(-0.05(x-a-5)*(x-a+5)-1.25) | a=x-Wert an dem nur dieser Ballontyp spawnt
             uint peek = StaticInfo.GetBalloonPeek(type);
-            return Math.Exp(-0.05 * (CurrentGame.Round - peek - 5) * (CurrentGame.Round - peek + 5) - 1.25);
+            return (decimal)Math.Exp(-0.05 * (CurrentGame.Round - peek - 5) * (CurrentGame.Round - peek + 5) - 1.25);
         }
 
         // Erstellt ein neues Paket an Ballons innerhalb einer Welle
@@ -133,7 +140,7 @@ namespace NoPasaranTD.Engine
             List<Balloon> newWave = new List<Balloon>(); // Die neue Paket Welle
 
             // Errechnet einen neuen Wert zwischen 0 und 1 welches dann der Anteil der gesamten Welle ist und erstellt diese Menge an Ballons dann
-            double part = -0.25 * Math.Sin(-0.4 * Math.Log(Math.Pow((CurrentGame.Round + currentBalloonOfWave / currentWave.Count), Math.Cos(CurrentGame.Round + currentBalloonOfWave / currentWave.Count)))) + 0.4;
+            decimal part = (decimal)(-0.25 * Math.Sin(-0.4 * Math.Log(Math.Pow((CurrentGame.Round + currentBalloonOfWave / currentWave.Count), Math.Cos(CurrentGame.Round + currentBalloonOfWave / currentWave.Count)))) + 0.4);
             if (currentBalloonOfWave + currentWave.Count * part < currentWave.Count)
             {
                 newWave = currentWave.GetRange(currentBalloonOfWave + 1, (int)(currentWave.Count * part));
@@ -150,7 +157,7 @@ namespace NoPasaranTD.Engine
         // Übergibt die neue Anzahl an Ballons in einer Runde in Abhängigkeit der Runde, dem Startwert, der Intensitivität und dem Exponenten
         private int GetBalloonCountInRound()
         {
-            return (int)(balloonStartValue * (waveSensitivity * Math.Pow(CurrentGame.Round, waveSensitivityExponent) + 1));
+            return (int)(balloonStartValue * (waveSensitivity * (decimal)Math.Pow(CurrentGame.Round, waveSensitivityExponent) + 1));
         }
 
         /// <summary>
