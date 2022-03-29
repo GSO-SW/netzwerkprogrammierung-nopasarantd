@@ -26,6 +26,9 @@ namespace NoPasaranTD.Visuals.Ingame
         // Mouse Cursor Paketeinstellungen
         private const int MOUSE_SEND_INTERVAL = 50;
 
+        private const int CIRCLE_RADIUS = 8;
+        private const int CROSS_RADIUS = 20;
+
         private readonly Game game;
         private readonly ConcurrentDictionary<string, PlayerCursorInfo> playerCursors;
         public CursorLayout(Game game)
@@ -52,34 +55,34 @@ namespace NoPasaranTD.Visuals.Ingame
             // zeichne die Maus Positionen von anderen wenn online
             if (!game.NetworkHandler.OfflineMode)
             {
-                int circlesize = 10;
-                int crosssize = 35;
                 for (int i = playerCursors.Count - 1; i >= 0; i--)
                 {
                     PlayerCursorInfo info = playerCursors.Values.ElementAt(i);
                     g.FillEllipse(Brushes.White,
-                        info.Position.X - circlesize, info.Position.Y - circlesize, 2* circlesize, 2* circlesize
+                        info.Position.X - CIRCLE_RADIUS, info.Position.Y - CIRCLE_RADIUS, 2 * CIRCLE_RADIUS, 2 * CIRCLE_RADIUS
                     );
                     
-                    g.DrawLine(Pens.LightGray, info.Position.X - crosssize, info.Position.Y, info.Position.X + crosssize, info.Position.Y);
-                    g.DrawLine(Pens.Gray, info.Position.X - crosssize, info.Position.Y - 1, info.Position.X - circlesize, info.Position.Y - 1);
-                    g.DrawLine(Pens.Gray, info.Position.X - crosssize, info.Position.Y + 1, info.Position.X - circlesize, info.Position.Y + 1);
-                    g.DrawLine(Pens.Gray, info.Position.X + crosssize, info.Position.Y - 1, info.Position.X + circlesize, info.Position.Y - 1);
-                    g.DrawLine(Pens.Gray, info.Position.X + crosssize, info.Position.Y + 1, info.Position.X + circlesize, info.Position.Y + 1);
+                    g.DrawLine(Pens.LightGray, info.Position.X - CROSS_RADIUS, info.Position.Y, info.Position.X + CROSS_RADIUS, info.Position.Y);
+                    g.DrawLine(Pens.Gray, info.Position.X - CROSS_RADIUS, info.Position.Y - 1, info.Position.X - CROSS_RADIUS, info.Position.Y - 1);
+                    g.DrawLine(Pens.Gray, info.Position.X - CROSS_RADIUS, info.Position.Y + 1, info.Position.X - CROSS_RADIUS, info.Position.Y + 1);
+                    g.DrawLine(Pens.Gray, info.Position.X + CROSS_RADIUS, info.Position.Y - 1, info.Position.X + CROSS_RADIUS, info.Position.Y - 1);
+                    g.DrawLine(Pens.Gray, info.Position.X + CROSS_RADIUS, info.Position.Y + 1, info.Position.X + CROSS_RADIUS, info.Position.Y + 1);
 
 
-                    g.DrawLine(Pens.LightGray, info.Position.X, info.Position.Y - crosssize, info.Position.X, info.Position.Y + crosssize);
-                    g.DrawLine(Pens.Gray, info.Position.X - 1, info.Position.Y - crosssize, info.Position.X - 1, info.Position.Y - circlesize);
-                    g.DrawLine(Pens.Gray, info.Position.X + 1, info.Position.Y - crosssize, info.Position.X + 1, info.Position.Y - circlesize);
-                    g.DrawLine(Pens.Gray, info.Position.X - 1, info.Position.Y + crosssize, info.Position.X - 1, info.Position.Y + circlesize);
-                    g.DrawLine(Pens.Gray, info.Position.X + 1, info.Position.Y + crosssize, info.Position.X + 1, info.Position.Y + circlesize);
+                    g.DrawLine(Pens.LightGray, info.Position.X, info.Position.Y - CROSS_RADIUS, info.Position.X, info.Position.Y + CROSS_RADIUS);
+                    g.DrawLine(Pens.Gray, info.Position.X - 1, info.Position.Y - CROSS_RADIUS, info.Position.X - 1, info.Position.Y - CROSS_RADIUS);
+                    g.DrawLine(Pens.Gray, info.Position.X + 1, info.Position.Y - CROSS_RADIUS, info.Position.X + 1, info.Position.Y - CROSS_RADIUS);
+                    g.DrawLine(Pens.Gray, info.Position.X - 1, info.Position.Y + CROSS_RADIUS, info.Position.X - 1, info.Position.Y + CROSS_RADIUS);
+                    g.DrawLine(Pens.Gray, info.Position.X + 1, info.Position.Y + CROSS_RADIUS, info.Position.X + 1, info.Position.Y + CROSS_RADIUS);
 
 
                     g.FillEllipse(Brushes.Purple,
-                        info.Position.X - (circlesize - 1), info.Position.Y - (circlesize - 1), (circlesize - 1) * 2, (circlesize - 1) * 2
+                        info.Position.X - (CIRCLE_RADIUS - 1), info.Position.Y - (CIRCLE_RADIUS - 1), 
+                        (CIRCLE_RADIUS - 1) * 2, (CIRCLE_RADIUS - 1) * 2
                     );
                     g.FillEllipse(Brushes.LightGray,
-                        info.Position.X - (circlesize - 5), info.Position.Y - (circlesize - 5), (circlesize - 5) * 2, (circlesize - 5) * 2
+                        info.Position.X - (CIRCLE_RADIUS - 5), info.Position.Y - (CIRCLE_RADIUS - 5), 
+                        (CIRCLE_RADIUS - 5) * 2, (CIRCLE_RADIUS - 5) * 2
                     );
 
                     g.DrawString(info.Username, StandartText1Font, Brushes.Black,
