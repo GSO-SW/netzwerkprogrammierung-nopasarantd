@@ -1,7 +1,8 @@
 ﻿using NoPasaranTD.Engine;
+using NoPasaranTD.Logic;
 using NoPasaranTD.Utilities;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Linq;
 
@@ -26,11 +27,11 @@ namespace NoPasaranTD.Visuals.Ingame
         private const int MOUSE_SEND_INTERVAL = 50;
 
         private readonly Game game;
-        private readonly Dictionary<string, PlayerCursorInfo> playerCursors;
+        private readonly ConcurrentDictionary<string, PlayerCursorInfo> playerCursors;
         public CursorLayout(Game game)
         {
             this.game = game;
-            playerCursors = new Dictionary<string, PlayerCursorInfo>();
+            playerCursors = new ConcurrentDictionary<string, PlayerCursorInfo>();
             game.NetworkHandler.EventHandlers.Add("TransferMousePosition", TransferMousePosition);
         }
 

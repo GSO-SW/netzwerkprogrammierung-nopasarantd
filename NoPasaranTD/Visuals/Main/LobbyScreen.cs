@@ -122,8 +122,8 @@ namespace NoPasaranTD.Visuals.Main
             btnStartGame.Render(g);
             btnPreviousMap.Render(g);
             btnNextMap.Render(g);
-            
-            if(mapList.TryGetValue(Lobby.MapName, out Map map))
+
+            if (mapList.TryGetValue(Lobby.MapName, out Map map))
             {
                 // Map preview
                 g.DrawImage(map.BackgroundImage,
